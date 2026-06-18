@@ -5,7 +5,7 @@ import {
   knowledgeEntries,
   starterQuestions,
 } from "./data/iropKnowledge";
-import { answerVisitorQuestion } from "./lib/iropAssistant";
+import { askIroha } from "./lib/iropAssistantClient";
 
 const TRAVEL_DISTANCE = 7200;
 
@@ -138,6 +138,8 @@ function PetAssistant({ className = "", compact = false }) {
     },
   ]);
   const [input, setInput] = useState("");
+  const [isThinking, setIsThinking] = useState(false);
+  const [runtimeLabel, setRuntimeLabel] = useState("LOCAL KB");
   const messagesRef = useRef(null);
 
   useEffect(() => {
@@ -146,19 +148,35 @@ function PetAssistant({ className = "", compact = false }) {
     messagePanel.scrollTop = 0;
   }, [messages]);
 
-  const ask = (question) => {
+  const ask = async (question) => {
     const normalized = question.trim();
-    if (!normalized) return;
-    const answer = answerVisitorQuestion(normalized);
+    if (!normalized || isThinking) return;
+    setInput("");
+    setIsThinking(true);
+    setRuntimeLabel("QUERYING");
     setMessages(
       compact
-        ? [{ role: "assistant", ...answer }]
+        ? [{ role: "assistant", text: "Indexing local memories...", source: "iroha skill", pending: true }]
         : [
             { role: "user", text: normalized },
-            { role: "assistant", ...answer },
+            { role: "assistant", text: "Indexing local memories...", source: "iroha skill", pending: true },
           ]
     );
-    setInput("");
+
+    try {
+      const answer = await askIroha(normalized);
+      setRuntimeLabel(answer.runtimeLabel || "LOCAL KB");
+      setMessages(
+        compact
+          ? [{ role: "assistant", ...answer }]
+          : [
+              { role: "user", text: normalized },
+              { role: "assistant", ...answer },
+            ]
+      );
+    } finally {
+      setIsThinking(false);
+    }
   };
 
   return (
@@ -174,11 +192,14 @@ function PetAssistant({ className = "", compact = false }) {
       <div className="pet-console">
         <div className="pet-console-top">
           <span>IROHA PET</span>
-          <b>LOCAL KB</b>
+          <b>{runtimeLabel}</b>
         </div>
-        <div className="pet-messages" aria-live="polite" ref={messagesRef}>
+        <div className="pet-messages" aria-live="polite" aria-busy={isThinking} ref={messagesRef}>
           {messages.map((message, index) => (
-            <p className={`pet-message ${message.role}`} key={`${message.role}-${index}-${message.text}`}>
+            <p
+              className={`pet-message ${message.role} ${message.pending ? "pending" : ""}`}
+              key={`${message.role}-${index}-${message.text}`}
+            >
               <span>{message.text}</span>
               {message.role === "assistant" && message.source ? (
                 <small>
@@ -208,7 +229,7 @@ function PetAssistant({ className = "", compact = false }) {
         </div>
         <div className="pet-chips" aria-label="Suggested questions">
           {starterQuestions.map((question) => (
-            <button type="button" onClick={() => ask(question)} key={question}>
+            <button type="button" onClick={() => ask(question)} key={question} disabled={isThinking}>
               {question}
             </button>
           ))}
@@ -225,8 +246,9 @@ function PetAssistant({ className = "", compact = false }) {
             onChange={(event) => setInput(event.target.value)}
             placeholder="Ask about irop..."
             aria-label="Ask Iroha pet about irop"
+            disabled={isThinking}
           />
-          <button type="submit">Ask</button>
+          <button type="submit" disabled={isThinking}>{isThinking ? "..." : "Ask"}</button>
         </form>
       </div>
     </section>
@@ -251,7 +273,7 @@ function KnowledgeDeck({ className = "" }) {
           indexes
         </span>
         <span>
-          <b>local</b>
+          <b>hybrid</b>
           runtime
         </span>
       </div>
@@ -285,6 +307,7 @@ function KnowledgeDeck({ className = "" }) {
       <div className="knowledge-actions">
         <a href={assistantSkill.specHref}>Skill spec</a>
         <a href={assistantSkill.manifestHref}>Manifest</a>
+        <a href={assistantSkill.apiHref}>API</a>
       </div>
     </section>
   );

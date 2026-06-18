@@ -356,6 +356,7 @@ a {
 .pet-console-top b {
   color: var(--yellow);
   font-size: 11px;
+  white-space: nowrap;
 }
 
 .pet-messages {
@@ -418,6 +419,14 @@ a {
   color: #fff6d6;
 }
 
+.pet-message.pending {
+  border-color: rgba(104, 204, 220, 0.28);
+  background:
+    linear-gradient(90deg, rgba(104, 204, 220, 0.12), rgba(203, 196, 248, 0.08)),
+    rgba(255, 255, 255, 0.045);
+  color: #dce9ff;
+}
+
 .pet-chips {
   display: flex;
   flex-wrap: wrap;
@@ -439,6 +448,13 @@ a {
 .pet-form button:hover {
   border-color: rgba(255, 228, 143, 0.6);
   background: rgba(255, 228, 143, 0.16);
+}
+
+.pet-chips button:disabled,
+.pet-form button:disabled,
+.pet-form input:disabled {
+  cursor: wait;
+  opacity: 0.58;
 }
 
 .pet-form {

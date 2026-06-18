@@ -22,10 +22,11 @@ export const starterQuestions = [
 
 export const assistantSkill = {
   name: "irop-portal-skill",
-  version: "0.2.0",
-  runtime: "local deterministic retrieval",
+  version: "0.3.0",
+  runtime: "local retrieval with optional remote assistant endpoint",
   specHref: "/knowledge/irop-skill.md",
   manifestHref: "/knowledge/irop-skill.json",
+  apiHref: "/knowledge/irop-assistant-api.md",
   role:
     "Answer visitor questions about irop, projects, writing, visual archives, WebGL demos and contact routes from the local curated knowledge base.",
   style:
@@ -38,6 +39,7 @@ export const assistantSkill = {
     "Profile and contact routing",
     "Public project explainers",
     "Blog, gallery and shader navigation",
+    "Optional remote AI/RAG endpoint",
     "Future backend or RAG replacement path",
   ],
 };

@@ -16,6 +16,8 @@ AI_API_KEY=server-side-secret
 AI_TIMEOUT_MS=12000
 ```
 
+Static deployments can leave `VITE_IROP_ASSISTANT_ENDPOINT` blank to use browser-only local KB mode. Deployments with `api/iroha-assistant.js` available should set `VITE_IROP_ASSISTANT_ENDPOINT=/api/iroha-assistant`.
+
 ## Request
 
 ```http
@@ -75,3 +77,5 @@ Content-Type: application/json
 If the browser endpoint is missing, times out, returns a non-2xx response, or sends invalid JSON, Iroha answers from `src/lib/iropAssistant.js` and labels the runtime as `LOCAL KB` or `LOCAL FALLBACK`.
 
 If the included serverless API is available but no model endpoint is configured, it returns `SERVER KB` and answers with the same public knowledge base. This keeps the deployed route useful before a real model/RAG service exists.
+
+Run `npm run smoke:iroha` to verify browser-local, server-local and mock server-AI paths.

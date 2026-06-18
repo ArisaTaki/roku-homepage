@@ -15,6 +15,22 @@ npm run dev
 npm run build
 ```
 
+## Iroha Assistant
+
+The Iroha pet works in browser-only local KB mode by default.
+
+```bash
+npm run smoke:iroha
+```
+
+For serverless deployments that can run `api/iroha-assistant.js`, set:
+
+```bash
+VITE_IROP_ASSISTANT_ENDPOINT=/api/iroha-assistant
+```
+
+Model keys stay server-side through `AI_CHAT_COMPLETIONS_ENDPOINT`, `AI_MODEL`, and `AI_API_KEY`. Static SSH deployment can leave the browser endpoint blank.
+
 ## Deployment
 
 Deployment is prepared in `.github/workflows/deploy.yml` and only runs when `main` receives a push.

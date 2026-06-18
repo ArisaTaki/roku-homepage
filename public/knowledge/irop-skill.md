@@ -13,6 +13,7 @@ Answer visitor questions about irop, public projects, writing, visual archives, 
 - `src/data/iropKnowledge.js`: curated knowledge entries, collections and skill policy.
 - `src/lib/iropAssistant.js`: local deterministic retrieval and answer composition.
 - `src/lib/iropAssistantClient.js`: optional remote assistant adapter with local fallback.
+- `api/iroha-assistant.js`: serverless assistant endpoint with model-ready server-side fallback.
 - `PetAssistant`: the Iroha pixel pet UI used on desktop and mobile.
 - `/knowledge/irop-skill.json`: public manifest for future indexing or backend replacement.
 - `/knowledge/irop-assistant-api.md`: POST contract for a future server-side LLM/RAG endpoint.

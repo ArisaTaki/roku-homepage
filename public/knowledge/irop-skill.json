@@ -6,6 +6,7 @@
   "runtime": "local retrieval with optional remote assistant endpoint",
   "description": "A public portfolio knowledge base used by the Iroha pixel pet on irop.one.",
   "apiContract": "/knowledge/irop-assistant-api.md",
+  "serverlessEndpoint": "/api/iroha-assistant",
   "optionalFrontendEnv": "VITE_IROP_ASSISTANT_ENDPOINT",
   "boundaries": [
     "Use public portfolio facts only.",

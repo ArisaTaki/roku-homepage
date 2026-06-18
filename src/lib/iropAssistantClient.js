@@ -61,8 +61,8 @@ function normalizeRemoteAnswer(remoteAnswer, localAnswer) {
     confidence: safeRemote.confidence || localAnswer.confidence || "remote",
     details: Array.isArray(safeRemote.details) ? safeRemote.details : localAnswer.details,
     links: Array.isArray(safeRemote.links) ? safeRemote.links : localAnswer.links,
-    runtime: "remote",
-    runtimeLabel: "REMOTE AI",
+    runtime: safeRemote.runtime || "remote",
+    runtimeLabel: safeRemote.runtimeLabel || "REMOTE AI",
   };
 }
 

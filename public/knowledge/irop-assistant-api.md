@@ -4,6 +4,18 @@ The frontend works without a server. When `VITE_IROP_ASSISTANT_ENDPOINT` is conf
 
 Do not put model API keys in the browser. The endpoint should be a server you control.
 
+This repo includes a Vercel-style serverless entry at `api/iroha-assistant.js`. Without model settings it still answers from the same public knowledge base on the server. With server-only model settings it calls an OpenAI-compatible chat-completions endpoint.
+
+## Environment
+
+```bash
+VITE_IROP_ASSISTANT_ENDPOINT=/api/iroha-assistant
+AI_CHAT_COMPLETIONS_ENDPOINT=https://your-server-or-provider/v1/chat/completions
+AI_MODEL=your-model-name
+AI_API_KEY=server-side-secret
+AI_TIMEOUT_MS=12000
+```
+
 ## Request
 
 ```http
@@ -47,6 +59,8 @@ Content-Type: application/json
   "details": [
     "Generated with public portfolio memory and server-side retrieval."
   ],
+  "runtime": "server-ai",
+  "runtimeLabel": "REMOTE AI",
   "links": [
     {
       "label": "Hermes-Yachiyo",
@@ -58,4 +72,6 @@ Content-Type: application/json
 
 ## Fallback
 
-If the endpoint is missing, times out, returns a non-2xx response, or sends invalid JSON, Iroha answers from `src/lib/iropAssistant.js` and labels the runtime as `LOCAL KB` or `LOCAL FALLBACK`.
+If the browser endpoint is missing, times out, returns a non-2xx response, or sends invalid JSON, Iroha answers from `src/lib/iropAssistant.js` and labels the runtime as `LOCAL KB` or `LOCAL FALLBACK`.
+
+If the included serverless API is available but no model endpoint is configured, it returns `SERVER KB` and answers with the same public knowledge base. This keeps the deployed route useful before a real model/RAG service exists.

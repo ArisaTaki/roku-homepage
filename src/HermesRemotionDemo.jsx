@@ -31,8 +31,8 @@ function range(frame, input, output) {
 
 function Cursor() {
   const frame = useCurrentFrame();
-  const x = range(frame, [0, 42, 84, 112, 154, 246, 360, 468], [742, 918, 1172, 1172, 842, 168, 168, 168]);
-  const y = range(frame, [0, 42, 84, 112, 154, 246, 360, 468], [734, 734, 734, 734, 518, 592, 640, 688]);
+  const x = range(frame, [0, 42, 84, 116, 132, 180, 246, 360, 468], [742, 918, 1132, 1132, 1132, 842, 168, 168, 168]);
+  const y = range(frame, [0, 42, 84, 116, 132, 180, 246, 360, 468], [734, 734, 782, 782, 782, 518, 592, 640, 688]);
   const press = spring({
     frame: Math.max(0, frame - 84),
     fps: FPS,
@@ -109,6 +109,7 @@ function ChatScene() {
   const typed = promptText.slice(0, typedCount);
   const sendScale = frame > 84 && frame < 98 ? 1.08 : 1;
   const showUser = frame >= 92;
+  const isProcessing = frame >= 98;
   const showReply = frame >= 126;
   const replyChars = Math.floor(range(frame, [126, 178], [0, replyText.length]));
   const toolProgress = clampFrame(frame - 154, 0, 72);
@@ -163,7 +164,9 @@ function ChatScene() {
               {typed}
               {typedCount < promptText.length ? <i /> : null}
             </p>
-            <button style={{ transform: `scale(${sendScale})` }}>↑</button>
+            <button className={isProcessing ? "is-processing" : ""} style={{ transform: `scale(${sendScale})` }}>
+              <span className={isProcessing ? "hy-demo-stop-icon" : "hy-demo-send-icon"} />
+            </button>
           </div>
         </div>
       </div>
@@ -266,7 +269,7 @@ function BubbleScene() {
 function Live2DScene() {
   const frame = useCurrentFrame();
   const local = frame;
-  const imageScale = 1.03 + range(local, [0, 56], [0, 0.06]);
+  const imageScale = 0.92 + range(local, [0, 56], [0, 0.04]);
   const chipOpacity = range(local, [28, 68], [0, 1]);
 
   return (
@@ -274,13 +277,18 @@ function Live2DScene() {
       <div className="hy-demo-live2d-page">
         <div className="hy-demo-live2d-stage">
           <span className="hy-demo-live2d-aura" />
+          <span className="hy-demo-live2d-guide" />
           <img src="/assets/hermes/hermes-live2d-character.png" alt="" style={{ transform: `scale(${imageScale})` }} />
+        </div>
+        <section className="hy-demo-live2d-copy">
+          <h4>Live2D 模式</h4>
+          <p>虚拟形象互动，让八千代在你的桌面上活起来。支持口型同步、表情动作、语音合成等功能。</p>
           <div style={{ opacity: chipOpacity }}>
-            {["口型同步", "4 个表情", "2 组动作", "月光舞台"].map((item) => (
+            {["口型同步", "4 个表情", "2 组动作", "语音合成", "自定义 · 60 FPS", "月光舞台"].map((item) => (
               <span key={item}>{item}</span>
             ))}
           </div>
-        </div>
+        </section>
       </div>
     </WindowFrame>
   );

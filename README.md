@@ -21,6 +21,7 @@ The Iroha pet works in browser-only local KB mode by default.
 
 ```bash
 npm run smoke:iroha
+npm run check:iroha
 ```
 
 For serverless deployments that can run `api/iroha-assistant.js`, set:

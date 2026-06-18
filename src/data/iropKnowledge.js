@@ -14,10 +14,10 @@ export const iropProfile = {
 };
 
 export const starterQuestions = [
-  "Who is irop?",
+  "What can you answer?",
   "Hermes-Yachiyo?",
   "自然语言 Live2D?",
-  "How to contact?",
+  "All links?",
 ];
 
 export const assistantSkill = {

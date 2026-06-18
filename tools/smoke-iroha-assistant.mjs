@@ -35,6 +35,14 @@ const local = await askIroha("Hermes-Yachiyo?");
 assert(local.runtimeLabel === "LOCAL KB", "local client should use LOCAL KB without endpoint");
 assert(local.source === "Hermes-Yachiyo", "local client should match Hermes-Yachiyo");
 
+const guide = await askIroha("What can you answer?");
+assert(guide.source === "irop portal skill", "guide answer should identify the portal skill");
+assert(guide.confidence === "guide", "guide answer should use guide confidence");
+
+const links = await askIroha("All links?");
+assert(links.source === "irop links", "all-links answer should identify irop links");
+assert(links.links.length >= 5, "all-links answer should return public profile links");
+
 const serverLocal = await postJson(apiUrl, { question: "怎么联系 irop?" });
 assert(serverLocal.status === 200, "server-local response should be 200");
 assert(serverLocal.body.runtimeLabel === "SERVER KB", "server-local response should use SERVER KB");

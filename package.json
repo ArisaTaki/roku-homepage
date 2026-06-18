@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "smoke:iroha": "node tools/smoke-iroha-assistant.mjs"
+    "smoke:iroha": "node tools/smoke-iroha-assistant.mjs",
+    "check:iroha": "npm run smoke:iroha && node tools/check-iroha-manifest.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

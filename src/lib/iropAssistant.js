@@ -1,4 +1,9 @@
-import { assistantSkill, iropProfile, knowledgeEntries } from "../data/iropKnowledge.js";
+import {
+  assistantSkill,
+  iropProfile,
+  knowledgeCollections,
+  knowledgeEntries,
+} from "../data/iropKnowledge.js";
 
 const fallbackKeywords = ["project", "ai", "tool", "live2d", "webgl", "blog", "gallery", "contact"];
 
@@ -44,6 +49,76 @@ function scoreEntry(entry, tokens, normalizedQuestion) {
   if (entry.id === "contact" && /(contact|email|mail|联系|邮箱)/i.test(normalizedQuestion)) score += 8;
 
   return score;
+}
+
+function entriesForCollection(label) {
+  const collection = knowledgeCollections.find((item) => item.label === label);
+  if (!collection) return [];
+  return collection.entryIds
+    .map((entryId) => knowledgeEntries.find((entry) => entry.id === entryId))
+    .filter(Boolean);
+}
+
+function linkedEntries(entries) {
+  return entries.map((entry) => ({ label: entry.title, href: entry.href }));
+}
+
+function buildMatchedEntries(entries, score = 99) {
+  return entries.map((entry) => ({
+    id: entry.id,
+    title: entry.title,
+    type: entry.type,
+    score,
+  }));
+}
+
+function answerIntent(question, normalizedQuestion) {
+  if (/(what can|what do you know|help|capabilit|你会|能问|可以问|知道什么|帮助|怎么用)/i.test(question)) {
+    const projectEntries = entriesForCollection("Projects");
+    const placeEntries = entriesForCollection("Places");
+
+    return {
+      text:
+        "You can ask me about irop's profile, public projects, writing, gallery, shader demos, contact route, and how this Iroha skill works.",
+      source: "irop portal skill",
+      confidence: "guide",
+      details: assistantSkill.capabilities,
+      links: [
+        { label: "Skill spec", href: assistantSkill.specHref },
+        { label: "Manifest", href: assistantSkill.manifestHref },
+        { label: "Email", href: `mailto:${iropProfile.contact}` },
+      ],
+      matchedEntries: buildMatchedEntries([...projectEntries, ...placeEntries], 20),
+    };
+  }
+
+  if (/(projects?|works?|repo|github|项目|作品|仓库|代码)/i.test(question)) {
+    const projectEntries = entriesForCollection("Projects");
+
+    return {
+      text:
+        "The main public projects are Hermes-Yachiyo, nature-live2d, and mimo-usage-watcher. Hermes-Yachiyo is the local desktop agent app; nature-live2d maps natural language to Live2D expression control; mimo-usage-watcher monitors MiMo quota usage.",
+      source: "Projects",
+      confidence: "guide",
+      details: projectEntries.map((entry) => entry.answer),
+      links: linkedEntries(projectEntries),
+      matchedEntries: buildMatchedEntries(projectEntries, 30),
+    };
+  }
+
+  if (/(all links|links|sites?|where|导航|链接|入口|站点|网址|全部)/i.test(normalizedQuestion)) {
+    return {
+      text:
+        "Useful irop links: GitHub for code, blog.irop.one for notes, images.irop.one for gallery work, shader.irop.one for WebGL demos, and me@irop.one for contact.",
+      source: "irop links",
+      confidence: "guide",
+      details: ["Public links only; private details are not inferred."],
+      links: iropProfile.links,
+      matchedEntries: buildMatchedEntries(knowledgeEntries, 10),
+    };
+  }
+
+  return null;
 }
 
 function composeAnswer(matches, question) {
@@ -99,6 +174,9 @@ export function answerVisitorQuestion(rawQuestion) {
       matchedEntries: [],
     };
   }
+
+  const intentAnswer = answerIntent(question, normalizedQuestion);
+  if (intentAnswer) return intentAnswer;
 
   const tokens = tokenize(question);
   const matches = knowledgeEntries

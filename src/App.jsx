@@ -68,8 +68,58 @@ const works = [
   },
 ];
 
+const starterQuestions = ["Who is irop?", "Hermes-Yachiyo?", "Live2D project?", "Contact"];
+
+const profileFacts = [
+  "irop builds AI-adjacent tools, local agent interfaces, Live2D expression experiments, WebGL sketches, image galleries and technical notes.",
+  "The current portfolio points to Hermes-Yachiyo, nature-live2d, mimo-usage-watcher, blog.irop.one, images.irop.one and shader.irop.one.",
+  "Contact: me@irop.one.",
+];
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
+}
+
+function answerVisitorQuestion(rawQuestion) {
+  const question = rawQuestion.trim().toLowerCase();
+
+  if (!question) {
+    return "Ask me about projects, AI tools, Live2D, WebGL, writing, galleries, or how to contact irop.";
+  }
+
+  if (/(contact|email|mail|联系|邮箱|合作)/.test(question)) {
+    return "You can reach irop at me@irop.one. For project links, GitHub is kuguya-AI-app-develop, and the portal links out to blog, gallery and shader demos.";
+  }
+
+  if (/(hermes|yachiyo|agent|桌面|本地|助手)/.test(question)) {
+    return "Hermes-Yachiyo is a desktop-first local personal Agent app. It wraps Hermes in a console, full chat window, floating bubble and Live2D desktop mode.";
+  }
+
+  if (/(live2d|expression|表情|vtube|自然语言|nature)/.test(question)) {
+    return "nature-live2d turns natural-language emotion intent into safe Live2D expression parameters and timelines. It can read model resources, whitelist parameters and clamp output ranges.";
+  }
+
+  if (/(mimo|quota|usage|额度|监控|token|balance)/.test(question)) {
+    return "mimo-usage-watcher is an Electron dashboard for MiMo token-plan usage and API-key balance across accounts, with local metadata and macOS Keychain storage for sensitive data.";
+  }
+
+  if (/(blog|writing|文章|笔记|notes)/.test(question)) {
+    return "blog.irop.one is the writing side of the portal: technical notes, AI-tool experiments, frontend observations and anything worth remembering.";
+  }
+
+  if (/(image|gallery|画廊|图片|visual)/.test(question)) {
+    return "images.irop.one is the gallery and visual archive. It keeps generated images, references and small visual fragments near the project work.";
+  }
+
+  if (/(shader|webgl|glsl|demo|渲染)/.test(question)) {
+    return "shader.irop.one is a WebGL shader demo space for motion, color and tiny rendering experiments.";
+  }
+
+  if (/(skill|knowledge|知识库|ai|pet|宠物|assistant)/.test(question)) {
+    return "This pet is the first local knowledge-base prototype. Right now it answers from curated facts in the site; later it can become an irop skill or connect to a real retrieval-backed AI endpoint.";
+  }
+
+  return `${profileFacts.join(" ")} Try asking about Hermes-Yachiyo, Live2D, MiMo usage, shader demos or contact.`;
 }
 
 function useSceneProgress(sceneRef) {
@@ -105,17 +155,6 @@ function useSceneProgress(sceneRef) {
   return progress;
 }
 
-function SketchFigure({ className = "", variant = "standing" }) {
-  return (
-    <img
-      className={`iroha-sketch ${className}`}
-      src={`/assets/iroha/iroha-${variant}.svg`}
-      alt=""
-      aria-hidden="true"
-    />
-  );
-}
-
 function HeroMark({ className = "" }) {
   return (
     <div className={`hero-mark ${className}`} aria-hidden="true">
@@ -124,6 +163,79 @@ function HeroMark({ className = "" }) {
       <span className="mark-o">o</span>
       <span className="mark-p">p</span>
     </div>
+  );
+}
+
+function PixelPet({ className = "" }) {
+  return <span className={`pixel-pet ${className}`} aria-hidden="true" />;
+}
+
+function PetAssistant({ className = "", compact = false }) {
+  const [messages, setMessages] = useState([
+    {
+      role: "assistant",
+      text: "Iroha pet online. I know the local irop.one knowledge base.",
+    },
+  ]);
+  const [input, setInput] = useState("");
+
+  const ask = (question) => {
+    const normalized = question.trim();
+    if (!normalized) return;
+    setMessages((current) => [
+      ...current.slice(-3),
+      { role: "user", text: normalized },
+      { role: "assistant", text: answerVisitorQuestion(normalized) },
+    ]);
+    setInput("");
+  };
+
+  return (
+    <section className={`pet-assistant ${compact ? "compact" : ""} ${className}`} aria-label="Iroha pet assistant">
+      <div className="pet-stage">
+        <PixelPet />
+        <div className="pet-signal" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      </div>
+      <div className="pet-console">
+        <div className="pet-console-top">
+          <span>IROHA PET</span>
+          <b>LOCAL KB</b>
+        </div>
+        <div className="pet-messages" aria-live="polite">
+          {messages.map((message, index) => (
+            <p className={`pet-message ${message.role}`} key={`${message.role}-${index}-${message.text}`}>
+              {message.text}
+            </p>
+          ))}
+        </div>
+        <div className="pet-chips" aria-label="Suggested questions">
+          {starterQuestions.map((question) => (
+            <button type="button" onClick={() => ask(question)} key={question}>
+              {question}
+            </button>
+          ))}
+        </div>
+        <form
+          className="pet-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            ask(input);
+          }}
+        >
+          <input
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            placeholder="Ask about irop..."
+            aria-label="Ask Iroha pet about irop"
+          />
+          <button type="submit">Ask</button>
+        </form>
+      </div>
+    </section>
   );
 }
 
@@ -197,13 +309,12 @@ function DesktopScene({ progress }) {
         <p className="desktop-intro">
           AI toolmaker and frontend tinkerer.
           <br />
-          A compact exhibition of agents,
+          A compact portal for agents,
           <br />
           Live2D, WebGL, notes and images.
         </p>
         <HeroMark className="desktop-mark" />
-        <SketchFigure className="walker" variant="flying" />
-        <SketchFigure className="standing" />
+        <PetAssistant className="hero-assistant" />
         <div className="this-way">
           <span>
             Exhibition
@@ -246,8 +357,8 @@ function MobilePage() {
         </p>
         <div className="mobile-logo-wrap">
           <HeroMark className="mobile-mark" />
-          <SketchFigure className="mobile-walker" variant="flying" />
         </div>
+        <PetAssistant className="mobile-hero-assistant" compact />
         <a className="mobile-this-way" href="#mobile-works">
           <span>
             Exhibition
@@ -282,7 +393,7 @@ function MobilePage() {
           <br />
           and visual experiments.
         </h2>
-        <SketchFigure className="about-doodle" />
+        <PetAssistant className="mobile-about-assistant" compact />
         <a className="mobile-mail" href="mailto:me@irop.one">
           me@irop.one
         </a>
@@ -323,9 +434,7 @@ function AboutPanel() {
           </a>
         </div>
       </div>
-      <div className="about-sketch" aria-hidden="true">
-        <SketchFigure className="about-stand-desktop" />
-      </div>
+      <PetAssistant className="about-assistant" />
     </section>
   );
 }

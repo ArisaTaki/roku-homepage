@@ -1,20 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Activity,
-  Bot,
-  Cpu,
-  MessageCircle,
-  MessagesSquare,
-  Monitor,
-  Radio,
-  Sparkles,
-} from "lucide-react";
-import {
   assistantSkill,
   knowledgeCollections,
   knowledgeEntries,
   starterQuestions,
 } from "./data/iropKnowledge";
+import { HermesReplay } from "./HermesRemotionDemo";
 import { askIroha } from "./lib/iropAssistantClient";
 
 const TRAVEL_DISTANCE = 7200;
@@ -86,13 +77,6 @@ const works = [
 ];
 
 const knowledgeEntryMap = new Map(knowledgeEntries.map((entry) => [entry.id, entry]));
-
-const hermesDemoModes = [
-  { id: "chat", label: "对话", Icon: MessageCircle },
-  { id: "studio", label: "Agent Studio", Icon: Bot },
-  { id: "bubble", label: "气泡模式", Icon: MessagesSquare },
-  { id: "live2d", label: "Live2D 模式", Icon: Sparkles },
-];
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -327,202 +311,6 @@ function KnowledgeDeck({ className = "" }) {
         <a href={assistantSkill.apiHref}>API</a>
       </div>
     </section>
-  );
-}
-
-function HermesReplay() {
-  return (
-    <div className="hermes-demo" aria-hidden="true">
-      <div className="hermes-window">
-        <div className="hermes-window-bar">
-          <span className="hermes-lights">
-            <i />
-            <i />
-            <i />
-          </span>
-          <b>
-            <img src="/assets/hermes/logo.png" alt="" />
-            <span className="hermes-title-modes">
-              <span>Hermes Yachiyo — 对话</span>
-              <span>Hermes Yachiyo — Agent Studio</span>
-              <span>Hermes Yachiyo — 气泡模式</span>
-              <span>Hermes Yachiyo — Live2D 模式</span>
-            </span>
-          </b>
-          <span className="hermes-window-tools">
-            <Activity size={10} />
-            <Monitor size={10} />
-          </span>
-        </div>
-        <div className="hermes-window-body">
-          <aside className="hermes-rail">
-            <div className="hermes-brand">
-              <span><img src="/assets/hermes/logo.png" alt="" /></span>
-              <b>Hermes Yachiyo</b>
-            </div>
-            <div className="hermes-profile">
-              <span><img src="/assets/hermes/yachiyo-default.jpg" alt="" /></span>
-              <div>
-                <b>月见八千代</b>
-                <small><i /> 八千代待机中</small>
-              </div>
-            </div>
-            <div className="hermes-nav-list">
-              <span className="hermes-nav-cursor" />
-              <strong>初始化</strong>
-              <span className="hermes-nav-item">
-                <Monitor size={12} strokeWidth={2.3} />
-                主控台
-              </span>
-              <span className="hermes-nav-item">
-                <Activity size={12} strokeWidth={2.3} />
-                模型配置
-                <em>ok</em>
-              </span>
-              <strong>日常桌面</strong>
-              {hermesDemoModes.map(({ id, label, Icon }) => (
-                <span className={`hermes-nav-item hermes-nav-${id}`} key={id}>
-                  <Icon size={12} strokeWidth={2.3} />
-                  {label}
-                </span>
-              ))}
-              <strong>资源</strong>
-              <span className="hermes-nav-item">
-                <Cpu size={12} strokeWidth={2.3} />
-                工作区
-                <em>ok</em>
-              </span>
-            </div>
-          </aside>
-          <main className="hermes-main">
-            <section className="hermes-scene hermes-scene-chat">
-              <div className="hermes-chat-layout">
-                <div className="hermes-thread-list">
-                  <b>会话列表</b>
-                  <input value="搜索会话..." readOnly />
-                  <span className="hermes-tabs"><i>Agent</i><i>群组</i><i>＋</i></span>
-                  <span className="is-active">
-                    <img src="/assets/hermes/yachiyo-default.jpg" alt="" />
-                    <strong>发布说明整理</strong>
-                    <small>~6.4k tok</small>
-                  </span>
-                  <span>
-                    <img src="/assets/hermes/yachiyo-default.jpg" alt="" />
-                    <strong>模型配置</strong>
-                    <small>~51 tok</small>
-                  </span>
-                  <span>
-                    <img src="/assets/hermes/yachiyo-default.jpg" alt="" />
-                    <strong>图像识别测试</strong>
-                    <small>~5.9k tok</small>
-                  </span>
-                </div>
-                <div className="hermes-chat-feed">
-                  <div className="hermes-chat-head">
-                    <img src="/assets/hermes/yachiyo-default.jpg" alt="" />
-                    <div>
-                      <b>把 Agent 更新整理成发布说明</b>
-                      <small>就绪 · Hermes · ~6.4k tok</small>
-                    </div>
-                  </div>
-                  <p className="hermes-bubble agent">今天要把哪些内容同步给我？</p>
-                  <p className="hermes-bubble user">
-                    <span>把 Agent 更新整理成发布说明。</span>
-                  </p>
-                  <div className="hermes-tool-stack">
-                    <span>读取 workspace</span>
-                    <span>整理 changelog</span>
-                    <span>生成摘要</span>
-                  </div>
-                  <p className="hermes-bubble agent answer">
-                    已整理：对话、Agent Studio、气泡模式和 Live2D 工作流都可直接演示。
-                  </p>
-                  <label className="hermes-composer">
-                    <span>输入消息...</span>
-                    <b>↑</b>
-                  </label>
-                </div>
-              </div>
-            </section>
-            <section className="hermes-scene hermes-scene-studio">
-              <div className="hermes-scene-head">
-                <span>Agent Studio</span>
-                <b>agents · skills · runs</b>
-              </div>
-              <div className="hermes-studio-tabs">
-                <span className="active">Agents</span>
-                <span>Skills</span>
-                <span>Runs</span>
-              </div>
-              <div className="hermes-studio-grid">
-                <div className="hermes-node source">
-                  <Cpu size={15} />
-                  <b>月见八千代</b>
-                  <span>主 Agent · system prompt · tools</span>
-                </div>
-                <div className="hermes-node runner">
-                  <Bot size={15} />
-                  <b>Skill Mounts</b>
-                  <span>browser · workspace · memory</span>
-                </div>
-                <div className="hermes-node output">
-                  <Radio size={15} />
-                  <b>Run Console</b>
-                  <span>streaming · tool trace · summary</span>
-                </div>
-                <div className="hermes-connection" />
-              </div>
-              <div className="hermes-studio-log">
-                <span>agent loaded</span>
-                <span>bridge running</span>
-                <span>workspace initialized</span>
-              </div>
-            </section>
-            <section className="hermes-scene hermes-scene-bubble">
-              <div className="hermes-scene-head">
-                <span>气泡模式</span>
-                <b>desktop bubble</b>
-              </div>
-              <div className="hermes-desktop-preview">
-                <div className="hermes-float-bubble">
-                  <span><img src="/assets/hermes/yachiyo-default.jpg" alt="" /></span>
-                  <p>我在桌面边缘待机，需要时叫我。</p>
-                </div>
-                <div className="hermes-mini-reply">提醒：发布前检查图片链接和构建状态。</div>
-                <div className="hermes-dock">
-                  <i />
-                  <i />
-                  <i />
-                </div>
-              </div>
-            </section>
-            <section className="hermes-scene hermes-scene-live2d">
-              <div className="hermes-scene-head">
-                <span>Live2D 模式</span>
-                <b>口型同步 · 表情动作</b>
-              </div>
-              <div className="hermes-live2d-grid">
-                <div className="hermes-model-stage">
-                  <span className="hermes-model-aura" />
-                  <span className="hermes-model">
-                    <i />
-                    <i />
-                    <i />
-                  </span>
-                </div>
-                <div className="hermes-live2d-panel">
-                  <b>Live2D 模式</b>
-                  <p>虚拟形象互动，让八千代在桌面上活起来。</p>
-                  <span>4 个表情</span>
-                  <span>动作摘要</span>
-                  <span>月光舞台</span>
-                </div>
-              </div>
-            </section>
-          </main>
-        </div>
-      </div>
-    </div>
   );
 }
 

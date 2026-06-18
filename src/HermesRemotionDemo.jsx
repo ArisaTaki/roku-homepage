@@ -17,14 +17,6 @@ const COMPOSITION_HEIGHT = 880;
 const promptText = "把 Agent 更新整理成发布说明。";
 const replyText = "已整理：对话、Agent Studio、气泡模式和 Live2D 工作流都可直接演示。";
 
-const steps = [
-  { label: "对话", from: 0, to: 108 },
-  { label: "回复", from: 108, to: 216 },
-  { label: "Agent Studio", from: 216, to: 336 },
-  { label: "气泡模式", from: 336, to: 444 },
-  { label: "Live2D", from: 444, to: DURATION_IN_FRAMES },
-];
-
 function clampFrame(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
@@ -37,13 +29,9 @@ function range(frame, input, output) {
   });
 }
 
-function phaseForFrame(frame) {
-  return steps.find((step) => frame >= step.from && frame < step.to) || steps[steps.length - 1];
-}
-
 function Cursor() {
   const frame = useCurrentFrame();
-  const x = range(frame, [0, 42, 96, 150, 246, 360, 468], [872, 940, 1030, 814, 215, 214, 214]);
+  const x = range(frame, [0, 42, 96, 150, 246, 360, 468], [872, 940, 1030, 814, 212, 214, 214]);
   const y = range(frame, [0, 42, 96, 150, 246, 360, 468], [780, 780, 780, 485, 498, 558, 616]);
   const press = spring({
     frame: Math.max(0, frame - 84),
@@ -55,30 +43,6 @@ function Cursor() {
   return (
     <div className="hy-demo-cursor" style={{ transform: `translate(${x}px, ${y}px) scale(${scale})` }}>
       <span />
-    </div>
-  );
-}
-
-function StepHud() {
-  const frame = useCurrentFrame();
-  const active = phaseForFrame(frame);
-  const localFrame = frame - active.from;
-  const progress = range(localFrame, [0, active.to - active.from], [0, 1]);
-
-  return (
-    <div className="hy-demo-hud">
-      <div>
-        <span>Guided hover demo</span>
-        <strong>{active.label}</strong>
-      </div>
-      <ol>
-        {steps.map((step) => (
-          <li className={step.from <= frame ? "is-active" : ""} key={step.label}>
-            {step.label}
-          </li>
-        ))}
-      </ol>
-      <i style={{ transform: `scaleX(${progress})` }} />
     </div>
   );
 }
@@ -209,7 +173,7 @@ function ChatScene() {
 
 function AgentStudioScene() {
   const frame = useCurrentFrame();
-  const local = frame - 216;
+  const local = frame;
   const glow = range(local, [0, 40, 96], [0, 1, 0.35]);
 
   return (
@@ -258,26 +222,40 @@ function AgentStudioScene() {
 
 function BubbleScene() {
   const frame = useCurrentFrame();
-  const local = frame - 336;
-  const bubbleY = range(local, [0, 38], [64, 0]);
-  const bubbleOpacity = range(local, [0, 24], [0, 1]);
+  const local = frame;
+  const firstBubble = range(local, [0, 24], [0, 1]);
+  const secondBubble = range(local, [22, 46], [0, 1]);
+  const thirdBubble = range(local, [34, 64], [0, 1]);
+  const avatarLift = range(local, [28, 66], [44, 0]);
 
   return (
     <WindowFrame activeNav="气泡模式" title="气泡模式" subtitle="Desktop bubble">
       <div className="hy-demo-bubble-page">
-        <section>
+        <div className="hy-demo-bubble-copy">
           <h4>轻量桌面入口</h4>
           <p>同步聊天处理、未读、最新回复和主动关怀状态。</p>
-          <button>打开桌面气泡</button>
-        </section>
-        <div className="hy-demo-desktop">
-          <div className="hy-demo-floating-bubble" style={{ opacity: bubbleOpacity, transform: `translateY(${bubbleY}px)` }}>
+        </div>
+        <div className="hy-demo-bubble-window">
+          <header>
             <img src="/assets/hermes/yachiyo-default.jpg" alt="" />
-            <p>我在桌面边缘待机，需要时叫我。</p>
+            <div>
+              <b>月見八千代</b>
+              <span>就绪</span>
+            </div>
+          </header>
+          <div className="hy-demo-bubble-thread">
+            <p className="is-agent" style={{ opacity: firstBubble }}>
+              今晚的月光很安静，要一起整理工作区吗？
+            </p>
+            <p className="is-user" style={{ opacity: secondBubble }}>
+              帮我看一下最近的状态。
+            </p>
+            <p className="is-agent is-long" style={{ opacity: thirdBubble }}>
+              好~记住了！让我更新一下相关配置~现在更新发布脚本中的域名，搞定啦。
+            </p>
           </div>
-          <div className="hy-demo-mini-panel">
-            <b>月見八千代</b>
-            <span>就绪 · 最新回复已同步</span>
+          <div className="hy-demo-bubble-avatar" style={{ transform: `translateY(${avatarLift}px)` }}>
+            <img src="/assets/hermes/yachiyo-default.jpg" alt="" />
           </div>
         </div>
       </div>
@@ -287,26 +265,22 @@ function BubbleScene() {
 
 function Live2DScene() {
   const frame = useCurrentFrame();
-  const local = frame - 444;
-  const imageScale = 0.95 + range(local, [0, 56], [0, 0.08]);
+  const local = frame;
+  const imageScale = 1.03 + range(local, [0, 56], [0, 0.06]);
   const chipOpacity = range(local, [28, 68], [0, 1]);
 
   return (
     <WindowFrame activeNav="Live2D 模式" title="Live2D 模式" subtitle="Model stage">
       <div className="hy-demo-live2d-page">
         <div className="hy-demo-live2d-stage">
-          <span />
-          <img src="/assets/hermes/hermes-live2d-model-preview.png" alt="" style={{ transform: `scale(${imageScale})` }} />
-        </div>
-        <section>
-          <h4>虚拟形象互动</h4>
-          <p>模型舞台、口型同步、表情动作、语音合成和月光状态都放在一个模式里。</p>
+          <span className="hy-demo-live2d-aura" />
+          <img src="/assets/hermes/hermes-live2d-character.png" alt="" style={{ transform: `scale(${imageScale})` }} />
           <div style={{ opacity: chipOpacity }}>
             {["口型同步", "4 个表情", "2 组动作", "月光舞台"].map((item) => (
               <span key={item}>{item}</span>
             ))}
           </div>
-        </section>
+        </div>
       </div>
     </WindowFrame>
   );
@@ -327,7 +301,6 @@ function HermesDemoComposition() {
       <Sequence from={444} durationInFrames={96}>
         <Live2DScene />
       </Sequence>
-      <StepHud />
       <Cursor />
     </AbsoluteFill>
   );

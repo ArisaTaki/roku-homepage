@@ -1,0 +1,69 @@
+{
+  "name": "irop-portal-skill",
+  "version": "0.2.0",
+  "owner": "irop",
+  "contact": "me@irop.one",
+  "runtime": "local deterministic retrieval",
+  "description": "A public portfolio knowledge base used by the Iroha pixel pet on irop.one.",
+  "boundaries": [
+    "Use public portfolio facts only.",
+    "Do not invent private biography, credentials, pricing, availability, or roadmaps.",
+    "When unsure, route visitors to public links or me@irop.one."
+  ],
+  "entries": [
+    {
+      "id": "profile",
+      "title": "irop profile",
+      "type": "identity",
+      "href": "mailto:me@irop.one"
+    },
+    {
+      "id": "hermes-yachiyo",
+      "title": "Hermes-Yachiyo",
+      "type": "project",
+      "href": "https://github.com/kuguya-AI-app-develop/Hermes-Yachiyo"
+    },
+    {
+      "id": "nature-live2d",
+      "title": "nature-live2d",
+      "type": "project",
+      "href": "https://github.com/kuguya-AI-app-develop/nature-live2d"
+    },
+    {
+      "id": "mimo-usage-watcher",
+      "title": "mimo-usage-watcher",
+      "type": "project",
+      "href": "https://github.com/kuguya-AI-app-develop/mimo-usage-watcher"
+    },
+    {
+      "id": "blog",
+      "title": "blog.irop.one",
+      "type": "site",
+      "href": "https://blog.irop.one/"
+    },
+    {
+      "id": "gallery",
+      "title": "images.irop.one",
+      "type": "site",
+      "href": "https://images.irop.one/"
+    },
+    {
+      "id": "shader",
+      "title": "shader.irop.one",
+      "type": "site",
+      "href": "https://shader.irop.one/"
+    },
+    {
+      "id": "pet-assistant",
+      "title": "Iroha pet assistant",
+      "type": "feature",
+      "href": "/knowledge/irop-skill.md"
+    },
+    {
+      "id": "contact",
+      "title": "Contact",
+      "type": "contact",
+      "href": "mailto:me@irop.one"
+    }
+  ]
+}

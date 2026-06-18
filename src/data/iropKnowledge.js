@@ -16,20 +16,49 @@ export const iropProfile = {
 export const starterQuestions = [
   "Who is irop?",
   "Hermes-Yachiyo?",
-  "Live2D project?",
+  "自然语言 Live2D?",
   "How to contact?",
 ];
 
 export const assistantSkill = {
   name: "irop-portal-skill",
-  version: "0.1.0",
+  version: "0.2.0",
+  runtime: "local deterministic retrieval",
+  specHref: "/knowledge/irop-skill.md",
+  manifestHref: "/knowledge/irop-skill.json",
   role:
     "Answer visitor questions about irop, projects, writing, visual archives, WebGL demos and contact routes from the local curated knowledge base.",
   style:
     "Be concise, friendly and factual. If the visitor asks for something unknown, say what is known and suggest a related project or contact route.",
   boundaries:
     "Do not invent private biographical details, availability, credentials, prices or project roadmaps that are not present in the knowledge base.",
+  dataPolicy:
+    "Public portfolio facts only. Unknown questions fall back to contact and public links instead of invented biography.",
+  capabilities: [
+    "Profile and contact routing",
+    "Public project explainers",
+    "Blog, gallery and shader navigation",
+    "Future backend or RAG replacement path",
+  ],
 };
+
+export const knowledgeCollections = [
+  {
+    label: "Projects",
+    accent: "cyan",
+    entryIds: ["hermes-yachiyo", "nature-live2d", "mimo-usage-watcher"],
+  },
+  {
+    label: "Places",
+    accent: "lavender",
+    entryIds: ["blog", "gallery", "shader"],
+  },
+  {
+    label: "Identity",
+    accent: "yellow",
+    entryIds: ["profile", "pet-assistant", "contact"],
+  },
+];
 
 export const knowledgeEntries = [
   {

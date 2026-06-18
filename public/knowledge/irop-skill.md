@@ -2,9 +2,18 @@
 
 Iroha Pet is the local assistant layer for irop.one.
 
+Version: 0.2.0
+
 ## Purpose
 
 Answer visitor questions about irop, public projects, writing, visual archives, WebGL demos and contact routes.
+
+## Runtime Surfaces
+
+- `src/data/iropKnowledge.js`: curated knowledge entries, collections and skill policy.
+- `src/lib/iropAssistant.js`: local deterministic retrieval and answer composition.
+- `PetAssistant`: the Iroha pixel pet UI used on desktop and mobile.
+- `/knowledge/irop-skill.json`: public manifest for future indexing or backend replacement.
 
 ## Current Data Sources
 
@@ -22,6 +31,7 @@ Answer visitor questions about irop, public projects, writing, visual archives, 
 - Prefer public project information.
 - If the answer is unknown, say what is known and suggest a related project or contact route.
 - Do not invent private biography, credentials, pricing, availability or roadmap details.
+- Return visible source labels and relevant links when a local memory is matched.
 
 ## Next Upgrade Path
 

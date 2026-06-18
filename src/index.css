@@ -361,7 +361,7 @@ a {
 .pet-messages {
   display: grid;
   gap: 7px;
-  max-height: 132px;
+  max-height: 150px;
   overflow: auto;
 }
 
@@ -385,6 +385,15 @@ a {
   font-weight: 800;
   letter-spacing: 0;
   text-transform: uppercase;
+}
+
+.pet-message-detail {
+  border-left: 2px solid rgba(255, 228, 143, 0.48);
+  padding-left: 7px;
+  color: #aeb8c8;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .pet-message-links {
@@ -879,6 +888,160 @@ a {
   background: rgba(104, 204, 220, 0.08);
 }
 
+.knowledge-deck {
+  margin-top: 30px;
+  border: 1px solid rgba(104, 204, 220, 0.3);
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, rgba(104, 204, 220, 0.1), rgba(203, 196, 248, 0.065)),
+    rgba(17, 21, 32, 0.78);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08);
+  padding: 18px;
+}
+
+.knowledge-head,
+.cluster-title,
+.knowledge-actions {
+  display: flex;
+  align-items: center;
+}
+
+.knowledge-head,
+.cluster-title {
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.knowledge-head {
+  color: var(--cyan);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.knowledge-head b {
+  color: var(--yellow);
+}
+
+.knowledge-deck .knowledge-summary {
+  max-width: none;
+  margin: 10px 0 0;
+  color: #d7dde6;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.knowledge-status {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.knowledge-status span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+  padding: 9px;
+  color: #8fc5ff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.knowledge-status b {
+  color: var(--ink);
+  font-size: 16px;
+  text-transform: none;
+}
+
+.knowledge-clusters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.knowledge-cluster {
+  min-width: 0;
+  border-left: 3px solid var(--cyan);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+  padding: 10px;
+}
+
+.knowledge-cluster.lavender {
+  border-left-color: var(--lavender);
+}
+
+.knowledge-cluster.yellow {
+  border-left-color: var(--yellow);
+}
+
+.cluster-title {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.cluster-title b {
+  color: var(--yellow);
+}
+
+.cluster-links {
+  display: grid;
+  gap: 0;
+  margin-top: 8px;
+}
+
+.cluster-links a {
+  display: grid;
+  gap: 3px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 8px 0;
+}
+
+.cluster-links a:first-child {
+  border-top: 0;
+}
+
+.cluster-links span {
+  color: #8fc5ff;
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.cluster-links strong {
+  color: #f4f7fb;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.12;
+}
+
+.knowledge-actions {
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.knowledge-actions a {
+  border: 1px solid rgba(104, 204, 220, 0.34);
+  border-radius: 999px;
+  background: rgba(104, 204, 220, 0.08);
+  padding: 7px 10px;
+  color: #dce9ff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
 .about-assistant {
   position: relative;
   right: auto;
@@ -1141,8 +1304,9 @@ a {
 
   .mobile-about {
     position: relative;
-    min-height: 780px;
+    min-height: 1140px;
     margin-top: 10px;
+    padding-bottom: 64px;
     background:
       linear-gradient(180deg, #10151f 0%, #171b23 100%);
     overflow: hidden;
@@ -1188,10 +1352,31 @@ a {
     min-height: 142px;
   }
 
+  .mobile-skill-deck {
+    width: calc(100% - 40px);
+    margin: 18px 20px 0;
+    padding: 14px;
+  }
+
+  .mobile-skill-deck .knowledge-clusters {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .mobile-skill-deck .knowledge-status {
+    gap: 6px;
+  }
+
+  .mobile-skill-deck .knowledge-status span {
+    padding: 8px;
+  }
+
   .mobile-mail {
-    position: absolute;
-    left: 20px;
-    top: 620px;
+    position: relative;
+    left: auto;
+    top: auto;
+    display: block;
+    margin: 28px 20px 0;
     font-family: "GT Haptik", Arial, sans-serif;
     font-size: 28px;
     line-height: 1;

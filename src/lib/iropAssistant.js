@@ -1,4 +1,4 @@
-import { iropProfile, knowledgeEntries } from "../data/iropKnowledge.js";
+import { assistantSkill, iropProfile, knowledgeEntries } from "../data/iropKnowledge.js";
 
 const fallbackKeywords = ["project", "ai", "tool", "live2d", "webgl", "blog", "gallery", "contact"];
 
@@ -53,6 +53,8 @@ function composeAnswer(matches, question) {
       source: "irop profile",
       confidence: "fallback",
       links: iropProfile.links.slice(0, 3),
+      details: [assistantSkill.dataPolicy],
+      matchedEntries: [],
     };
   }
 
@@ -68,10 +70,17 @@ function composeAnswer(matches, question) {
     text: `${primary.entry.answer}${related}`,
     source: primary.entry.title,
     confidence: primary.score > 12 ? "high" : "medium",
+    details: primary.entry.details?.slice(0, 2) || [],
     links: [
       { label: primary.entry.title, href: primary.entry.href },
       ...(relatedEntry?.href ? [{ label: relatedEntry.title, href: relatedEntry.href }] : []),
     ].filter((link, index, list) => link.href && list.findIndex((item) => item.href === link.href) === index),
+    matchedEntries: matches.map((match) => ({
+      id: match.entry.id,
+      title: match.entry.title,
+      type: match.entry.type,
+      score: match.score,
+    })),
     debug: { question },
   };
 }
@@ -86,6 +95,8 @@ export function answerVisitorQuestion(rawQuestion) {
       source: "irop portal skill",
       confidence: "prompt",
       links: iropProfile.links.slice(0, 3),
+      details: assistantSkill.capabilities.slice(0, 2),
+      matchedEntries: [],
     };
   }
 

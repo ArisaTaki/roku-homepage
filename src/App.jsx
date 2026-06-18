@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { starterQuestions } from "./data/iropKnowledge";
+import {
+  assistantSkill,
+  knowledgeCollections,
+  knowledgeEntries,
+  starterQuestions,
+} from "./data/iropKnowledge";
 import { answerVisitorQuestion } from "./lib/iropAssistant";
 
 const TRAVEL_DISTANCE = 7200;
@@ -70,6 +75,8 @@ const works = [
   },
 ];
 
+const knowledgeEntryMap = new Map(knowledgeEntries.map((entry) => [entry.id, entry]));
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
@@ -136,22 +143,21 @@ function PetAssistant({ className = "", compact = false }) {
   useEffect(() => {
     const messagePanel = messagesRef.current;
     if (!messagePanel) return;
-    messagePanel.scrollTop = compact ? 0 : messagePanel.scrollHeight;
-  }, [compact, messages]);
+    messagePanel.scrollTop = 0;
+  }, [messages]);
 
   const ask = (question) => {
     const normalized = question.trim();
     if (!normalized) return;
     const answer = answerVisitorQuestion(normalized);
-    setMessages((current) => (
+    setMessages(
       compact
         ? [{ role: "assistant", ...answer }]
         : [
-            ...current.slice(-3),
             { role: "user", text: normalized },
             { role: "assistant", ...answer },
           ]
-    ));
+    );
     setInput("");
   };
 
@@ -174,7 +180,15 @@ function PetAssistant({ className = "", compact = false }) {
           {messages.map((message, index) => (
             <p className={`pet-message ${message.role}`} key={`${message.role}-${index}-${message.text}`}>
               <span>{message.text}</span>
-              {message.role === "assistant" && message.source ? <small>Source: {message.source}</small> : null}
+              {message.role === "assistant" && message.source ? (
+                <small>
+                  Source: {message.source}
+                  {message.confidence ? ` · ${message.confidence}` : ""}
+                </small>
+              ) : null}
+              {!compact && message.role === "assistant" && message.details?.length ? (
+                <span className="pet-message-detail">{message.details[0]}</span>
+              ) : null}
               {message.role === "assistant" && message.links?.length ? (
                 <span className="pet-message-links">
                   {message.links.slice(0, 2).map((link) => (
@@ -214,6 +228,63 @@ function PetAssistant({ className = "", compact = false }) {
           />
           <button type="submit">Ask</button>
         </form>
+      </div>
+    </section>
+  );
+}
+
+function KnowledgeDeck({ className = "" }) {
+  return (
+    <section className={`knowledge-deck ${className}`} aria-label="Iroha skill memory index">
+      <div className="knowledge-head">
+        <span>IROHA SKILL</span>
+        <b>{assistantSkill.version}</b>
+      </div>
+      <p className="knowledge-summary">{assistantSkill.role}</p>
+      <div className="knowledge-status" aria-label="Skill status">
+        <span>
+          <b>{knowledgeEntries.length}</b>
+          memories
+        </span>
+        <span>
+          <b>{knowledgeCollections.length}</b>
+          indexes
+        </span>
+        <span>
+          <b>local</b>
+          runtime
+        </span>
+      </div>
+      <div className="knowledge-clusters">
+        {knowledgeCollections.map((collection) => (
+          <div className={`knowledge-cluster ${collection.accent}`} key={collection.label}>
+            <div className="cluster-title">
+              <span>{collection.label}</span>
+              <b>{collection.entryIds.length}</b>
+            </div>
+            <div className="cluster-links">
+              {collection.entryIds.map((entryId) => {
+                const entry = knowledgeEntryMap.get(entryId);
+                if (!entry) return null;
+                return (
+                  <a
+                    href={entry.href}
+                    target={entry.href.startsWith("http") ? "_blank" : undefined}
+                    rel={entry.href.startsWith("http") ? "noreferrer" : undefined}
+                    key={entry.id}
+                  >
+                    <span>{entry.type}</span>
+                    <strong>{entry.title}</strong>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="knowledge-actions">
+        <a href={assistantSkill.specHref}>Skill spec</a>
+        <a href={assistantSkill.manifestHref}>Manifest</a>
       </div>
     </section>
   );
@@ -374,6 +445,7 @@ function MobilePage() {
           and visual experiments.
         </h2>
         <PetAssistant className="mobile-about-assistant" compact />
+        <KnowledgeDeck className="mobile-skill-deck" />
         <a className="mobile-mail" href="mailto:me@irop.one">
           me@irop.one
         </a>
@@ -413,6 +485,7 @@ function AboutPanel() {
             Shader
           </a>
         </div>
+        <KnowledgeDeck />
       </div>
       <PetAssistant className="about-assistant" />
     </section>

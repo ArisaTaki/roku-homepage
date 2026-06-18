@@ -1,0 +1,60 @@
+name: Deploy irop.one
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: deploy-irop-one
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and deploy to irop.one
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://irop.one
+    env:
+      DEPLOY_HOST: 38.47.238.143
+      DEPLOY_DOMAIN: irop.one
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Validate deployment secrets
+        run: |
+          test -n "$DEPLOY_USER"
+          test -n "$DEPLOY_PATH"
+          test -n "$DEPLOY_SSH_KEY"
+
+      - name: Prepare SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/irop_deploy_key
+          chmod 600 ~/.ssh/irop_deploy_key
+          ssh-keyscan -p "$DEPLOY_PORT" "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy dist
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/irop_deploy_key -p $DEPLOY_PORT" \
+            dist/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"

@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { starterQuestions } from "./data/iropKnowledge";
+import { answerVisitorQuestion } from "./lib/iropAssistant";
 
 const TRAVEL_DISTANCE = 7200;
 
@@ -68,58 +70,8 @@ const works = [
   },
 ];
 
-const starterQuestions = ["Who is irop?", "Hermes-Yachiyo?", "Live2D project?", "Contact"];
-
-const profileFacts = [
-  "irop builds AI-adjacent tools, local agent interfaces, Live2D expression experiments, WebGL sketches, image galleries and technical notes.",
-  "The current portfolio points to Hermes-Yachiyo, nature-live2d, mimo-usage-watcher, blog.irop.one, images.irop.one and shader.irop.one.",
-  "Contact: me@irop.one.",
-];
-
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
-}
-
-function answerVisitorQuestion(rawQuestion) {
-  const question = rawQuestion.trim().toLowerCase();
-
-  if (!question) {
-    return "Ask me about projects, AI tools, Live2D, WebGL, writing, galleries, or how to contact irop.";
-  }
-
-  if (/(contact|email|mail|联系|邮箱|合作)/.test(question)) {
-    return "You can reach irop at me@irop.one. For project links, GitHub is kuguya-AI-app-develop, and the portal links out to blog, gallery and shader demos.";
-  }
-
-  if (/(hermes|yachiyo|agent|桌面|本地|助手)/.test(question)) {
-    return "Hermes-Yachiyo is a desktop-first local personal Agent app. It wraps Hermes in a console, full chat window, floating bubble and Live2D desktop mode.";
-  }
-
-  if (/(live2d|expression|表情|vtube|自然语言|nature)/.test(question)) {
-    return "nature-live2d turns natural-language emotion intent into safe Live2D expression parameters and timelines. It can read model resources, whitelist parameters and clamp output ranges.";
-  }
-
-  if (/(mimo|quota|usage|额度|监控|token|balance)/.test(question)) {
-    return "mimo-usage-watcher is an Electron dashboard for MiMo token-plan usage and API-key balance across accounts, with local metadata and macOS Keychain storage for sensitive data.";
-  }
-
-  if (/(blog|writing|文章|笔记|notes)/.test(question)) {
-    return "blog.irop.one is the writing side of the portal: technical notes, AI-tool experiments, frontend observations and anything worth remembering.";
-  }
-
-  if (/(image|gallery|画廊|图片|visual)/.test(question)) {
-    return "images.irop.one is the gallery and visual archive. It keeps generated images, references and small visual fragments near the project work.";
-  }
-
-  if (/(shader|webgl|glsl|demo|渲染)/.test(question)) {
-    return "shader.irop.one is a WebGL shader demo space for motion, color and tiny rendering experiments.";
-  }
-
-  if (/(skill|knowledge|知识库|ai|pet|宠物|assistant)/.test(question)) {
-    return "This pet is the first local knowledge-base prototype. Right now it answers from curated facts in the site; later it can become an irop skill or connect to a real retrieval-backed AI endpoint.";
-  }
-
-  return `${profileFacts.join(" ")} Try asking about Hermes-Yachiyo, Live2D, MiMo usage, shader demos or contact.`;
 }
 
 function useSceneProgress(sceneRef) {
@@ -175,18 +127,31 @@ function PetAssistant({ className = "", compact = false }) {
     {
       role: "assistant",
       text: "Iroha pet online. I know the local irop.one knowledge base.",
+      source: "irop portal skill",
     },
   ]);
   const [input, setInput] = useState("");
+  const messagesRef = useRef(null);
+
+  useEffect(() => {
+    const messagePanel = messagesRef.current;
+    if (!messagePanel) return;
+    messagePanel.scrollTop = compact ? 0 : messagePanel.scrollHeight;
+  }, [compact, messages]);
 
   const ask = (question) => {
     const normalized = question.trim();
     if (!normalized) return;
-    setMessages((current) => [
-      ...current.slice(-3),
-      { role: "user", text: normalized },
-      { role: "assistant", text: answerVisitorQuestion(normalized) },
-    ]);
+    const answer = answerVisitorQuestion(normalized);
+    setMessages((current) => (
+      compact
+        ? [{ role: "assistant", ...answer }]
+        : [
+            ...current.slice(-3),
+            { role: "user", text: normalized },
+            { role: "assistant", ...answer },
+          ]
+    ));
     setInput("");
   };
 
@@ -205,10 +170,25 @@ function PetAssistant({ className = "", compact = false }) {
           <span>IROHA PET</span>
           <b>LOCAL KB</b>
         </div>
-        <div className="pet-messages" aria-live="polite">
+        <div className="pet-messages" aria-live="polite" ref={messagesRef}>
           {messages.map((message, index) => (
             <p className={`pet-message ${message.role}`} key={`${message.role}-${index}-${message.text}`}>
-              {message.text}
+              <span>{message.text}</span>
+              {message.role === "assistant" && message.source ? <small>Source: {message.source}</small> : null}
+              {message.role === "assistant" && message.links?.length ? (
+                <span className="pet-message-links">
+                  {message.links.slice(0, 2).map((link) => (
+                    <a
+                      href={link.href}
+                      target={link.href.startsWith("http") ? "_blank" : undefined}
+                      rel={link.href.startsWith("http") ? "noreferrer" : undefined}
+                      key={link.href}
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </span>
+              ) : null}
             </p>
           ))}
         </div>

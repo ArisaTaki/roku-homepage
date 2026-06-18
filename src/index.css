@@ -366,6 +366,8 @@ a {
 }
 
 .pet-message {
+  display: grid;
+  gap: 6px;
   margin: 0;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
@@ -375,6 +377,30 @@ a {
   font-size: 12px;
   font-weight: 600;
   line-height: 1.35;
+}
+
+.pet-message small {
+  color: #8fc5ff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.pet-message-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.pet-message-links a {
+  border: 1px solid rgba(104, 204, 220, 0.32);
+  border-radius: 999px;
+  padding: 4px 7px;
+  color: #dce9ff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .pet-message.user {
@@ -977,7 +1003,7 @@ a {
 
   .mobile-hero-assistant .pet-messages,
   .mobile-about-assistant .pet-messages {
-    max-height: 106px;
+    max-height: 172px;
   }
 
   .mobile-hero-assistant .pet-message,

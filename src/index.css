@@ -1251,30 +1251,17 @@ a {
 .hy-demo-cursor {
   position: absolute;
   z-index: 6;
-  width: 76px;
-  height: 82px;
+  width: 42px;
+  height: 52px;
   pointer-events: none;
 }
 
 .hy-demo-cursor span {
-  position: relative;
   display: block;
-  width: 62px;
-  height: 66px;
-  background: #f8fbff;
-  clip-path: polygon(7% 2%, 7% 86%, 31% 62%, 45% 98%, 64% 90%, 50% 57%, 83% 57%);
-  filter:
-    drop-shadow(0 0 1px rgba(0, 0, 0, 0.95))
-    drop-shadow(0 9px 10px rgba(0, 0, 0, 0.36));
-}
-
-.hy-demo-cursor span::before {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  z-index: -1;
-  background: #111827;
-  clip-path: inherit;
+  width: 42px;
+  height: 52px;
+  background: url("/assets/hermes/cursor-pointer.svg") 0 0 / contain no-repeat;
+  filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.28));
 }
 
 .hermes-demo {

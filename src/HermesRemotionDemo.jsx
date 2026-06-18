@@ -31,8 +31,8 @@ function range(frame, input, output) {
 
 function Cursor() {
   const frame = useCurrentFrame();
-  const x = range(frame, [0, 42, 96, 150, 246, 360, 468], [872, 940, 1030, 814, 212, 214, 214]);
-  const y = range(frame, [0, 42, 96, 150, 246, 360, 468], [780, 780, 780, 485, 498, 558, 616]);
+  const x = range(frame, [0, 42, 84, 112, 154, 246, 360, 468], [742, 918, 1172, 1172, 842, 168, 168, 168]);
+  const y = range(frame, [0, 42, 84, 112, 154, 246, 360, 468], [734, 734, 734, 734, 518, 592, 640, 688]);
   const press = spring({
     frame: Math.max(0, frame - 84),
     fps: FPS,
@@ -41,7 +41,7 @@ function Cursor() {
   const scale = frame > 78 && frame < 92 ? 1 - press * 0.16 : 1;
 
   return (
-    <div className="hy-demo-cursor" style={{ transform: `translate(${x}px, ${y}px) scale(${scale})` }}>
+    <div className="hy-demo-cursor" style={{ transform: `translate(${x - 3}px, ${y - 3}px) scale(${scale})` }}>
       <span />
     </div>
   );

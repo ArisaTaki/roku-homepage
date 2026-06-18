@@ -13,6 +13,8 @@
 - Local URL: `http://127.0.0.1:4178/`
 - Bubble-mode screenshot: `/tmp/hermes-polish-bubble-v4.png`
 - Live2D-mode screenshot: `/tmp/hermes-polish-live2d-v4.png`
+- Cursor Agent Studio screenshot: `/private/tmp/hermes-cursor-agent-v2.png`
+- Cursor Live2D screenshot: `/private/tmp/hermes-cursor-live2d-v2.png`
 - Viewport: `1600 x 1000`, desktop.
 - State: Hermes-Yachiyo work card hovered, with the deterministic Remotion timeline sampled at bubble and Live2D moments.
 - Full-view comparison evidence: source screenshots and the rendered card were inspected. The implementation now uses a Remotion composition with a deterministic frame clock, not screenshot crossfades.
@@ -31,10 +33,11 @@
 - Colors and tokens: Hermes dark surfaces, pink/teal accents, subtle borders, and status chips align with the screenshots.
 - Image quality and asset fidelity: the demo uses real Hermes logo/avatar assets and a Live2D static preview asset; it avoids the previous screenshot carousel behavior.
 - Copy and content: the demo introduces chat, Agent Studio, bubble mode, and Live2D in a single continuous operation flow.
-- Interaction: hover starts the frame-clocked Remotion timeline from frame 0; leaving hover resets to the first frame. Mobile hoverless environments autoplay the same timeline.
+- Interaction: hover starts the frame-clocked Remotion timeline from frame 0; leaving hover resets to the first frame. The cursor is a normal-sized white SVG pointer, and its tip lands inside the active Agent Studio, bubble mode, and Live2D navigation buttons.
 
 **Patches Made Since Previous QA Pass**
-- Enlarged and reshaped the animated cursor from a small cone into a larger arrow pointer.
+- Replaced the CSS polygon cursor with `public/assets/hermes/cursor-pointer.svg`, a white anti-aliased pointer at normal visual size.
+- Recalibrated cursor path coordinates so send and mode-switch positions use the pointer tip as the click target.
 - Removed the bottom-right guided progress HUD from the Remotion composition.
 - Rebuilt the bubble-mode scene around a visible floating chat window, bubble messages, status avatar, and earlier reply reveal.
 - Cropped the Live2D preview into `public/assets/hermes/hermes-live2d-character.png`, then centered and enlarged it in the stage.

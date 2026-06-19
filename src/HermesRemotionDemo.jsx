@@ -178,6 +178,7 @@ function AgentStudioScene() {
   const frame = useCurrentFrame();
   const local = frame;
   const glow = range(local, [0, 40, 96], [0, 1, 0.35]);
+  const runPulse = range(local, [18, 58, 108], [0.3, 1, 0.55]);
 
   return (
     <WindowFrame activeNav="Agent Studio" title="Agent Studio" subtitle="Agent Runtime">
@@ -189,8 +190,8 @@ function AgentStudioScene() {
             </span>
           ))}
         </div>
-        <section>
-          <aside>
+        <div className="hy-demo-studio-board" style={{ boxShadow: `0 0 ${44 * glow}px rgba(101, 205, 222, ${0.18 * glow})` }}>
+          <section className="hy-demo-studio-panel is-agents">
             <h4>Agents</h4>
             {["编码Agent Iroha", "Yachiyo Orchestrator", "设计Agent Kaguya"].map((agent, index) => (
               <article className={index === 0 ? "is-active" : ""} key={agent}>
@@ -201,23 +202,51 @@ function AgentStudioScene() {
                 </div>
               </article>
             ))}
-          </aside>
-          <div className="hy-demo-agent-form" style={{ boxShadow: `0 0 ${48 * glow}px rgba(101, 205, 222, ${0.24 * glow})` }}>
-            <h4>编码Agent Iroha</h4>
-            <div className="hy-demo-form-grid">
-              <label>Name<span>编码Agent Iroha</span></label>
-              <label>Nickname<span>Iroha</span></label>
-              <label>Output Contract<span>chat</span></label>
-              <label>Tools<span>workspace · browser · memory</span></label>
+          </section>
+
+          <section className="hy-demo-studio-panel is-skills">
+            <h4>Skill Library</h4>
+            {[
+              ["workspace.read", "mounted"],
+              ["browser.capture", "ready"],
+              ["memory.lookup", "ready"],
+            ].map(([skill, state]) => (
+              <article key={skill}>
+                <span>{skill}</span>
+                <em>{state}</em>
+              </article>
+            ))}
+          </section>
+
+          <section className="hy-demo-studio-panel is-workflow">
+            <h4>Workflow Studio</h4>
+            <div className="hy-demo-workflow-row">
+              {["读取 workspace", "整理 changelog", "发布说明"].map((node, index) => (
+                <span className={index < 2 ? "is-done" : ""} key={node}>
+                  {node}
+                </span>
+              ))}
             </div>
-            <p>把功能要求、人格提示、工具策略和模型配置放在同一个可运行 Agent 配置里。</p>
-            <div className="hy-demo-run-strip">
-              <span>读取 workspace</span>
-              <span>整理 changelog</span>
-              <span>生成摘要</span>
+            <p>把 Agent 更新整理成可复用流程。</p>
+          </section>
+
+          <section className="hy-demo-studio-panel is-runs">
+            <h4>Runs</h4>
+            <div className="hy-demo-run-list">
+              {[
+                ["Iroha", "running", "~6.4k tok"],
+                ["Yachiyo", "success", "42s"],
+                ["Workflow", "queued", "next"],
+              ].map(([name, state, meta], index) => (
+                <article style={{ opacity: index === 0 ? runPulse : 1 }} key={name}>
+                  <b>{name}</b>
+                  <span>{state}</span>
+                  <em>{meta}</em>
+                </article>
+              ))}
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
     </WindowFrame>
   );

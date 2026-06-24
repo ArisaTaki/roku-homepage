@@ -1,23 +1,29 @@
 {
   "name": "irop-portal-skill",
-  "version": "0.3.0",
-  "owner": "irop",
+  "version": "0.4.0",
+  "owner": "八六 / HacchiRoku",
   "contact": "me@irop.one",
-  "runtime": "local retrieval with optional remote assistant endpoint",
+  "runtime": "local retrieval with optional DeepSeek-compatible server assistant endpoint",
   "description": "A public portfolio knowledge base used by the Iroha pixel pet on irop.one.",
   "apiContract": "/knowledge/irop-assistant-api.md",
   "serverlessEndpoint": "/api/iroha-assistant",
   "optionalFrontendEnv": "VITE_IROP_ASSISTANT_ENDPOINT",
   "boundaries": [
     "Use public portfolio facts only.",
-    "Do not invent private biography, credentials, pricing, availability, or roadmaps.",
-    "When unsure, route visitors to public links or me@irop.one."
+    "Do not reveal or infer real name, home address, employer name, school name, private contact routes, income, or anything that needs deeper trust before sharing.",
+    "When unsure or when a topic is unrelated, gently refuse instead of inventing details."
   ],
   "entries": [
     {
       "id": "profile",
-      "title": "irop profile",
+      "title": "八六 profile",
       "type": "identity",
+      "href": "mailto:me@irop.one"
+    },
+    {
+      "id": "tech-stack",
+      "title": "Technology stack",
+      "type": "skill",
       "href": "mailto:me@irop.one"
     },
     {
@@ -53,8 +59,26 @@
     {
       "id": "shader",
       "title": "shader.irop.one",
-      "type": "site",
+      "type": "project",
       "href": "https://shader.irop.one/"
+    },
+    {
+      "id": "experience",
+      "title": "Public experience summary",
+      "type": "experience",
+      "href": "mailto:me@irop.one"
+    },
+    {
+      "id": "interests",
+      "title": "Interests",
+      "type": "interest",
+      "href": "https://blog.irop.one/"
+    },
+    {
+      "id": "privacy-boundaries",
+      "title": "Privacy boundaries",
+      "type": "boundary",
+      "href": "mailto:me@irop.one"
     },
     {
       "id": "pet-assistant",

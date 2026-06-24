@@ -5,23 +5,30 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && vite build",
     "preview": "vite preview",
-    "smoke:iroha": "node tools/smoke-iroha-assistant.mjs",
-    "check:iroha": "npm run smoke:iroha && node tools/check-iroha-manifest.mjs"
+    "smoke:iroha": "tsx tools/smoke-iroha-assistant.ts",
+    "check:iroha": "npm run smoke:iroha && tsx tools/check-iroha-manifest.ts"
   },
   "dependencies": {
     "@remotion/player": "^4.0.481",
     "lucide-react": "^0.475.0",
+    "pixi-live2d-display": "^0.4.0",
+    "pixi.js": "^6.5.10",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "remotion": "^4.0.481"
   },
   "devDependencies": {
+    "@types/node": "^25.9.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.5.1",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.22.4",
     "typescript": "^5.8.0",
     "vite": "^7.0.0"
   }

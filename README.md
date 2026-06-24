@@ -17,20 +17,20 @@ npm run build
 
 ## Iroha Assistant
 
-The Iroha pet works in browser-only local KB mode by default.
+The Iroha pet works in browser-only local KB mode by default, with refusal rules for private or unrelated questions.
 
 ```bash
 npm run smoke:iroha
 npm run check:iroha
 ```
 
-For serverless deployments that can run `api/iroha-assistant.js`, set:
+For local Vite dev/preview or serverless deployments that can run `api/iroha-assistant.ts`, set:
 
 ```bash
 VITE_IROP_ASSISTANT_ENDPOINT=/api/iroha-assistant
 ```
 
-Model keys stay server-side through `AI_CHAT_COMPLETIONS_ENDPOINT`, `AI_MODEL`, and `AI_API_KEY`. Static SSH deployment can leave the browser endpoint blank.
+Model keys stay server-side through `AI_API_KEY`, `AI_MODEL`, and `AI_CHAT_COMPLETIONS_ENDPOINT`. With only `AI_API_KEY` set, the included endpoint defaults to DeepSeek's chat-completions API and `deepseek-v4-flash` with `AI_THINKING=disabled` for short website replies. Short greetings and over-long questions stay local; other questions use the model for intent classification and public-memory answers. Remote model calls are rate-limited with `AI_RATE_LIMIT_MAX=10` and `AI_RATE_LIMIT_WINDOW_HOURS=6` by default. Static SSH deployment can leave the browser endpoint blank.
 
 ## Deployment
 

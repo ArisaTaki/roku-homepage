@@ -1,54 +1,34 @@
 **Findings**
-- No actionable P0/P1/P2 issues found for the Hermes-Yachiyo hover demo.
+- No actionable P0/P1/P2 issues found for the luminous fish background.
 
 **Source Visual Truth**
-- User-provided Hermes-Yachiyo screenshots in this thread, especially the chat and Agent Studio views.
-- Local Hermes UI direction from `/Users/hacchiroku/AI/Hermes-Yachiyo`.
-- Remotion official docs for the implementation model:
-  - `https://www.remotion.dev/docs/player/player`
-  - `https://www.remotion.dev/docs/sequence`
-  - `https://www.remotion.dev/docs/interpolate`
+- User-provided reference screenshot: `/var/folders/vv/nn9kvwbs1nv0123t_p6pcr5r0000gn/T/codex-clipboard-31262ae4-8e95-4eb5-8d8f-7a1a684463dd.png`
+- Visual target: dark cinematic scene with many glowing cyan, pink, yellow, lavender, and teal fish-like light shapes moving as a school behind the page.
 
 **Implementation Evidence**
-- Local URL: `http://127.0.0.1:4179/`
-- Bubble-mode screenshot: `/tmp/hermes-polish-bubble-v4.png`
-- Live2D-mode screenshot: `/private/tmp/hermes-detail-live2d.png`
-- Cursor Agent Studio screenshot: `/private/tmp/hermes-cursor-agent-v2.png`
-- Cursor Live2D screenshot: `/private/tmp/hermes-cursor-live2d-v2.png`
-- Send-button screenshot: `/private/tmp/hermes-detail-send-before-v2.png`
-- Stop-button screenshot: `/private/tmp/hermes-detail-send-stop-v2.png`
-- Agent Studio avatar screenshot: `/private/tmp/hermes-detail-agent.png`
-- Agent Studio four-panel screenshot: `/private/tmp/hermes-agent-studio-four-panels-v2.png`
-- Viewport: `1600 x 1000`, desktop.
-- State: Hermes-Yachiyo work card hovered, with the deterministic Remotion timeline sampled at bubble and Live2D moments.
-- Full-view comparison evidence: source screenshots and the rendered card were inspected. The implementation now uses a Remotion composition with a deterministic frame clock, not screenshot crossfades.
-- Focused region comparison evidence: the work-card visual area, cursor, typing composer, assistant reply, Agent Studio panel, desktop bubble, and Live2D stage were inspected.
-
-**Observed Timeline**
-- `1.2s`: chat composer types `把 Agent 更新整理成发布`.
-- `4.5s`: user message is sent and the assistant reply begins.
-- `8.2s`: Agent Studio scene is active and shows Agents / Skill Library / Workflow Studio / Runs.
-- `12.2s`: bubble mode scene is active and shows the floating desktop bubble.
-- `15.6s`: Live2D scene is active and shows the static model preview plus feature chips.
+- Local URL: `http://127.0.0.1:5173/`
+- Desktop top screenshot: `/private/tmp/irop-qa/light-fish-desktop-top.png`
+- Desktop scrolled screenshot: `/private/tmp/irop-qa/light-fish-desktop-wheel.png`
+- Mobile top screenshot: `/private/tmp/irop-qa/light-fish-mobile-top.png`
+- Viewports: `1440 x 900` desktop, `390 x 900 @2x` mobile.
+- State: home top, horizontal work-scroll section after a wheel scroll to `scrollY = 9000`, and mobile hero.
+- Full-view comparison evidence: the reference image and implementation screenshots were inspected. The implementation intentionally translates the cinematic fish-school feeling into a site background instead of recreating the movie frame's architecture/bridge foreground.
+- Focused region comparison evidence: hero title, assistant card, fixed nav, work card area, and mobile hero were inspected for contrast and overlap.
 
 **QA Notes**
-- Fonts and typography: compact but legible inside the 620px work-card frame; headings and dense app UI match the local Hermes dark interface direction.
-- Spacing and layout rhythm: the mini app window, sidebar, chat panel, and feature scenes fit the card without overflow or overlap.
-- Colors and tokens: Hermes dark surfaces, pink/teal accents, subtle borders, and status chips align with the screenshots.
-- Image quality and asset fidelity: the demo uses real Hermes logo/avatar assets, a generated Iroha avatar crop from the pet spritesheet, and a Live2D static preview asset; it avoids the previous screenshot carousel behavior.
-- Copy and content: the demo introduces chat, Agent Studio, bubble mode, and Live2D in a single continuous operation flow. Agent Studio now shows Agents, Skill Library, Workflow Studio, and Runs at the same time.
-- Interaction: hover starts the frame-clocked Remotion timeline from frame 0; leaving hover resets to the first frame. The cursor is a normal-sized white SVG pointer, its tip lands inside the send/stop button during the chat send moment, and its tip lands inside the active Agent Studio, bubble mode, and Live2D navigation buttons.
+- Fonts and typography: existing GT Haptik and Diana Inter hierarchy remains intact. The canvas sits behind content and does not reduce the legibility of the hero title, intro copy, nav, assistant card, work titles, or mobile copy.
+- Spacing and layout rhythm: the new fixed canvas does not affect layout flow. Desktop sticky scene, horizontal track, nav cards, and mobile stacked layout keep their previous spacing.
+- Colors and tokens: the background uses the site's existing cyan, lavender, pink, coral, and yellow language, with extra teal/yellow glow to better match the reference. It avoids turning the page into a single-hue palette.
+- Image quality and asset fidelity: the fish are rendered on canvas as luminous bitmap-like forms with glow trails and current lines. This is appropriate for a procedural animated background; no placeholder assets are visible.
+- Copy and content: no user-facing copy changed.
+- Interaction: fish render as a static background at rest. Scroll input starts a short animation burst, extends while scrolling continues, then stops the animation loop after the burst window. The reduced-motion media query keeps the layer static.
+- Responsiveness: desktop and mobile screenshots show the fish layer visible but subordinate to content.
 
-**Patches Made Since Previous QA Pass**
-- Replaced the CSS polygon cursor with `public/assets/hermes/cursor-pointer.svg`, a white anti-aliased pointer at normal visual size.
-- Recalibrated cursor path coordinates so send and mode-switch positions use the pointer tip as the click target.
-- Added send and stop icon assets, then changed the chat composer button from send state to stop state after the message is submitted.
-- Added `public/assets/iroha/iroha.png` from the Iroha pet spritesheet so Agent Studio no longer shows a broken avatar.
-- Reworked the Agent Studio scene into a four-panel board for Agents, Skill Library, Workflow Studio, and Runs.
-- Reworked Live2D mode into a left model stage and right-side explanatory panel with feature chips, closer to the actual Hermes-Yachiyo Live2D view.
-- Removed the bottom-right guided progress HUD from the Remotion composition.
-- Rebuilt the bubble-mode scene around a visible floating chat window, bubble messages, status avatar, and earlier reply reveal.
-- Cropped the Live2D preview into `public/assets/hermes/hermes-live2d-character.png`, then centered and enlarged it in the stage.
+**Patches Made**
+- Added `LightFishBackground` in `src/App.tsx` with canvas-rendered fish particles, glow trails, soft current lines, scroll-responsive drift, viewport-aware density, and reduced-motion behavior.
+- Mounted the background once at app root so it covers the whole site.
+- Updated `src/index.css` to place the canvas behind the page, tune background opacity, and make the stage/about/mobile backgrounds translucent enough for the fish layer to show through.
+- Changed the fish background from a continuous `requestAnimationFrame` loop to a static-at-rest canvas with short scroll-triggered animation bursts, reducing idle CPU/GPU pressure.
 
 **Final Result**
 - final result: passed

@@ -58,6 +58,7 @@ type PixiApplication = {
 };
 
 let cubismCorePromise: Promise<void> | null = null;
+let live2DAssetsPromise: Promise<void> | null = null;
 
 type NatureDemoIntent = {
   emotion: string;
@@ -301,6 +302,33 @@ function ensureCubismCore(): Promise<void> {
   });
 
   return cubismCorePromise;
+}
+
+export function preloadNatureLive2DAssets(): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  if (live2DAssetsPromise) return live2DAssetsPromise;
+
+  live2DAssetsPromise = (async () => {
+    await ensureCubismCore();
+    const PIXI = await import("pixi.js");
+    window.PIXI = PIXI;
+    const { Live2DModel } = await import("pixi-live2d-display/cubism4");
+
+    Live2DModel.registerTicker(PIXI.Ticker);
+
+    const model = await Live2DModel.from(LIVE2D_MODEL_URL, {
+      autoInteract: false,
+      autoUpdate: false,
+    } as never) as unknown as Live2DParameterTarget;
+
+    model.update?.(0);
+    model.destroy?.({ children: true, texture: false, baseTexture: false });
+  })().catch((error) => {
+    live2DAssetsPromise = null;
+    throw error;
+  });
+
+  return live2DAssetsPromise;
 }
 
 function applyParamsToLive2DModel(model: Live2DParameterTarget, params: Record<string, number>, weight = 1): void {

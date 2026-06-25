@@ -11,6 +11,7 @@ import {
   type WorkCopy,
   type WorkId,
 } from "./i18n";
+import { waitForInitialAppReady } from "./bootReadiness";
 import { askIroha, type AssistantAnswerWithRuntime } from "./lib/iropAssistantClient";
 
 const TRAVEL_DISTANCE = 7200;
@@ -47,6 +48,11 @@ type WorkBase = {
 };
 
 type Work = WorkBase & WorkCopy;
+
+type AppProps = {
+  isBooting?: boolean;
+  onReady?: () => void;
+};
 
 type PetMessage = Partial<AssistantAnswerWithRuntime> & {
   role: "assistant" | "user";
@@ -946,18 +952,41 @@ function WorkVisualLoading({
   );
 }
 
-function DeferredWorkPreview({ work, children }: { work: Work; children: ReactNode }) {
+function DeferredWorkPreview({
+  work,
+  children,
+  forceLoad = false,
+}: {
+  work: Work;
+  children: ReactNode;
+  forceLoad?: boolean;
+}) {
   const [ref, hasEntered] = useHasEnteredViewport<HTMLDivElement>();
+  const [hasForcedLoad, setHasForcedLoad] = useState(forceLoad);
   const fallback = <WorkVisualLoading work={work} />;
 
-  if (!hasEntered) {
+  useEffect(() => {
+    if (forceLoad) setHasForcedLoad(true);
+  }, [forceLoad]);
+
+  if (!hasEntered && !hasForcedLoad) {
     return <WorkVisualLoading work={work} previewRef={ref} />;
   }
 
   return <Suspense fallback={fallback}>{children}</Suspense>;
 }
 
-function WorkVisual({ work, copy, layout }: { work: Work; copy: UiCopy; layout: "desktop" | "mobile" }) {
+function WorkVisual({
+  work,
+  copy,
+  layout,
+  eagerPreview = false,
+}: {
+  work: Work;
+  copy: UiCopy;
+  layout: "desktop" | "mobile";
+  eagerPreview?: boolean;
+}) {
   if (work.image) {
     return <img src={work.image} alt="" />;
   }
@@ -968,7 +997,7 @@ function WorkVisual({ work, copy, layout }: { work: Work; copy: UiCopy; layout: 
     }
 
     return (
-      <DeferredWorkPreview work={work}>
+      <DeferredWorkPreview work={work} forceLoad={eagerPreview}>
         <HermesReplay />
         <HermesMobilePreview copy={copy.hermesMobile} />
       </DeferredWorkPreview>
@@ -977,7 +1006,7 @@ function WorkVisual({ work, copy, layout }: { work: Work; copy: UiCopy; layout: 
 
   if (work.visual === "visual-live2d") {
     return (
-      <DeferredWorkPreview work={work}>
+      <DeferredWorkPreview work={work} forceLoad={eagerPreview}>
         <NatureLive2DReplay />
       </DeferredWorkPreview>
     );
@@ -985,7 +1014,7 @@ function WorkVisual({ work, copy, layout }: { work: Work; copy: UiCopy; layout: 
 
   if (work.visual === "visual-shader") {
     return (
-      <DeferredWorkPreview work={work}>
+      <DeferredWorkPreview work={work} forceLoad={eagerPreview}>
         <ShaderReplay />
       </DeferredWorkPreview>
     );
@@ -1094,11 +1123,13 @@ function DesktopScene({
   works,
   copy,
   petSessionKey,
+  eagerPreview,
 }: {
   progress: number;
   works: Work[];
   copy: UiCopy;
   petSessionKey: string;
+  eagerPreview: boolean;
 }) {
   const transform = useMemo(() => `translate3d(${-progress * TRAVEL_DISTANCE}px, 0, 0)`, [progress]);
 
@@ -1132,7 +1163,7 @@ function DesktopScene({
             target={work.href?.startsWith("http") ? "_blank" : undefined}
             rel={work.href?.startsWith("http") ? "noreferrer" : undefined}
           >
-            <WorkVisual work={work} copy={copy} layout="desktop" />
+            <WorkVisual work={work} copy={copy} layout="desktop" eagerPreview={eagerPreview} />
             <h2>{work.title}</h2>
             <p>{work.description}</p>
             <small>{work.meta}</small>
@@ -1143,7 +1174,17 @@ function DesktopScene({
   );
 }
 
-function MobilePage({ works, copy, petSessionKey }: { works: Work[]; copy: UiCopy; petSessionKey: string }) {
+function MobilePage({
+  works,
+  copy,
+  petSessionKey,
+  eagerPreview,
+}: {
+  works: Work[];
+  copy: UiCopy;
+  petSessionKey: string;
+  eagerPreview: boolean;
+}) {
   return (
     <div className="mobile-page">
       <section className="mobile-hero" aria-labelledby="mobile-title">
@@ -1177,7 +1218,7 @@ function MobilePage({ works, copy, petSessionKey }: { works: Work[]; copy: UiCop
             target={work.href?.startsWith("http") ? "_blank" : undefined}
             rel={work.href?.startsWith("http") ? "noreferrer" : undefined}
           >
-            <WorkVisual work={work} copy={copy} layout="mobile" />
+            <WorkVisual work={work} copy={copy} layout="mobile" eagerPreview={eagerPreview} />
             <h2>{work.title}</h2>
             <p>{work.description}</p>
             <small>{work.meta}</small>
@@ -1222,8 +1263,9 @@ function AboutPanel({ copy }: { copy: UiCopy }) {
   );
 }
 
-export default function App() {
+export default function App({ isBooting = false, onReady }: AppProps) {
   const [locale, setLocale] = useLocale();
+  const appRef = useRef<HTMLDivElement | null>(null);
   const sceneRef = useRef<HTMLElement | null>(null);
   const progress = useSceneProgress(sceneRef);
   const isMobileLayout = useMediaQuery(MOBILE_QUERY);
@@ -1235,6 +1277,24 @@ export default function App() {
   );
   const compactNav = progress > 0.13;
   const showMiniLogo = progress > 0.13 && progress < 0.98;
+
+  useEffect(() => {
+    if (!isBooting) return undefined;
+
+    let cancelled = false;
+
+    void waitForInitialAppReady(appRef.current)
+      .catch((error) => {
+        console.error("Initial app readiness check failed", error);
+      })
+      .finally(() => {
+        if (!cancelled) onReady?.();
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isBooting, onReady]);
 
   useEffect(() => {
     const idleWindow = window as Window & {
@@ -1255,7 +1315,7 @@ export default function App() {
   }, []);
 
   return (
-    <>
+    <div className={`app-shell ${isBooting ? "is-booting" : "is-ready"}`} ref={appRef}>
       <LightFishBackground progress={progress} />
       <a className="skip-link" href="#project">
         {copy.skip}
@@ -1271,13 +1331,24 @@ export default function App() {
       <main>
         <section id="project" ref={sceneRef} className="scroll-scene">
           {isMobileLayout ? (
-            <MobilePage works={works} copy={copy} petSessionKey={petSessionKey} />
+            <MobilePage
+              works={works}
+              copy={copy}
+              petSessionKey={petSessionKey}
+              eagerPreview={isBooting}
+            />
           ) : (
-            <DesktopScene progress={progress} works={works} copy={copy} petSessionKey={petSessionKey} />
+            <DesktopScene
+              progress={progress}
+              works={works}
+              copy={copy}
+              petSessionKey={petSessionKey}
+              eagerPreview={isBooting}
+            />
           )}
         </section>
         <AboutPanel copy={copy} />
       </main>
-    </>
+    </div>
   );
 }

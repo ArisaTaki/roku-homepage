@@ -1268,6 +1268,7 @@ function AboutPanel({ copy }: { copy: UiCopy }) {
 
 export default function App({ isBooting = false, onReady }: AppProps) {
   const [locale, setLocale] = useLocale();
+  const [eagerPreviewCards, setEagerPreviewCards] = useState(false);
   const appRef = useRef<HTMLDivElement | null>(null);
   const sceneRef = useRef<HTMLElement | null>(null);
   const progress = useSceneProgress(sceneRef);
@@ -1302,6 +1303,10 @@ export default function App({ isBooting = false, onReady }: AppProps) {
   useEffect(() => {
     if (isBooting) return undefined;
 
+    const previewMountHandle = window.setTimeout(() => {
+      setEagerPreviewCards(true);
+    }, 300);
+
     const idleWindow = window as Window & {
       requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
       cancelIdleCallback?: (handle: number) => void;
@@ -1314,6 +1319,7 @@ export default function App({ isBooting = false, onReady }: AppProps) {
     }
 
     return () => {
+      window.clearTimeout(previewMountHandle);
       if (idleHandle) idleWindow.cancelIdleCallback?.(idleHandle);
       if (timeoutHandle) window.clearTimeout(timeoutHandle);
     };
@@ -1340,7 +1346,7 @@ export default function App({ isBooting = false, onReady }: AppProps) {
               works={works}
               copy={copy}
               petSessionKey={petSessionKey}
-              eagerPreview={false}
+              eagerPreview={eagerPreviewCards}
             />
           ) : (
             <DesktopScene
@@ -1348,7 +1354,7 @@ export default function App({ isBooting = false, onReady }: AppProps) {
               works={works}
               copy={copy}
               petSessionKey={petSessionKey}
-              eagerPreview={false}
+              eagerPreview={eagerPreviewCards}
             />
           )}
         </section>

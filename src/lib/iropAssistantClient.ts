@@ -7,6 +7,7 @@ import {
 import { answerVisitorQuestion, isLocalOnlyAnswer, type AssistantAnswer } from "./iropAssistant";
 
 const DEFAULT_TIMEOUT_MS = 15000;
+const STREAM_STEP_MS = 16;
 
 export type AssistantAnswerWithRuntime = AssistantAnswer & {
   runtime?: string;
@@ -17,6 +18,10 @@ export type AssistantAnswerWithRuntime = AssistantAnswer & {
 export type AskIrohaOptions = {
   endpoint?: string;
   timeoutMs?: number;
+};
+
+export type AskIrohaStreamOptions = AskIrohaOptions & {
+  onToken?: (text: string) => void;
 };
 
 type RemoteAnswer = Partial<AssistantAnswerWithRuntime> & {
@@ -160,6 +165,32 @@ function withLocalRuntime(
   };
 }
 
+function streamDelay(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    globalThis.setTimeout(resolve, ms);
+  });
+}
+
+async function emitAssistantText(text: string, onToken?: (text: string) => void): Promise<void> {
+  if (!onToken) return;
+
+  let rendered = "";
+  const characters = Array.from(text);
+
+  for (const character of characters) {
+    rendered += character;
+    onToken(rendered);
+
+    const delay = /[。！？.!?]/.test(character)
+      ? STREAM_STEP_MS * 4
+      : /[，、,;；:：]/.test(character)
+        ? STREAM_STEP_MS * 2
+        : STREAM_STEP_MS;
+
+    await streamDelay(delay);
+  }
+}
+
 export async function askIroha(
   rawQuestion: string,
   options: AskIrohaOptions = {}
@@ -211,4 +242,13 @@ export async function askIroha(
   } finally {
     globalThis.clearTimeout(timeout);
   }
+}
+
+export async function askIrohaStream(
+  rawQuestion: string,
+  options: AskIrohaStreamOptions = {}
+): Promise<AssistantAnswerWithRuntime> {
+  const answer = await askIroha(rawQuestion, options);
+  await emitAssistantText(answer.text, options.onToken);
+  return answer;
 }

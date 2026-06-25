@@ -12,7 +12,7 @@ import {
   type WorkId,
 } from "./i18n";
 import { preloadDeferredAppAssets, waitForInitialAppReady } from "./bootReadiness";
-import { askIroha, type AssistantAnswerWithRuntime } from "./lib/iropAssistantClient";
+import { askIrohaStream, type AssistantAnswerWithRuntime } from "./lib/iropAssistantClient";
 
 const TRAVEL_DISTANCE = 7200;
 const LOCALE_STORAGE_KEY = "irop-locale";
@@ -698,6 +698,7 @@ function PetAssistant({
     () => readPetSession(sessionKey)?.petMood || "idle"
   );
   const messagesRef = useRef<HTMLDivElement | null>(null);
+  const askRunRef = useRef(0);
 
   useEffect(() => {
     const storedSession = readPetSession(sessionKey);
@@ -725,6 +726,8 @@ function PetAssistant({
   const ask = async (question: string, displayQuestion = question) => {
     const normalized = question.trim();
     if (!normalized || isThinking) return;
+    const askRun = askRunRef.current + 1;
+    askRunRef.current = askRun;
     setInput("");
     setIsThinking(true);
     setRuntimeLabel(copy.queryingRuntime);
@@ -739,7 +742,22 @@ function PetAssistant({
     );
 
     try {
-      const answer = await askIroha(normalized);
+      const streamPendingAnswer = (text: string) => {
+        if (askRunRef.current !== askRun) return;
+
+        setMessages(
+          compact
+            ? [{ role: "assistant", text, source: copy.pendingSource, pending: true }]
+            : [
+                { role: "user", text: displayQuestion },
+                { role: "assistant", text, source: copy.pendingSource, pending: true },
+              ]
+        );
+      };
+      const answer = await askIrohaStream(normalized, {
+        onToken: streamPendingAnswer,
+      });
+      if (askRunRef.current !== askRun) return;
       const nextRuntimeLabel = localizeRuntimeLabel(answer.runtimeLabel, copy);
       const nextPetMood = answer.mood || "happy";
       const nextMessages: PetMessage[] = compact

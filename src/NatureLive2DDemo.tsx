@@ -16,6 +16,8 @@ const LIVE2D_MODEL_URL = "/models/yachiyo-web/yachiyo.model3.json";
 const CUBISM_CORE_URL = "/assets/vendor/live2dcubismcore.min.js";
 const ACTING_START_FRAME = 82;
 const ACTING_END_FRAME = 318;
+const LIVE2D_RENDER_RESOLUTION = 1.25;
+const LIVE2D_PARAM_SMOOTHING = 0.22;
 
 declare global {
   interface Window {
@@ -360,10 +362,21 @@ function mixParam(baseValue: number, targetValue: number, progress: number): num
   return baseValue + (targetValue - baseValue) * progress;
 }
 
+function smoothBlinkValue(frame: number): number {
+  const phase = frame % 120;
+
+  if (phase < 104) return 0.96;
+  if (phase < 109) return mixParam(0.96, 0.3, smoothstep((phase - 104) / 5));
+  if (phase < 113) return 0.3;
+  if (phase < 120) return mixParam(0.3, 0.96, smoothstep((phase - 113) / 7));
+
+  return 0.96;
+}
+
 function buildLive2DParams(beat: NatureDemoBeat, frame: number, expression: number): Record<string, number> {
   const params = { ...beat.sampleParams };
   const breathe = 0.55 + Math.sin(frame / 18) * 0.12;
-  const blink = frame % 96 > 88 ? 0.28 : 0.96;
+  const blink = smoothBlinkValue(frame);
   const emotion = beat.intent.emotion;
   const beatId = beat.id || emotion;
 
@@ -450,6 +463,27 @@ function blendParamRecords(
   return result;
 }
 
+function smoothParamRecords(
+  previous: Record<string, number>,
+  target: Record<string, number>,
+  amount: number,
+): Record<string, number> {
+  const result: Record<string, number> = {};
+  const keys = new Set([...Object.keys(previous), ...Object.keys(target)]);
+
+  for (const key of keys) {
+    const targetValue = target[key];
+    if (targetValue == null) continue;
+
+    const previousValue = previous[key];
+    result[key] = previousValue == null
+      ? targetValue
+      : mixParam(previousValue, targetValue, amount);
+  }
+
+  return result;
+}
+
 function continuousActingState(data: NatureDemoData, frame: number) {
   const beats = beatsFor(data);
 
@@ -477,9 +511,9 @@ function continuousActingState(data: NatureDemoData, frame: number) {
   const index = Math.min(beats.length - 1, Math.floor(position));
   const nextIndex = Math.min(beats.length - 1, index + 1);
   const localProgress = nextIndex === index ? 0 : position - index;
-  const transitionProgress = nextIndex === index ? 0 : smoothstep((localProgress - 0.42) / 0.58);
-  const expression = stepProgress(frame, ACTING_START_FRAME + 8, ACTING_START_FRAME + 34);
-  const beat = transitionProgress > 0.5 ? beats[nextIndex] : beats[index];
+  const transitionProgress = nextIndex === index ? 0 : smoothstep((localProgress - 0.16) / 0.78);
+  const expression = stepProgress(frame, ACTING_START_FRAME + 8, ACTING_START_FRAME + 56);
+  const beat = transitionProgress > 0.68 ? beats[nextIndex] : beats[index];
   const fromParams = buildLive2DParams(beats[index], frame, expression);
   const toParams = buildLive2DParams(beats[nextIndex], frame, expression);
 
@@ -576,6 +610,7 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
   const stageCardRef = useRef<HTMLDivElement | null>(null);
   const appRef = useRef<PixiApplication | null>(null);
   const modelRef = useRef<Live2DParameterTarget | null>(null);
+  const smoothedParamsRef = useRef<Record<string, number>>({});
   const [runtimeStatus, setRuntimeStatus] = useState<"loading" | "ready" | "error">("loading");
   const actingState = continuousActingState(data, frame);
   const emotion = actingState.beat.intent.emotion;
@@ -611,9 +646,9 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
           width,
           height,
           autoDensity: true,
-          antialias: true,
+          antialias: false,
           backgroundAlpha: 0,
-          resolution: Math.min(window.devicePixelRatio || 1, 2),
+          resolution: Math.min(window.devicePixelRatio || 1, LIVE2D_RENDER_RESOLUTION),
         }) as unknown as PixiApplication;
 
         app.stop?.();
@@ -637,6 +672,7 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
 
         appRef.current = app;
         modelRef.current = model;
+        smoothedParamsRef.current = {};
         setRuntimeStatus("ready");
 
         resizeObserver = new ResizeObserver(([entry]) => {
@@ -664,6 +700,7 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
       appRef.current?.destroy(false, { children: true, texture: true, baseTexture: true });
       modelRef.current = null;
       appRef.current = null;
+      smoothedParamsRef.current = {};
     };
   }, [enabled]);
 
@@ -673,7 +710,13 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
     if (!enabled || !app || !model) return;
 
     model.update?.(1000 / FPS);
-    applyParamsToLive2DModel(model, actingState.params, 1);
+    const smoothedParams = smoothParamRecords(
+      smoothedParamsRef.current,
+      actingState.params,
+      LIVE2D_PARAM_SMOOTHING
+    );
+    smoothedParamsRef.current = smoothedParams;
+    applyParamsToLive2DModel(model, smoothedParams, 1);
     app.renderer.render(app.stage);
   }, [actingState.params, enabled, frame]);
 

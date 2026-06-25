@@ -1,5 +1,6 @@
 import http from "node:http";
-import handler from "../api/iroha-assistant";
+import irohaAssistantHandler from "../api/iroha-assistant";
+import natureLive2DDemoHandler from "../api/nature-live2d-demo";
 
 const DEFAULT_PORT = 8787;
 const MAX_BODY_BYTES = 80_000;
@@ -17,6 +18,10 @@ function requestPath(req: http.IncomingMessage): string {
 }
 
 const port = Number(process.env.IROP_ASSISTANT_PORT || DEFAULT_PORT);
+const apiHandlers = {
+  "/api/iroha-assistant": irohaAssistantHandler,
+  "/api/nature-live2d-demo": natureLive2DDemoHandler,
+};
 
 const server = http.createServer((req, res) => {
   const path = requestPath(req);
@@ -26,7 +31,8 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  if (path !== "/api/iroha-assistant") {
+  const handler = apiHandlers[path as keyof typeof apiHandlers];
+  if (!handler) {
     json(res, 404, { error: "Not found" });
     return;
   }

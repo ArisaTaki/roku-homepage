@@ -27,6 +27,16 @@ jobs:
       DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
       DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
       DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      API_DEPLOY_PATH: ${{ secrets.API_DEPLOY_PATH || '/home/wwwroot/irop-one-api' }}
+      API_PORT: ${{ secrets.API_PORT || '8787' }}
+      NODE_RUNTIME_PATH: /opt/irop-one/node
+      AI_API_KEY: ${{ secrets.AI_API_KEY }}
+      AI_MODEL: ${{ secrets.AI_MODEL || 'deepseek-v4-flash' }}
+      AI_CHAT_COMPLETIONS_ENDPOINT: ${{ secrets.AI_CHAT_COMPLETIONS_ENDPOINT || 'https://api.deepseek.com/chat/completions' }}
+      AI_THINKING: ${{ secrets.AI_THINKING || 'disabled' }}
+      AI_TIMEOUT_MS: ${{ secrets.AI_TIMEOUT_MS || '12000' }}
+      AI_RATE_LIMIT_MAX: ${{ secrets.AI_RATE_LIMIT_MAX || '10' }}
+      AI_RATE_LIMIT_WINDOW_HOURS: ${{ secrets.AI_RATE_LIMIT_WINDOW_HOURS || '6' }}
       NODE_VERSION: 24
 
     steps:
@@ -46,11 +56,13 @@ jobs:
         run: npm run check:iroha
 
       - name: Build
+        env:
+          VITE_IROP_ASSISTANT_ENDPOINT: /api/iroha-assistant
         run: npm run build
 
       - name: Validate deployment secrets
         run: |
-          for name in DEPLOY_HOST DEPLOY_USER DEPLOY_PATH DEPLOY_SSH_KEY; do
+          for name in DEPLOY_HOST DEPLOY_USER DEPLOY_PATH DEPLOY_SSH_KEY API_DEPLOY_PATH AI_API_KEY; do
             if [ -z "${!name}" ]; then
               echo "::error::$name is required"
               exit 1
@@ -62,6 +74,11 @@ jobs:
             exit 1
           fi
 
+          if [ "$API_DEPLOY_PATH" = "/" ]; then
+            echo "::error::API_DEPLOY_PATH must not be the filesystem root"
+            exit 1
+          fi
+
       - name: Prepare SSH
         run: |
           install -m 700 -d ~/.ssh
@@ -69,12 +86,31 @@ jobs:
           chmod 600 ~/.ssh/irop_deploy_key
           ssh-keyscan -H -p "$DEPLOY_PORT" "$DEPLOY_HOST" >> ~/.ssh/known_hosts
 
-      - name: Package static site
-        run: tar -czf "irop-one-${GITHUB_SHA}.tar.gz" -C dist .
+      - name: Package deploy artifacts
+        run: |
+          tar -czf "irop-one-${GITHUB_SHA}.tar.gz" -C dist .
+          tar -czf "irop-one-api-${GITHUB_SHA}.tar.gz" -C dist-api .
+
+          node_dir="$(dirname "$(dirname "$(command -v node)")")"
+          tar -czf "irop-one-node-runtime.tar.gz" -C "$node_dir" .
+
+          {
+            printf 'AI_API_KEY=%s\n' "$AI_API_KEY"
+            printf 'AI_MODEL=%s\n' "$AI_MODEL"
+            printf 'AI_CHAT_COMPLETIONS_ENDPOINT=%s\n' "$AI_CHAT_COMPLETIONS_ENDPOINT"
+            printf 'AI_THINKING=%s\n' "$AI_THINKING"
+            printf 'AI_TIMEOUT_MS=%s\n' "$AI_TIMEOUT_MS"
+            printf 'AI_RATE_LIMIT_MAX=%s\n' "$AI_RATE_LIMIT_MAX"
+            printf 'AI_RATE_LIMIT_WINDOW_HOURS=%s\n' "$AI_RATE_LIMIT_WINDOW_HOURS"
+          } > irop-one-assistant.env
+          chmod 600 irop-one-assistant.env
 
       - name: Upload and activate release
         run: |
           archive_name="irop-one-${GITHUB_SHA}.tar.gz"
+          api_archive_name="irop-one-api-${GITHUB_SHA}.tar.gz"
+          node_archive_name="irop-one-node-runtime.tar.gz"
+          env_file_name="irop-one-assistant.env"
           ssh_opts=(
             -i ~/.ssh/irop_deploy_key
             -p "$DEPLOY_PORT"
@@ -88,9 +124,15 @@ jobs:
             -o StrictHostKeyChecking=yes
           )
 
-          scp "${scp_opts[@]}" "$archive_name" "$DEPLOY_USER@$DEPLOY_HOST:/tmp/$archive_name"
+          scp "${scp_opts[@]}" \
+            "$archive_name" \
+            "$api_archive_name" \
+            "$node_archive_name" \
+            "$env_file_name" \
+            "$DEPLOY_USER@$DEPLOY_HOST:/tmp/"
+
           ssh "${ssh_opts[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
-            "DEPLOY_PATH=$(printf '%q' "$DEPLOY_PATH") ARCHIVE_NAME=$(printf '%q' "$archive_name") bash -s" <<'REMOTE_SCRIPT'
+            "DEPLOY_PATH=$(printf '%q' "$DEPLOY_PATH") API_DEPLOY_PATH=$(printf '%q' "$API_DEPLOY_PATH") API_PORT=$(printf '%q' "$API_PORT") NODE_RUNTIME_PATH=$(printf '%q' "$NODE_RUNTIME_PATH") ARCHIVE_NAME=$(printf '%q' "$archive_name") API_ARCHIVE_NAME=$(printf '%q' "$api_archive_name") NODE_ARCHIVE_NAME=$(printf '%q' "$node_archive_name") ENV_FILE_NAME=$(printf '%q' "$env_file_name") bash -s" <<'REMOTE_SCRIPT'
           set -euo pipefail
 
           if [ -z "$DEPLOY_PATH" ] || [ "$DEPLOY_PATH" = "/" ]; then
@@ -98,8 +140,17 @@ jobs:
             exit 1
           fi
 
+          if [ -z "$API_DEPLOY_PATH" ] || [ "$API_DEPLOY_PATH" = "/" ]; then
+            echo "Unsafe API_DEPLOY_PATH: ${API_DEPLOY_PATH:-<empty>}" >&2
+            exit 1
+          fi
+
           remote_archive="/tmp/$ARCHIVE_NAME"
+          remote_api_archive="/tmp/$API_ARCHIVE_NAME"
+          remote_node_archive="/tmp/$NODE_ARCHIVE_NAME"
+          remote_env_file="/tmp/$ENV_FILE_NAME"
           release_dir="$DEPLOY_PATH/.release-${ARCHIVE_NAME%.tar.gz}"
+          node_tmp="${NODE_RUNTIME_PATH}.tmp"
 
           mkdir -p "$DEPLOY_PATH"
           rm -rf "$release_dir"
@@ -112,7 +163,67 @@ jobs:
             -exec rm -rf {} +
 
           cp -a "$release_dir"/. "$DEPLOY_PATH"/
-          rm -rf "$release_dir" "$remote_archive"
+
+          mkdir -p "$API_DEPLOY_PATH" "$(dirname "$NODE_RUNTIME_PATH")"
+          rm -rf "$node_tmp"
+          mkdir -p "$node_tmp"
+          tar -xzf "$remote_node_archive" -C "$node_tmp"
+          rm -rf "$NODE_RUNTIME_PATH"
+          mv "$node_tmp" "$NODE_RUNTIME_PATH"
+
+          tar -xzf "$remote_api_archive" -C "$API_DEPLOY_PATH"
+          install -m 600 "$remote_env_file" /etc/irop-one-assistant.env
+
+          cat > /etc/systemd/system/irop-one-assistant.service <<SERVICE_UNIT
+          [Unit]
+          Description=irop.one Iroha assistant API
+          After=network-online.target
+          Wants=network-online.target
+
+          [Service]
+          Type=simple
+          User=www
+          Group=www
+          WorkingDirectory=$API_DEPLOY_PATH
+          EnvironmentFile=/etc/irop-one-assistant.env
+          Environment=IROP_ASSISTANT_PORT=$API_PORT
+          ExecStart=$NODE_RUNTIME_PATH/bin/node $API_DEPLOY_PATH/iroha-server.mjs
+          Restart=always
+          RestartSec=3
+
+          [Install]
+          WantedBy=multi-user.target
+          SERVICE_UNIT
+
+          api_snippet="/usr/local/nginx/conf/snippets/irop_one_assistant_api.conf"
+          cat > "$api_snippet" <<NGINX_SNIPPET
+          location = /api/iroha-assistant {
+              proxy_pass http://127.0.0.1:$API_PORT/api/iroha-assistant;
+              proxy_http_version 1.1;
+              proxy_set_header Host \$host;
+              proxy_set_header X-Real-IP \$remote_addr;
+              proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto \$scheme;
+              proxy_read_timeout 30s;
+          }
+          NGINX_SNIPPET
+
+          nginx_conf="/usr/local/nginx/conf/sites-enabled/irop.one.conf"
+          if ! grep -q "irop_one_assistant_api.conf" "$nginx_conf"; then
+            cp "$nginx_conf" "$nginx_conf.bak.$(date +%Y%m%d%H%M%S)"
+            sed -i '/^[[:space:]]*index index.html;$/a\
+              include /usr/local/nginx/conf/snippets/irop_one_assistant_api.conf;' "$nginx_conf"
+          fi
+
+          systemctl daemon-reload
+          systemctl enable irop-one-assistant.service
+          systemctl restart irop-one-assistant.service
+          /usr/local/nginx/sbin/nginx -t
+          /usr/local/nginx/sbin/nginx -s reload
+          systemctl is-active --quiet irop-one-assistant.service
+          curl --fail --silent --show-error "http://127.0.0.1:$API_PORT/healthz" > /dev/null
+
+          rm -rf "$release_dir" "$remote_archive" "$remote_api_archive" "$remote_node_archive" "$remote_env_file"
           REMOTE_SCRIPT
 
       - name: Check production URL
@@ -122,3 +233,12 @@ jobs:
             --max-time 20 "https://$DEPLOY_DOMAIN/" > production-index.html
           grep -q "<title>irop.one</title>" production-index.html
           grep -q 'id="root"' production-index.html
+
+          printf '{"question":"请介绍一下八六的公开项目"}' > assistant-request.json
+          curl --fail --silent --show-error --location \
+            --retry 5 --retry-delay 5 --retry-connrefused \
+            --max-time 30 \
+            -H "Content-Type: application/json" \
+            --data @assistant-request.json \
+            "https://$DEPLOY_DOMAIN/api/iroha-assistant" > assistant-response.json
+          grep -q '"runtimeLabel":"REMOTE AI"' assistant-response.json

@@ -96,6 +96,51 @@ body {
   background-size: auto, auto;
 }
 
+.boot-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100svh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(104, 204, 220, 0.18), transparent 31%),
+    radial-gradient(circle at 62% 56%, rgba(245, 186, 191, 0.16), transparent 30%),
+    linear-gradient(180deg, #050812 0%, #0b1019 52%, #111823 100%);
+}
+
+.boot-mark {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  max-width: calc(100vw - 32px);
+  font-family: "GT Haptik", Arial, sans-serif;
+  font-size: clamp(48px, 10.5vw, 148px);
+  font-weight: 500;
+  line-height: 0.78;
+  letter-spacing: 0;
+  filter: drop-shadow(0 22px 38px rgba(0, 0, 0, 0.28));
+}
+
+.boot-mark .mark-letter {
+  animation: boot-letter-hop 1.16s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  transform-origin: 50% 78%;
+}
+
+@keyframes boot-letter-hop {
+  0%,
+  58%,
+  100% {
+    transform: translateY(0) rotate(var(--boot-tilt, 0deg));
+  }
+
+  22% {
+    transform: translateY(-0.22em) rotate(var(--boot-tilt, 0deg));
+  }
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -218,6 +263,16 @@ main {
 
 .mark-letter {
   transform-origin: 48% 68%;
+}
+
+.boot-mark .mark-letter:nth-child(2),
+.boot-mark .mark-letter:nth-child(6) {
+  --boot-tilt: 4deg;
+}
+
+.boot-mark .mark-letter:nth-child(4),
+.boot-mark .mark-letter:nth-child(9) {
+  --boot-tilt: -3deg;
 }
 
 .mark-coral {
@@ -3662,6 +3717,10 @@ main {
 }
 
 @media (max-width: 760px) {
+  .boot-mark {
+    font-size: clamp(38px, 12vw, 58px);
+  }
+
   :root {
     background: var(--paper);
   }
@@ -4187,5 +4246,11 @@ main {
 
   .about-panel {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot-mark .mark-letter {
+    animation: none;
   }
 }

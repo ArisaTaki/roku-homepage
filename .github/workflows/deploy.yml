@@ -212,11 +212,24 @@ jobs:
           }
           NGINX_SNIPPET
 
+          compression_snippet="/usr/local/nginx/conf/snippets/irop_one_static_compression.conf"
+          cat > "$compression_snippet" <<NGINX_COMPRESSION
+          gzip_min_length 1k;
+          gzip_comp_level 5;
+          gzip_vary on;
+          gzip_types text/plain text/css text/javascript application/javascript application/x-javascript application/json application/xml application/xml+rss application/octet-stream image/svg+xml;
+          NGINX_COMPRESSION
+
           nginx_conf="/usr/local/nginx/conf/sites-enabled/irop.one.conf"
           if ! grep -q "irop_one_assistant_api.conf" "$nginx_conf"; then
             cp "$nginx_conf" "$nginx_conf.bak.$(date +%Y%m%d%H%M%S)"
             sed -i '/^[[:space:]]*index index.html;$/a\
               include /usr/local/nginx/conf/snippets/irop_one_assistant_api.conf;' "$nginx_conf"
+          fi
+          if ! grep -q "irop_one_static_compression.conf" "$nginx_conf"; then
+            cp "$nginx_conf" "$nginx_conf.bak.$(date +%Y%m%d%H%M%S)"
+            sed -i '/^[[:space:]]*include \/usr\/local\/nginx\/conf\/snippets\/irop_one_assistant_api\.conf;$/a\
+              include /usr/local/nginx/conf/snippets/irop_one_static_compression.conf;' "$nginx_conf"
           fi
 
           systemctl daemon-reload
@@ -250,6 +263,14 @@ jobs:
             --max-time 20 "https://$DEPLOY_DOMAIN/" > production-index.html
           grep -q "<title>irop.one</title>" production-index.html
           grep -q 'id="root"' production-index.html
+
+          curl --fail --silent --show-error --location \
+            --max-time 30 \
+            -H "Accept-Encoding: gzip" \
+            -o /dev/null \
+            -D live2d-moc3.headers \
+            "https://$DEPLOY_DOMAIN/models/yachiyo-web/yachiyo.moc3"
+          grep -qi '^content-encoding: gzip' live2d-moc3.headers
 
           printf '{"question":"请介绍一下八六的公开项目"}' > assistant-request.json
           curl --fail --silent --show-error --location \

@@ -14,9 +14,9 @@ const DEFERRED_IMAGE_URLS = [
   "/assets/screenshots/gallery-000001.webp",
   "/assets/screenshots/gallery-000004.webp",
   "/assets/screenshots/gallery-000010.webp",
-  "/models/yachiyo-web/avatar.png",
-  "/models/yachiyo-web/textures/texture_00.png",
-  "/models/yachiyo-web/textures/texture_01.png",
+  "/models/yachiyo-web/avatar.webp",
+  "/models/yachiyo-web/textures/texture_00.webp",
+  "/models/yachiyo-web/textures/texture_01.webp",
 ] as const;
 
 const LIVE2D_FETCH_URLS = [

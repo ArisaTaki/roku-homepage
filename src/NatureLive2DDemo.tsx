@@ -559,7 +559,7 @@ function Live2DPlaceholderStage({ data }: { data: NatureDemoData }) {
       <div className="nl2d-stage-grid" aria-hidden="true" />
       <div className="nl2d-model-card nl2d-model-card-placeholder">
         <span className="nl2d-model-aura" />
-        <img src="/models/yachiyo-web/avatar.png" alt="" />
+        <img src="/models/yachiyo-web/avatar.webp" alt="" />
         <span className="nl2d-runtime-badge">real Cubism ready</span>
       </div>
       <div className="nl2d-stage-meta">

@@ -1,4 +1,3 @@
-const BOOT_TIMEOUT_MS = 30_000;
 const FRAME_DELAY_COUNT = 2;
 
 const BOOT_IMAGE_URLS = [
@@ -27,12 +26,6 @@ const LIVE2D_FETCH_URLS = [
 
 let bootAssetPromise: Promise<void> | null = null;
 
-function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    window.setTimeout(resolve, ms);
-  });
-}
-
 function waitForFrames(count = FRAME_DELAY_COUNT): Promise<void> {
   return new Promise((resolve) => {
     let remaining = count;
@@ -48,16 +41,6 @@ function waitForFrames(count = FRAME_DELAY_COUNT): Promise<void> {
 
     window.requestAnimationFrame(tick);
   });
-}
-
-function timeoutAfter(ms: number, label: string): Promise<never> {
-  return wait(ms).then(() => {
-    throw new Error(`${label} timed out after ${ms}ms`);
-  });
-}
-
-function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
-  return Promise.race([promise, timeoutAfter(ms, label)]);
 }
 
 function loadImage(src: string): Promise<void> {
@@ -127,7 +110,7 @@ async function preloadBootAssets(): Promise<void> {
     Promise.all(LIVE2D_FETCH_URLS.map((url) => fetchWarm(url))).then(() => undefined),
     import("./HermesRemotionDemo").then(() => undefined),
     import("./ShaderRemotionDemo").then(() => undefined),
-    import("./NatureLive2DDemo").then((module) => module.preloadNatureLive2DAssets()),
+    import("./NatureLive2DDemo").then(() => undefined),
   ]).then(() => undefined);
 
   return bootAssetPromise;
@@ -171,6 +154,27 @@ function waitForNoSelector(root: ParentNode, selector: string): Promise<void> {
   });
 }
 
+function waitForLive2DReady(root: ParentNode): Promise<void> {
+  if (queryRequired(root, ".nl2d-runtime-badge.is-ready")) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const observer = new MutationObserver(() => {
+      if (queryRequired(root, ".nl2d-runtime-badge.is-ready")) {
+        observer.disconnect();
+        resolve();
+        return;
+      }
+
+      if (queryRequired(root, ".nl2d-runtime-badge.is-error")) {
+        observer.disconnect();
+        reject(new Error("Live2D runtime reported an error"));
+      }
+    });
+
+    observer.observe(root, { attributes: true, childList: true, subtree: true });
+  });
+}
+
 function hasRenderableBox(element: Element): boolean {
   const rect = element.getBoundingClientRect();
   return rect.width > 0 && rect.height > 0;
@@ -184,8 +188,8 @@ async function waitForDomImages(root: ParentNode): Promise<void> {
 async function waitForRenderedApp(root: HTMLElement): Promise<void> {
   await waitForSelector<HTMLElement>(root, ".pet-assistant .pixel-pet", hasRenderableBox);
   await waitForSelector<HTMLElement>(root, ".nature-live2d-remotion-shell", hasRenderableBox);
-  await withTimeout(waitForNoSelector(root, ".work-preview-loading"), BOOT_TIMEOUT_MS, "preview mounts");
-  await withTimeout(waitForSelector<HTMLElement>(root, ".nl2d-runtime-badge.is-ready"), BOOT_TIMEOUT_MS, "Live2D runtime");
+  await waitForNoSelector(root, ".work-preview-loading");
+  await waitForLive2DReady(root);
   await waitForDomImages(root);
   await waitForFrames();
 }
@@ -193,6 +197,8 @@ async function waitForRenderedApp(root: HTMLElement): Promise<void> {
 export async function waitForInitialAppReady(root: HTMLElement | null): Promise<void> {
   if (!root) return;
 
-  await withTimeout(preloadBootAssets(), BOOT_TIMEOUT_MS, "boot assets");
-  await waitForRenderedApp(root);
+  await Promise.all([
+    preloadBootAssets(),
+    waitForRenderedApp(root),
+  ]);
 }

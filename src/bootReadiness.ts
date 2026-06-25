@@ -1,7 +1,10 @@
 const FRAME_DELAY_COUNT = 2;
 
-const BOOT_IMAGE_URLS = [
+const CRITICAL_BOOT_IMAGE_URLS = [
   "/assets/pet/iroha/spritesheet.webp",
+] as const;
+
+const DEFERRED_IMAGE_URLS = [
   "/assets/hermes/logo.png",
   "/assets/hermes/yachiyo-default.jpg",
   "/assets/hermes/hermes-live2d-character.png",
@@ -25,6 +28,7 @@ const LIVE2D_FETCH_URLS = [
 ] as const;
 
 let bootAssetPromise: Promise<void> | null = null;
+let deferredAssetPromise: Promise<void> | null = null;
 
 function waitForFrames(count = FRAME_DELAY_COUNT): Promise<void> {
   return new Promise((resolve) => {
@@ -106,14 +110,24 @@ async function preloadBootAssets(): Promise<void> {
 
   bootAssetPromise = Promise.all([
     "fonts" in document ? document.fonts.ready.then(() => undefined) : Promise.resolve(),
-    Promise.all(BOOT_IMAGE_URLS.map((src) => loadImage(src))).then(() => undefined),
+    Promise.all(CRITICAL_BOOT_IMAGE_URLS.map((src) => loadImage(src))).then(() => undefined),
+  ]).then(() => undefined);
+
+  return bootAssetPromise;
+}
+
+export function preloadDeferredAppAssets(): Promise<void> {
+  if (deferredAssetPromise) return deferredAssetPromise;
+
+  deferredAssetPromise = Promise.allSettled([
+    ...DEFERRED_IMAGE_URLS.map((src) => loadImage(src)),
     Promise.all(LIVE2D_FETCH_URLS.map((url) => fetchWarm(url))).then(() => undefined),
     import("./HermesRemotionDemo").then(() => undefined),
     import("./ShaderRemotionDemo").then(() => undefined),
     import("./NatureLive2DDemo").then(() => undefined),
   ]).then(() => undefined);
 
-  return bootAssetPromise;
+  return deferredAssetPromise;
 }
 
 function queryRequired<T extends Element>(root: ParentNode, selector: string): T | null {
@@ -140,57 +154,31 @@ function waitForSelector<T extends Element>(
   });
 }
 
-function waitForNoSelector(root: ParentNode, selector: string): Promise<void> {
-  if (!queryRequired(root, selector)) return Promise.resolve();
-
-  return new Promise((resolve) => {
-    const observer = new MutationObserver(() => {
-      if (queryRequired(root, selector)) return;
-      observer.disconnect();
-      resolve();
-    });
-
-    observer.observe(root, { childList: true, subtree: true });
-  });
-}
-
-function waitForLive2DReady(root: ParentNode): Promise<void> {
-  if (queryRequired(root, ".nl2d-runtime-badge.is-ready")) return Promise.resolve();
-
-  return new Promise((resolve, reject) => {
-    const observer = new MutationObserver(() => {
-      if (queryRequired(root, ".nl2d-runtime-badge.is-ready")) {
-        observer.disconnect();
-        resolve();
-        return;
-      }
-
-      if (queryRequired(root, ".nl2d-runtime-badge.is-error")) {
-        observer.disconnect();
-        reject(new Error("Live2D runtime reported an error"));
-      }
-    });
-
-    observer.observe(root, { attributes: true, childList: true, subtree: true });
-  });
-}
-
 function hasRenderableBox(element: Element): boolean {
   const rect = element.getBoundingClientRect();
   return rect.width > 0 && rect.height > 0;
 }
 
-async function waitForDomImages(root: ParentNode): Promise<void> {
+function isInInitialViewport(element: Element): boolean {
+  const rect = element.getBoundingClientRect();
+  return rect.bottom > 0
+    && rect.right > 0
+    && rect.top < window.innerHeight
+    && rect.left < window.innerWidth;
+}
+
+async function waitForInitialViewportImages(root: ParentNode): Promise<void> {
   const images = Array.from(root.querySelectorAll<HTMLImageElement>("img"));
-  await Promise.all(images.map((image) => waitForImageElement(image)));
+  await Promise.all(
+    images
+      .filter((image) => isInInitialViewport(image))
+      .map((image) => waitForImageElement(image))
+  );
 }
 
 async function waitForRenderedApp(root: HTMLElement): Promise<void> {
   await waitForSelector<HTMLElement>(root, ".pet-assistant .pixel-pet", hasRenderableBox);
-  await waitForSelector<HTMLElement>(root, ".nature-live2d-remotion-shell", hasRenderableBox);
-  await waitForNoSelector(root, ".work-preview-loading");
-  await waitForLive2DReady(root);
-  await waitForDomImages(root);
+  await waitForInitialViewportImages(root);
   await waitForFrames();
 }
 

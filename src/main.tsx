@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-const MIN_LOADING_MS = 1400;
+const MIN_LOADING_MS = 1000;
 const BOOT_MARK = "HacchiRoku";
 const BOOT_COLORS = ["mark-coral", "mark-yellow", "mark-cyan", "mark-lavender"];
 

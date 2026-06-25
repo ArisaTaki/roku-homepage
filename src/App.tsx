@@ -11,7 +11,7 @@ import {
   type WorkCopy,
   type WorkId,
 } from "./i18n";
-import { waitForInitialAppReady } from "./bootReadiness";
+import { preloadDeferredAppAssets, waitForInitialAppReady } from "./bootReadiness";
 import { askIroha, type AssistantAnswerWithRuntime } from "./lib/iropAssistantClient";
 
 const TRAVEL_DISTANCE = 7200;
@@ -185,7 +185,10 @@ function useMediaQuery(query: string): boolean {
 }
 
 function preloadInteractiveWorkVisuals() {
-  void Promise.allSettled(interactivePreviewLoaders.map((loadPreview) => loadPreview()));
+  void Promise.allSettled([
+    preloadDeferredAppAssets(),
+    ...interactivePreviewLoaders.map((loadPreview) => loadPreview()),
+  ]);
 }
 
 function useHasEnteredViewport<T extends Element>(): [RefObject<T | null>, boolean] {
@@ -1297,6 +1300,8 @@ export default function App({ isBooting = false, onReady }: AppProps) {
   }, [isBooting, onReady]);
 
   useEffect(() => {
+    if (isBooting) return undefined;
+
     const idleWindow = window as Window & {
       requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
       cancelIdleCallback?: (handle: number) => void;
@@ -1312,7 +1317,7 @@ export default function App({ isBooting = false, onReady }: AppProps) {
       if (idleHandle) idleWindow.cancelIdleCallback?.(idleHandle);
       if (timeoutHandle) window.clearTimeout(timeoutHandle);
     };
-  }, []);
+  }, [isBooting]);
 
   return (
     <div className={`app-shell ${isBooting ? "is-booting" : "is-ready"}`} ref={appRef}>
@@ -1335,7 +1340,7 @@ export default function App({ isBooting = false, onReady }: AppProps) {
               works={works}
               copy={copy}
               petSessionKey={petSessionKey}
-              eagerPreview={isBooting}
+              eagerPreview={false}
             />
           ) : (
             <DesktopScene
@@ -1343,7 +1348,7 @@ export default function App({ isBooting = false, onReady }: AppProps) {
               works={works}
               copy={copy}
               petSessionKey={petSessionKey}
-              eagerPreview={isBooting}
+              eagerPreview={false}
             />
           )}
         </section>

@@ -3481,10 +3481,10 @@ main {
 }
 
 .nav-card.compact {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  pointer-events: auto;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-16px);
+  pointer-events: none;
 }
 
 .nav-row {
@@ -3629,15 +3629,6 @@ main {
   visibility: visible;
   transform: translateY(0);
   pointer-events: auto;
-}
-
-@media (min-width: 761px) {
-  .where-card.visible {
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-16px);
-    pointer-events: none;
-  }
 }
 
 .mini-logo {

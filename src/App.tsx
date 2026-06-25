@@ -1345,12 +1345,7 @@ export default function App({ isBooting = false, onReady }: AppProps) {
   }, [isBooting]);
 
   return (
-    <div className={`app-shell ${isBooting ? "is-booting" : "is-ready"}`} ref={appRef}>
-      <LightFishBackground progress={progress} />
-      <a className="skip-link" href="#project">
-        {copy.skip}
-      </a>
-      <div id="top" />
+    <>
       <FloatingNav
         compact={compactNav}
         showMini={showMiniLogo}
@@ -1358,27 +1353,34 @@ export default function App({ isBooting = false, onReady }: AppProps) {
         onLocaleChange={setLocale}
         copy={copy}
       />
-      <main>
-        <section id="project" ref={sceneRef} className="scroll-scene">
-          {isMobileLayout ? (
-            <MobilePage
-              works={works}
-              copy={copy}
-              petSessionKey={petSessionKey}
-              eagerPreview={eagerPreviewCards}
-            />
-          ) : (
-            <DesktopScene
-              progress={progress}
-              works={works}
-              copy={copy}
-              petSessionKey={petSessionKey}
-              eagerPreview={eagerPreviewCards}
-            />
-          )}
-        </section>
-        <AboutPanel copy={copy} />
-      </main>
-    </div>
+      <div className={`app-shell ${isBooting ? "is-booting" : "is-ready"}`} ref={appRef}>
+        <LightFishBackground progress={progress} />
+        <a className="skip-link" href="#project">
+          {copy.skip}
+        </a>
+        <div id="top" />
+        <main>
+          <section id="project" ref={sceneRef} className="scroll-scene">
+            {isMobileLayout ? (
+              <MobilePage
+                works={works}
+                copy={copy}
+                petSessionKey={petSessionKey}
+                eagerPreview={eagerPreviewCards}
+              />
+            ) : (
+              <DesktopScene
+                progress={progress}
+                works={works}
+                copy={copy}
+                petSessionKey={petSessionKey}
+                eagerPreview={eagerPreviewCards}
+              />
+            )}
+          </section>
+          <AboutPanel copy={copy} />
+        </main>
+      </div>
+    </>
   );
 }

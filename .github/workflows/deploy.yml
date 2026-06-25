@@ -92,6 +92,8 @@ jobs:
 
       - name: Package deploy artifacts
         run: |
+          cp vendor/kuguya-ai-nature-live2d-*.tgz dist-api/
+
           tar -czf "irop-one-${GITHUB_SHA}.tar.gz" -C dist .
           tar -czf "irop-one-api-${GITHUB_SHA}.tar.gz" -C dist-api .
 
@@ -106,6 +108,7 @@ jobs:
             printf 'AI_TIMEOUT_MS=%s\n' "$AI_TIMEOUT_MS"
             printf 'AI_RATE_LIMIT_MAX=%s\n' "$AI_RATE_LIMIT_MAX"
             printf 'AI_RATE_LIMIT_WINDOW_HOURS=%s\n' "$AI_RATE_LIMIT_WINDOW_HOURS"
+            printf 'NATURE_LIVE2D_MODEL_DIR=%s\n' "$DEPLOY_PATH/models/yachiyo-web"
           } > irop-one-assistant.env
           chmod 600 irop-one-assistant.env
 
@@ -175,7 +178,27 @@ jobs:
           rm -rf "$NODE_RUNTIME_PATH"
           mv "$node_tmp" "$NODE_RUNTIME_PATH"
 
+          rm -f "$API_DEPLOY_PATH"/kuguya-ai-nature-live2d-*.tgz
           tar -xzf "$remote_api_archive" -C "$API_DEPLOY_PATH"
+          nature_live2d_package="$(find "$API_DEPLOY_PATH" -maxdepth 1 -name 'kuguya-ai-nature-live2d-*.tgz' -print -quit)"
+          if [ -z "$nature_live2d_package" ]; then
+            echo "Missing @kuguya-ai/nature-live2d package tarball in API artifact" >&2
+            exit 1
+          fi
+
+          cat > "$API_DEPLOY_PATH/package.json" <<API_PACKAGE_JSON
+          {
+            "private": true,
+            "type": "module",
+            "dependencies": {
+              "@kuguya-ai/nature-live2d": "file:$(basename "$nature_live2d_package")"
+            }
+          }
+          API_PACKAGE_JSON
+          (
+            cd "$API_DEPLOY_PATH"
+            "$NODE_RUNTIME_PATH/bin/npm" install --omit=dev --no-audit --no-fund --package-lock=false
+          )
           install -m 600 "$remote_env_file" /etc/irop-one-assistant.env
 
           cat > /etc/systemd/system/irop-one-assistant.service <<SERVICE_UNIT

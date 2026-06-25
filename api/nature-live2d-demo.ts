@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 const DEFAULT_TIMEOUT_MS = 12000;
 const DEFAULT_DEEPSEEK_ENDPOINT = "https://api.deepseek.com/chat/completions";
 const DEFAULT_DEEPSEEK_MODEL = "deepseek-v4-flash";
+const NATURE_LIVE2D_PACKAGE_NAME = "@kuguya-ai/nature-live2d";
 const DEFAULT_PROJECT_DIR = "/Users/hacchiroku/AI/nature-live2d";
 const DEFAULT_TEXT = "咦？这个表情真的会跟着一句话变化吗……刚刚有点被吓到。可是没关系，我会认真听你说，也会陪你把这段流程跑完。嗯，现在放心啦，我们一起笑一下吧。";
 const DEFAULT_MODEL_THINKING = "disabled";
@@ -545,8 +546,21 @@ class DeepSeekEmotionAnalyzer {
 }
 
 async function loadNatureLive2DModule(projectDir: string): Promise<NatureLive2DModule> {
-  const indexFile = resolve(projectDir, "dist/index.js");
-  return await import(pathToFileURL(indexFile).href) as NatureLive2DModule;
+  try {
+    return await import(NATURE_LIVE2D_PACKAGE_NAME) as NatureLive2DModule;
+  } catch (packageError) {
+    const indexFile = resolve(projectDir, "dist/index.js");
+
+    try {
+      return await import(pathToFileURL(indexFile).href) as NatureLive2DModule;
+    } catch (localError) {
+      const packageMessage = packageError instanceof Error ? packageError.message : String(packageError);
+      const localMessage = localError instanceof Error ? localError.message : String(localError);
+      throw new Error(
+        `Unable to load ${NATURE_LIVE2D_PACKAGE_NAME}. package import failed: ${packageMessage}; local development import failed: ${localMessage}`
+      );
+    }
+  }
 }
 
 function parameterRange(
@@ -651,7 +665,7 @@ function defaultCurveSamples(): DemoCurveSample[] {
 
 async function generateDemoPayload(text: string): Promise<NatureLive2DDemoPayload> {
   const projectDir = process.env.NATURE_LIVE2D_PROJECT_DIR || DEFAULT_PROJECT_DIR;
-  const yachiyoDir = resolve(projectDir, "yachiyo");
+  const yachiyoDir = process.env.NATURE_LIVE2D_MODEL_DIR || resolve(projectDir, "yachiyo");
   const natureLive2D = await loadNatureLive2DModule(projectDir);
   const deepSeekConfig = configuredDeepSeek();
   const mockAnalyzer = new natureLive2D.MockEmotionAnalyzer();

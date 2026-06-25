@@ -177,6 +177,7 @@ jobs:
           tar -xzf "$remote_node_archive" -C "$node_tmp"
           rm -rf "$NODE_RUNTIME_PATH"
           mv "$node_tmp" "$NODE_RUNTIME_PATH"
+          export PATH="$NODE_RUNTIME_PATH/bin:$PATH"
 
           rm -f "$API_DEPLOY_PATH"/kuguya-ai-nature-live2d-*.tgz
           tar -xzf "$remote_api_archive" -C "$API_DEPLOY_PATH"

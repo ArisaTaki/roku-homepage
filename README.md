@@ -42,7 +42,7 @@ Required GitHub Actions secrets:
 
 - `DEPLOY_SSH_KEY`: private key that can write to the server deploy path.
 - `DEPLOY_USER`: SSH user for the server.
-- `DEPLOY_PATH`: absolute target directory for `irop.one` static files.
+- `DEPLOY_PATH`: absolute target directory for `irop.one` static files. Current server path: `/home/wwwroot/fufubest.com/dist`.
 - `DEPLOY_HOST`: SSH host, optional; defaults to `38.47.238.143`.
 - `DEPLOY_PORT`: SSH port, optional; defaults to `22`.
 

@@ -225,7 +225,20 @@ jobs:
           /usr/local/nginx/sbin/nginx -t
           /usr/local/nginx/sbin/nginx -s reload
           systemctl is-active --quiet irop-one-assistant.service
-          curl --fail --silent --show-error "http://127.0.0.1:$API_PORT/healthz" > /dev/null
+
+          for attempt in {1..15}; do
+            if curl --fail --silent --show-error "http://127.0.0.1:$API_PORT/healthz" > /dev/null; then
+              break
+            fi
+
+            if [ "$attempt" -eq 15 ]; then
+              systemctl status irop-one-assistant.service --no-pager -l
+              journalctl -u irop-one-assistant.service -n 80 --no-pager
+              exit 1
+            fi
+
+            sleep 1
+          done
 
           rm -rf "$release_dir" "$remote_archive" "$remote_api_archive" "$remote_node_archive" "$remote_env_file"
           REMOTE_SCRIPT

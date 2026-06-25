@@ -6,7 +6,7 @@ import {
   spring,
   useCurrentFrame,
 } from "remotion";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const FPS = 30;
 const DURATION_IN_FRAMES = 360;
@@ -580,6 +580,7 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
   const actingState = continuousActingState(data, frame);
   const emotion = actingState.beat.intent.emotion;
   const expressionClass = `is-beat-${actingState.beat.id} is-emotion-${emotion}`;
+  const mouthOpen = actingState.params.ParamMouthOpenY ?? 0;
 
   useEffect(() => {
     if (!enabled) return undefined;
@@ -671,15 +672,21 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
     const model = modelRef.current;
     if (!enabled || !app || !model) return;
 
-    applyParamsToLive2DModel(model, actingState.params, 1);
     model.update?.(1000 / FPS);
+    applyParamsToLive2DModel(model, actingState.params, 1);
     app.renderer.render(app.stage);
   }, [actingState.params, enabled, frame]);
 
   return (
     <section className="nl2d-stage">
       <div className="nl2d-stage-grid" aria-hidden="true" />
-      <div className={`nl2d-model-card ${expressionClass}`} ref={stageCardRef}>
+      <div
+        className={`nl2d-model-card ${expressionClass}`}
+        data-acting-frame={frame}
+        data-emotion-progress={actingState.progress.toFixed(3)}
+        data-mouth-open={mouthOpen.toFixed(3)}
+        ref={stageCardRef}
+      >
         <span className="nl2d-model-aura" />
         <canvas className="nl2d-live-canvas" ref={canvasRef} />
         <span className={`nl2d-runtime-badge is-${runtimeStatus}`}>
@@ -899,7 +906,7 @@ export function NatureLive2DReplay() {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
 
-  const loadDemoData = () => {
+  const loadDemoData = useCallback(() => {
     if (requestRef.current) return requestRef.current;
 
     requestRef.current = fetch("/api/nature-live2d-demo", { method: "GET" })
@@ -918,7 +925,7 @@ export function NatureLive2DReplay() {
       });
 
     return requestRef.current;
-  };
+  }, []);
 
   useEffect(() => {
     let raf = 0;
@@ -944,18 +951,18 @@ export function NatureLive2DReplay() {
     };
   }, [isPlaying, playSession]);
 
-  const startReplay = () => {
+  const startReplay = useCallback(() => {
     if (isPlayingRef.current) return;
     isPlayingRef.current = true;
     void loadDemoData();
     setPlaySession((current) => current + 1);
     setIsPlaying(true);
-  };
+  }, [loadDemoData]);
 
-  const stopReplay = () => {
-    isPlayingRef.current = false;
-    setIsPlaying(false);
-  };
+  useEffect(() => {
+    const autoStart = window.setTimeout(startReplay, 180);
+    return () => window.clearTimeout(autoStart);
+  }, [startReplay]);
 
   return (
     <div
@@ -963,13 +970,10 @@ export function NatureLive2DReplay() {
       aria-hidden="true"
       onMouseEnter={startReplay}
       onMouseMove={startReplay}
-      onMouseLeave={stopReplay}
       onPointerEnter={startReplay}
       onPointerMove={startReplay}
-      onPointerLeave={stopReplay}
       onTouchStart={startReplay}
       onFocus={startReplay}
-      onBlur={stopReplay}
     >
       <Player
         ref={playerRef}
@@ -980,6 +984,7 @@ export function NatureLive2DReplay() {
         compositionHeight={COMPOSITION_HEIGHT}
         durationInFrames={DURATION_IN_FRAMES}
         fps={FPS}
+        acknowledgeRemotionLicense
         loop
         controls={false}
         style={{ width: "100%", height: "100%" }}

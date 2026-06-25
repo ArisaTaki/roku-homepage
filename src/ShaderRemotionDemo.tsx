@@ -1319,6 +1319,7 @@ export function ShaderReplay() {
         compositionHeight={COMPOSITION_HEIGHT}
         durationInFrames={DURATION_IN_FRAMES}
         fps={FPS}
+        acknowledgeRemotionLicense
         loop
         controls={false}
         style={{ width: "100%", height: "100%" }}

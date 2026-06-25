@@ -1,4 +1,5 @@
 const FRAME_DELAY_COUNT = 2;
+const READY_TIMEOUT_MS = 30_000;
 
 const CRITICAL_BOOT_IMAGE_URLS = [
   "/assets/pet/iroha/spritesheet.webp",
@@ -29,6 +30,25 @@ const LIVE2D_FETCH_URLS = [
 
 let bootAssetPromise: Promise<void> | null = null;
 let deferredAssetPromise: Promise<void> | null = null;
+
+class ReadinessTimeoutError extends Error {
+  constructor(label: string) {
+    super(`Timed out waiting for ${label}`);
+    this.name = "ReadinessTimeoutError";
+  }
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => {
+      reject(new ReadinessTimeoutError(label));
+    }, timeoutMs);
+
+    promise
+      .then(resolve, reject)
+      .finally(() => window.clearTimeout(timeout));
+  });
+}
 
 function waitForFrames(count = FRAME_DELAY_COUNT): Promise<void> {
   return new Promise((resolve) => {
@@ -110,7 +130,11 @@ async function preloadBootAssets(): Promise<void> {
 
   bootAssetPromise = Promise.all([
     "fonts" in document ? document.fonts.ready.then(() => undefined) : Promise.resolve(),
-    Promise.all(CRITICAL_BOOT_IMAGE_URLS.map((src) => loadImage(src))).then(() => undefined),
+    Promise.all([...CRITICAL_BOOT_IMAGE_URLS, ...DEFERRED_IMAGE_URLS].map((src) => loadImage(src))).then(() => undefined),
+    Promise.all(LIVE2D_FETCH_URLS.map((url) => fetchWarm(url))).then(() => undefined),
+    import("./HermesRemotionDemo").then(() => undefined),
+    import("./ShaderRemotionDemo").then(() => undefined),
+    import("./NatureLive2DDemo").then(() => undefined),
   ]).then(() => undefined);
 
   return bootAssetPromise;
@@ -118,6 +142,7 @@ async function preloadBootAssets(): Promise<void> {
 
 export function preloadDeferredAppAssets(): Promise<void> {
   if (deferredAssetPromise) return deferredAssetPromise;
+  if (bootAssetPromise) return bootAssetPromise;
 
   deferredAssetPromise = Promise.allSettled([
     ...DEFERRED_IMAGE_URLS.map((src) => loadImage(src)),
@@ -154,39 +179,47 @@ function waitForSelector<T extends Element>(
   });
 }
 
+function waitForNoSelector(root: ParentNode, selector: string): Promise<void> {
+  if (!root.querySelector(selector)) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    const observer = new MutationObserver(() => {
+      if (root.querySelector(selector)) return;
+      observer.disconnect();
+      resolve();
+    });
+
+    observer.observe(root, { attributes: true, childList: true, subtree: true });
+  });
+}
+
 function hasRenderableBox(element: Element): boolean {
   const rect = element.getBoundingClientRect();
   return rect.width > 0 && rect.height > 0;
 }
 
-function isInInitialViewport(element: Element): boolean {
-  const rect = element.getBoundingClientRect();
-  return rect.bottom > 0
-    && rect.right > 0
-    && rect.top < window.innerHeight
-    && rect.left < window.innerWidth;
-}
-
-async function waitForInitialViewportImages(root: ParentNode): Promise<void> {
+async function waitForDomImages(root: ParentNode): Promise<void> {
   const images = Array.from(root.querySelectorAll<HTMLImageElement>("img"));
-  await Promise.all(
-    images
-      .filter((image) => isInInitialViewport(image))
-      .map((image) => waitForImageElement(image))
-  );
+  await Promise.all(images.map((image) => waitForImageElement(image)));
 }
 
 async function waitForRenderedApp(root: HTMLElement): Promise<void> {
   await waitForSelector<HTMLElement>(root, ".pet-assistant .pixel-pet", hasRenderableBox);
-  await waitForInitialViewportImages(root);
+  await waitForNoSelector(root, ".work-preview-loading");
+  await waitForSelector<HTMLElement>(root, ".nature-live2d-remotion-shell .nl2d-runtime-badge.is-ready", hasRenderableBox);
+  await waitForDomImages(root);
   await waitForFrames();
 }
 
 export async function waitForInitialAppReady(root: HTMLElement | null): Promise<void> {
   if (!root) return;
 
-  await Promise.all([
-    preloadBootAssets(),
-    waitForRenderedApp(root),
-  ]);
+  await withTimeout(
+    Promise.all([
+      preloadBootAssets(),
+      waitForRenderedApp(root),
+    ]).then(() => undefined),
+    READY_TIMEOUT_MS,
+    "all homepage resources"
+  );
 }

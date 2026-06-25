@@ -1268,7 +1268,7 @@ function AboutPanel({ copy }: { copy: UiCopy }) {
 
 export default function App({ isBooting = false, onReady }: AppProps) {
   const [locale, setLocale] = useLocale();
-  const [eagerPreviewCards, setEagerPreviewCards] = useState(false);
+  const [eagerPreviewCards, setEagerPreviewCards] = useState(isBooting);
   const appRef = useRef<HTMLDivElement | null>(null);
   const sceneRef = useRef<HTMLElement | null>(null);
   const progress = useSceneProgress(sceneRef);
@@ -1286,6 +1286,7 @@ export default function App({ isBooting = false, onReady }: AppProps) {
     if (!isBooting) return undefined;
 
     let cancelled = false;
+    setEagerPreviewCards(true);
 
     void waitForInitialAppReady(appRef.current)
       .catch((error) => {

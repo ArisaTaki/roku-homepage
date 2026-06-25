@@ -271,16 +271,57 @@ function beatsFor(data: NatureDemoData): NatureDemoBeat[] {
   return data.beats?.length ? data.beats : [singleBeatFromData(data)];
 }
 
+function readCubismCore(): unknown {
+  if (typeof window === "undefined") return undefined;
+  if (window.Live2DCubismCore) return window.Live2DCubismCore;
+
+  try {
+    const core = window.Function("return typeof Live2DCubismCore !== 'undefined' ? Live2DCubismCore : undefined")();
+    if (core) window.Live2DCubismCore = core;
+    return core;
+  } catch {
+    return undefined;
+  }
+}
+
+function isCubismCoreReady(): boolean {
+  const core = readCubismCore() as { Moc?: unknown; Model?: unknown } | undefined;
+  return Boolean(core?.Moc && core?.Model);
+}
+
+function waitForCubismCoreReady(): Promise<void> {
+  if (isCubismCoreReady()) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const startedAt = Date.now();
+    const tick = () => {
+      if (isCubismCoreReady()) {
+        resolve();
+        return;
+      }
+
+      if (Date.now() - startedAt > 15_000) {
+        reject(new Error("Live2D Cubism Core loaded but was not initialized"));
+        return;
+      }
+
+      window.setTimeout(tick, 50);
+    };
+
+    tick();
+  });
+}
+
 function ensureCubismCore(): Promise<void> {
   if (typeof window === "undefined") return Promise.resolve();
-  if (window.Live2DCubismCore) return Promise.resolve();
+  if (isCubismCoreReady()) return Promise.resolve();
   if (cubismCorePromise) return cubismCorePromise;
 
   cubismCorePromise = new Promise((resolve, reject) => {
     const existingScript = document.querySelector<HTMLScriptElement>(`script[src="${CUBISM_CORE_URL}"]`);
 
     if (existingScript?.dataset.loaded === "true") {
-      resolve();
+      void waitForCubismCoreReady().then(resolve, reject);
       return;
     }
 
@@ -290,7 +331,7 @@ function ensureCubismCore(): Promise<void> {
     script.dataset.loaded = "false";
     script.addEventListener("load", () => {
       script.dataset.loaded = "true";
-      resolve();
+      void waitForCubismCoreReady().then(resolve, reject);
     }, { once: true });
     script.addEventListener("error", () => {
       cubismCorePromise = null;

@@ -34,13 +34,16 @@ Model keys stay server-side through `AI_API_KEY`, `AI_MODEL`, and `AI_CHAT_COMPL
 
 ## Deployment
 
-Deployment is prepared in `.github/workflows/deploy.yml` and only runs when `main` receives a push.
+Deployment is prepared in `.github/workflows/deploy.yml` and runs when `main` receives a push. It can also be started manually from the GitHub Actions tab.
+
+The workflow installs dependencies, runs `npm run check:iroha`, builds the Vite app, packages `dist/`, uploads it through SSH, and replaces the server web root used by `irop.one`. The server's HTTP service should already point `irop.one` at `DEPLOY_PATH`.
 
 Required GitHub Actions secrets:
 
 - `DEPLOY_SSH_KEY`: private key that can write to the server deploy path.
-- `DEPLOY_USER`: SSH user for `38.47.238.143`.
+- `DEPLOY_USER`: SSH user for the server.
 - `DEPLOY_PATH`: absolute target directory for `irop.one` static files.
+- `DEPLOY_HOST`: SSH host, optional; defaults to `38.47.238.143`.
 - `DEPLOY_PORT`: SSH port, optional; defaults to `22`.
 
 Current development branch should remain `develop`; only push `main` when the production deploy is intended.

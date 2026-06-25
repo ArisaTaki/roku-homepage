@@ -4,10 +4,14 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 concurrency:
   group: deploy-irop-one
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
@@ -17,12 +21,13 @@ jobs:
       name: production
       url: https://irop.one
     env:
-      DEPLOY_HOST: 38.47.238.143
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST || '38.47.238.143' }}
       DEPLOY_DOMAIN: irop.one
       DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
       DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
       DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
       DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      NODE_VERSION: 24
 
     steps:
       - name: Checkout
@@ -31,30 +36,87 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Check assistant knowledge base
+        run: npm run check:iroha
 
       - name: Build
         run: npm run build
 
       - name: Validate deployment secrets
         run: |
-          test -n "$DEPLOY_USER"
-          test -n "$DEPLOY_PATH"
-          test -n "$DEPLOY_SSH_KEY"
+          for name in DEPLOY_HOST DEPLOY_USER DEPLOY_PATH DEPLOY_SSH_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is required"
+              exit 1
+            fi
+          done
+
+          if [ "$DEPLOY_PATH" = "/" ]; then
+            echo "::error::DEPLOY_PATH must not be the filesystem root"
+            exit 1
+          fi
 
       - name: Prepare SSH
         run: |
-          mkdir -p ~/.ssh
+          install -m 700 -d ~/.ssh
           printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/irop_deploy_key
           chmod 600 ~/.ssh/irop_deploy_key
-          ssh-keyscan -p "$DEPLOY_PORT" "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          ssh-keyscan -H -p "$DEPLOY_PORT" "$DEPLOY_HOST" >> ~/.ssh/known_hosts
 
-      - name: Deploy dist
+      - name: Package static site
+        run: tar -czf "irop-one-${GITHUB_SHA}.tar.gz" -C dist .
+
+      - name: Upload and activate release
         run: |
-          rsync -az --delete \
-            -e "ssh -i ~/.ssh/irop_deploy_key -p $DEPLOY_PORT" \
-            dist/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
+          archive_name="irop-one-${GITHUB_SHA}.tar.gz"
+          ssh_opts=(
+            -i ~/.ssh/irop_deploy_key
+            -p "$DEPLOY_PORT"
+            -o BatchMode=yes
+            -o StrictHostKeyChecking=yes
+          )
+          scp_opts=(
+            -i ~/.ssh/irop_deploy_key
+            -P "$DEPLOY_PORT"
+            -o BatchMode=yes
+            -o StrictHostKeyChecking=yes
+          )
+
+          scp "${scp_opts[@]}" "$archive_name" "$DEPLOY_USER@$DEPLOY_HOST:/tmp/$archive_name"
+          ssh "${ssh_opts[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "DEPLOY_PATH=$(printf '%q' "$DEPLOY_PATH") ARCHIVE_NAME=$(printf '%q' "$archive_name") bash -s" <<'REMOTE_SCRIPT'
+          set -euo pipefail
+
+          if [ -z "$DEPLOY_PATH" ] || [ "$DEPLOY_PATH" = "/" ]; then
+            echo "Unsafe DEPLOY_PATH: ${DEPLOY_PATH:-<empty>}" >&2
+            exit 1
+          fi
+
+          remote_archive="/tmp/$ARCHIVE_NAME"
+          release_dir="$DEPLOY_PATH/.release-${ARCHIVE_NAME%.tar.gz}"
+
+          mkdir -p "$DEPLOY_PATH"
+          rm -rf "$release_dir"
+          mkdir -p "$release_dir"
+          tar -xzf "$remote_archive" -C "$release_dir"
+
+          find "$DEPLOY_PATH" -mindepth 1 -maxdepth 1 \
+            ! -name ".well-known" \
+            ! -name "$(basename "$release_dir")" \
+            -exec rm -rf {} +
+
+          cp -a "$release_dir"/. "$DEPLOY_PATH"/
+          rm -rf "$release_dir" "$remote_archive"
+          REMOTE_SCRIPT
+
+      - name: Check production URL
+        run: |
+          curl --fail --silent --show-error --location \
+            --retry 5 --retry-delay 5 --retry-connrefused \
+            --max-time 20 "https://$DEPLOY_DOMAIN/" > /dev/null

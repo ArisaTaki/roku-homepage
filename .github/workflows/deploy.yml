@@ -53,6 +53,10 @@ jobs:
         run: npm ci
 
       - name: Check assistant knowledge base
+        env:
+          AI_API_KEY: ""
+          AI_MODEL: ""
+          AI_CHAT_COMPLETIONS_ENDPOINT: ""
         run: npm run check:iroha
 
       - name: Build

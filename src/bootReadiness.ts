@@ -1,5 +1,5 @@
 const FRAME_DELAY_COUNT = 2;
-const READY_TIMEOUT_MS = 30_000;
+const READY_TIMEOUT_MS = 120_000;
 
 const CRITICAL_BOOT_IMAGE_URLS = [
   "/assets/pet/iroha/spritesheet.webp",
@@ -131,7 +131,6 @@ async function preloadBootAssets(): Promise<void> {
   bootAssetPromise = Promise.all([
     "fonts" in document ? document.fonts.ready.then(() => undefined) : Promise.resolve(),
     Promise.all([...CRITICAL_BOOT_IMAGE_URLS, ...DEFERRED_IMAGE_URLS].map((src) => loadImage(src))).then(() => undefined),
-    Promise.all(LIVE2D_FETCH_URLS.map((url) => fetchWarm(url))).then(() => undefined),
     import("./HermesRemotionDemo").then(() => undefined),
     import("./ShaderRemotionDemo").then(() => undefined),
     import("./NatureLive2DDemo").then(() => undefined),

@@ -90,7 +90,7 @@ const workShells: WorkBase[] = [
   },
   {
     id: "nature-live2d",
-    href: "https://github.com/kuguya-AI-app-develop/nature-live2d",
+    href: "https://www.npmjs.com/package/@kuguya-ai/nature-live2d",
     visual: "visual-live2d",
     width: 620,
     left: 2440,

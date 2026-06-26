@@ -217,7 +217,7 @@ export const knowledgeEntries: KnowledgeEntry[] = [
     id: "nature-live2d",
     title: "nature-live2d",
     type: "project",
-    href: "https://github.com/kuguya-AI-app-develop/nature-live2d",
+    href: "https://www.npmjs.com/package/@kuguya-ai/nature-live2d",
     visibility: "public",
     keywords: [
       "live2d",

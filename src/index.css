@@ -231,7 +231,7 @@ main {
 
 .scroll-scene {
   position: relative;
-  height: 21500px;
+  height: 20000px;
 }
 
 .project-anchor-rail {
@@ -264,7 +264,7 @@ main {
   position: absolute;
   z-index: 2;
   inset: 0 auto auto 0;
-  width: 7300px;
+  width: 6900px;
   height: 720px;
   min-height: 100vh;
   transform: translate3d(0, 0, 0);
@@ -4160,7 +4160,8 @@ main {
 .about-panel {
   position: relative;
   min-height: 100vh;
-  padding: 76px 48px 32px;
+  margin-top: -160px;
+  padding: 60px 48px 32px;
   background: rgba(5, 8, 18, 0.42);
   overflow: hidden;
 }

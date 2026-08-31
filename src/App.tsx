@@ -24,7 +24,7 @@ import {
 import { preloadDeferredAppAssets, waitForInitialAppReady } from "./bootReadiness";
 import { askIrohaStream, type AssistantAnswerWithRuntime } from "./lib/iropAssistantClient";
 
-const TRAVEL_DISTANCE = 6400;
+const TRAVEL_DISTANCE = 5900;
 const LOCALE_STORAGE_KEY = "irop-locale";
 const IROHA_SESSION_STORAGE_PREFIX = "irop-iroha-session";
 const MOBILE_QUERY = "(max-width: 760px)";
@@ -1430,7 +1430,7 @@ export default function App({ isBooting = false, onReady }: AppProps) {
     [locale]
   );
   const compactNav = progress > 0.13;
-  const showMiniLogo = progress > 0.13 && progress < 0.98;
+  const showMiniLogo = progress > 0.13 && progress < 1;
 
   useEffect(() => {
     if (!isBooting) return undefined;

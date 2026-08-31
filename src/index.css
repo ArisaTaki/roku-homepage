@@ -231,7 +231,7 @@ main {
 
 .scroll-scene {
   position: relative;
-  height: 24000px;
+  height: 21500px;
 }
 
 .project-anchor-rail {
@@ -264,7 +264,7 @@ main {
   position: absolute;
   z-index: 2;
   inset: 0 auto auto 0;
-  width: 8200px;
+  width: 7300px;
   height: 720px;
   min-height: 100vh;
   transform: translate3d(0, 0, 0);
@@ -3870,11 +3870,6 @@ main {
 .visual-shader .visual-kicker,
 .visual-shader .visual-grid i {
   background: rgba(0, 0, 0, 0.22);
-}
-
-.visual-portal {
-  background:
-    linear-gradient(90deg, #ff877c 0 18%, #ffe48f 18% 46%, #68ccdc 46% 74%, #cbc4f8 74% 100%);
 }
 
 .work-card h2 {

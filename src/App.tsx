@@ -1,6 +1,5 @@
 import Lenis from "lenis";
 import {
-  AtSign,
   Bot,
   FileText,
   Gauge,
@@ -25,7 +24,7 @@ import {
 import { preloadDeferredAppAssets, waitForInitialAppReady } from "./bootReadiness";
 import { askIrohaStream, type AssistantAnswerWithRuntime } from "./lib/iropAssistantClient";
 
-const TRAVEL_DISTANCE = 7200;
+const TRAVEL_DISTANCE = 6400;
 const LOCALE_STORAGE_KEY = "irop-locale";
 const IROHA_SESSION_STORAGE_PREFIX = "irop-iroha-session";
 const MOBILE_QUERY = "(max-width: 760px)";
@@ -137,13 +136,6 @@ const workShells: WorkBase[] = [
     width: 580,
     left: 6030,
   },
-  {
-    id: "portal",
-    href: "mailto:me@irop.one",
-    visual: "visual-portal",
-    width: 520,
-    left: 6880,
-  },
 ];
 
 const workNavIcons: Record<WorkId, LucideIcon> = {
@@ -153,7 +145,6 @@ const workNavIcons: Record<WorkId, LucideIcon> = {
   blog: FileText,
   gallery: Images,
   shader: Waves,
-  portal: AtSign,
 };
 
 function clamp(value: number, min: number, max: number): number {

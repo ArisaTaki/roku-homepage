@@ -24,8 +24,7 @@ export type WorkId =
   | "mimo-usage-watcher"
   | "blog"
   | "gallery"
-  | "shader"
-  | "portal";
+  | "shader";
 
 export type WorkCopy = {
   title: string;
@@ -65,11 +64,6 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
       description: "Tiny WebGL sketches for motion, color and shader play.",
       meta: "WebGL, Shader, Demo",
     },
-    portal: {
-      title: "One small front door",
-      description: "A compact place for projects, notes, visuals and contact paths to sit together.",
-      meta: "irop.one, Portfolio, AI",
-    },
   },
   zh: {
     "hermes-yachiyo": {
@@ -102,11 +96,6 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
       description: "放 WebGL 小实验的地方，主要玩运动、颜色和一点点渲染手感。",
       meta: "WebGL, Shader, 小实验",
     },
-    portal: {
-      title: "一个小门面",
-      description: "把项目、笔记、视觉 demo 和联系方式收在一起，像一个可以慢慢逛的小展厅。",
-      meta: "irop.one, 个人站, AI",
-    },
   },
   ja: {
     "hermes-yachiyo": {
@@ -138,11 +127,6 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
       title: "shader.irop.one",
       description: "動き、色、質感を少しずつ試す WebGL Shader の小さな実験場。",
       meta: "WebGL, Shader, Sketches",
-    },
-    portal: {
-      title: "小さな玄関口",
-      description: "プロジェクト、メモ、ビジュアル demo、連絡先をひとつにまとめた、ゆっくり眺めるための場所。",
-      meta: "irop.one, Portfolio, AI",
     },
   },
 };

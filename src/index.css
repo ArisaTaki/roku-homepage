@@ -4085,12 +4085,12 @@ main {
 
 .where-card {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr;
   align-items: center;
   gap: 14px;
-  width: 162px;
+  width: 174px;
   height: 90px;
-  padding: 0 30px;
+  padding: 0 24px;
   font-family: "GT Haptik", Arial, sans-serif;
   font-size: 23px;
   font-weight: 400;
@@ -4279,9 +4279,9 @@ main {
     top: 0;
     right: 20px;
     display: grid;
-    width: 106px;
+    width: 126px;
     height: 60px;
-    padding: 0 12px 2px 18px;
+    padding: 0 12px 2px;
     gap: 8px;
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;

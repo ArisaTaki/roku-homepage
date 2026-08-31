@@ -1244,8 +1244,8 @@ function FloatingNav({
         <LanguageSwitcher locale={locale} onLocaleChange={onLocaleChange} label={copy.nav.language} />
       </nav>
       <a className={`where-card ${compact ? "visible" : ""}`} href="#top" aria-label={copy.nav.backHome}>
+        <span aria-hidden="true">←</span>
         <span>{copy.nav.where}</span>
-        <span>?</span>
       </a>
     </>
   );

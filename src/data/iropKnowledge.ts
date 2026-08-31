@@ -275,10 +275,13 @@ export const knowledgeEntries: KnowledgeEntry[] = [
     type: "site",
     href: "https://images.irop.one/",
     visibility: "public",
-    keywords: ["image", "images", "gallery", "visual", "画廊", "图片", "图像", "视觉"],
+    keywords: ["image", "images", "gallery", "visual", "photo", "archive", "webgl", "画廊", "图片", "图像", "视觉", "照片", "相册"],
     answer:
-      "images.irop.one is a personal gallery and visual archive for generated images, references and small visual fragments.",
-    details: ["It is the visual companion to the more technical projects and writing."],
+      "images.irop.one is a self-hosted WebGL photo archive with seven public albums and cinematic, image-led navigation.",
+    details: [
+      "The redesigned public gallery uses interactive album covers, full-bleed album pages and animated photo browsing.",
+      "Photo uploads, storage settings and administration remain in a private studio.",
+    ],
   },
   {
     id: "shader",

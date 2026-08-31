@@ -27,7 +27,7 @@ Answer visitor questions about 八六 / HacchiRoku, public projects, technical s
 - nature-live2d: npm package that uses LLM analysis to control Live2D model parameters for expression changes and more human-like AI host behavior.
 - mimo-usage-watcher: Xiaomi MiMo quota and API key balance monitor.
 - blog.irop.one: writing and technical notes.
-- images.irop.one: gallery and visual archive.
+- images.irop.one: self-hosted WebGL photo archive with seven public albums and cinematic image navigation.
 - shader.irop.one: WebGL shader demo site that records childhood photos through shader rendering.
 - Contact: me@irop.one as the primary public route.
 

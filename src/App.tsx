@@ -24,9 +24,11 @@ const FISH_BACKGROUND_PROGRESS_EVENT = "irop:fish-progress";
 const loadHermesReplay = () => import("./HermesRemotionDemo");
 const loadNatureLive2DReplay = () => import("./NatureLive2DDemo");
 const loadShaderReplay = () => import("./ShaderRemotionDemo");
+const loadGalleryReplay = () => import("./GalleryRemotionDemo");
 const interactivePreviewLoaders: Array<() => Promise<unknown>> = [
   loadHermesReplay,
   loadNatureLive2DReplay,
+  loadGalleryReplay,
   loadShaderReplay,
 ];
 
@@ -34,6 +36,7 @@ const HermesReplay = lazy(() => loadHermesReplay().then((module) => ({ default: 
 const NatureLive2DReplay = lazy(() => (
   loadNatureLive2DReplay().then((module) => ({ default: module.NatureLive2DReplay }))
 ));
+const GalleryReplay = lazy(() => loadGalleryReplay().then((module) => ({ default: module.GalleryReplay })));
 const ShaderReplay = lazy(() => loadShaderReplay().then((module) => ({ default: module.ShaderReplay })));
 
 type WorkBase = {
@@ -112,8 +115,8 @@ const workShells: WorkBase[] = [
   {
     id: "gallery",
     href: "https://images.irop.one/",
-    image: "/assets/screenshots/gallery-000001.webp",
-    width: 540,
+    visual: "visual-gallery",
+    width: 594,
     left: 5110,
   },
   {
@@ -1033,6 +1036,14 @@ function WorkVisual({
     );
   }
 
+  if (work.visual === "visual-gallery") {
+    return (
+      <DeferredWorkPreview work={work} forceLoad={eagerPreview}>
+        <GalleryReplay />
+      </DeferredWorkPreview>
+    );
+  }
+
   if (work.visual === "visual-shader") {
     return (
       <DeferredWorkPreview work={work} forceLoad={eagerPreview}>
@@ -1047,6 +1058,8 @@ function WorkVisual({
 function workCardClass(baseClass: string, work: Work): string {
   return `${baseClass} ${work.visual === "visual-hermes" ? "is-hermes" : ""} ${
     work.visual === "visual-live2d" ? "is-nature-live2d" : ""
+  } ${
+    work.visual === "visual-gallery" ? "is-gallery" : ""
   } ${
     work.visual === "visual-shader" ? "is-shader" : ""
   } ${

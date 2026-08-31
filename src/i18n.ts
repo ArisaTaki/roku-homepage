@@ -57,8 +57,8 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
     },
     gallery: {
       title: "images.irop.one",
-      description: "A visual shelf for generated images, references and small fragments of taste.",
-      meta: "Gallery, Archive",
+      description: "A self-hosted WebGL photo archive where seven albums unfold through cinematic, image-led navigation.",
+      meta: "WebGL, Photo Archive, Self-hosted",
     },
     shader: {
       title: "shader.irop.one",
@@ -94,8 +94,8 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
     },
     gallery: {
       title: "images.irop.one",
-      description: "一面图像墙，收着生成图、参考图和一些零散的视觉偏好。",
-      meta: "画廊, 图像收藏",
+      description: "一个自托管的 WebGL 照片档案；七组相册用更像展览的动效逐层展开。",
+      meta: "WebGL, 照片档案, 自托管",
     },
     shader: {
       title: "shader.irop.one",
@@ -131,8 +131,8 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
     },
     gallery: {
       title: "images.irop.one",
-      description: "生成画像、参考資料、気に入った視覚のかけらを並べる個人ギャラリー。",
-      meta: "Gallery, Archive",
+      description: "7つのアルバムを、映像的な動きでめくっていくセルフホストの WebGL フォトアーカイブ。",
+      meta: "WebGL, Photo Archive, Self-hosted",
     },
     shader: {
       title: "shader.irop.one",

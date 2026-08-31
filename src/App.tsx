@@ -1,4 +1,14 @@
 import Lenis from "lenis";
+import {
+  AtSign,
+  Bot,
+  FileText,
+  Gauge,
+  Images,
+  ScanFace,
+  Waves,
+  type LucideIcon,
+} from "lucide-react";
 import { lazy, memo, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type RefObject } from "react";
 import {
   isLocale,
@@ -136,14 +146,14 @@ const workShells: WorkBase[] = [
   },
 ];
 
-const workNavGlyphs: Record<WorkId, string> = {
-  "hermes-yachiyo": "AI",
-  "nature-live2d": "2D",
-  "mimo-usage-watcher": "Q",
-  blog: "TXT",
-  gallery: "IMG",
-  shader: "GL",
-  portal: "@",
+const workNavIcons: Record<WorkId, LucideIcon> = {
+  "hermes-yachiyo": Bot,
+  "nature-live2d": ScanFace,
+  "mimo-usage-watcher": Gauge,
+  blog: FileText,
+  gallery: Images,
+  shader: Waves,
+  portal: AtSign,
 };
 
 function clamp(value: number, min: number, max: number): number {
@@ -1211,16 +1221,19 @@ function FloatingNav({
             <span className="arrow">→</span>
           </a>
           <span className="icon-strip work-anchor-strip" aria-label={copy.nav.works}>
-            {works.map((work) => (
-              <a
-                href={`#work-${work.id}`}
-                aria-label={`${copy.nav.works}: ${work.title}`}
-                title={work.title}
-                key={work.id}
-              >
-                {workNavGlyphs[work.id]}
-              </a>
-            ))}
+            {works.map((work) => {
+              const WorkIcon = workNavIcons[work.id];
+              return (
+                <a
+                  href={`#work-${work.id}`}
+                  aria-label={`${copy.nav.works}: ${work.title}`}
+                  title={work.title}
+                  key={work.id}
+                >
+                  <WorkIcon aria-hidden="true" />
+                </a>
+              );
+            })}
           </span>
         </div>
         <div className="nav-row nav-row-menu">

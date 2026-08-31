@@ -27,12 +27,13 @@ const albums: GalleryAlbum[] = [
   { title: "败犬女主", image: "/assets/gallery-new/cover-makeine.webp" },
 ];
 
-const weatheringPhotos: GalleryPhoto[] = [
-  { title: "主视觉", image: "/assets/gallery-new/weathering-main.webp" },
-  { title: "场景视觉 01", image: "/assets/gallery-new/weathering-scene-01.webp" },
-  { title: "场景视觉 02", image: "/assets/gallery-new/weathering-scene-02.webp" },
-  { title: "场景视觉 03", image: "/assets/gallery-new/weathering-scene-03.webp" },
-  { title: "故事场景", image: "/assets/gallery-new/weathering-story.webp" },
+const kaguyaPhotos: GalleryPhoto[] = [
+  { title: "辉夜 · 主视觉 01", image: "/assets/gallery-new/cover-kaguya.webp" },
+  { title: "彩叶与辉夜 · 主视觉 02", image: "/assets/gallery-new/kaguya-visual-02.webp" },
+  { title: "月见八千代 · 主视觉 03", image: "/assets/gallery-new/kaguya-visual-03.webp" },
+  { title: "虚拟空间月读 · 场景视觉", image: "/assets/gallery-new/kaguya-story.webp" },
+  { title: "辉夜 · 角色视觉", image: "/assets/gallery-new/kaguya-character.webp" },
+  { title: "酒寄彩叶 · 角色视觉", image: "/assets/gallery-new/kaguya-iroha.webp" },
 ];
 
 function range(frame: number, input: number[], output: number[]): number {
@@ -45,8 +46,7 @@ function range(frame: number, input: number[], output: number[]): number {
 
 function selectedAlbum(frame: number): number {
   if (frame < 14) return -1;
-  if (frame < 40) return 0;
-  return 1;
+  return 0;
 }
 
 function selectedPhoto(frame: number): number {
@@ -70,9 +70,9 @@ function GalleryTopbar({ detail = false }: { detail?: boolean }) {
     <header className="gallery-demo-topbar">
       <GalleryLogo />
       <div className="gallery-demo-counter">
-        <span>{detail ? "02" : "01"}</span>
+        <span>01</span>
         <span>07</span>
-        <b>{detail ? "02 × 07" : "01 / 07"}</b>
+        <b>{detail ? "01 × 07" : "01 / 07"}</b>
       </div>
       <span className="gallery-demo-about">ABOUT</span>
     </header>
@@ -105,7 +105,7 @@ function AlbumIndex({ frame }: { frame: number }) {
         <p>ALBUM COLLECTION<br />07 ALBUMS</p>
         <p>
           <strong>{activeAlbum >= 0 ? albums[activeAlbum].title : "超时空辉夜姬!"}</strong><br />
-          {activeAlbum === 1 ? "05 PHOTOS" : "06 PHOTOS"}<br />
+          06 PHOTOS<br />
           {String(Math.max(0, activeAlbum) + 1).padStart(2, "0")} / 07
         </p>
       </div>
@@ -116,10 +116,10 @@ function AlbumIndex({ frame }: { frame: number }) {
 function AlbumTransition({ frame }: { frame: number }) {
   const progress = range(frame, [70, 108], [0, 1]);
   const opacity = range(frame, [68, 76, 104, 116], [0, 1, 1, 0]);
-  const left = range(frame, [70, 108], [544, 294]);
-  const top = range(frame, [70, 108], [284, 214]);
-  const width = range(frame, [70, 108], [64, 692]);
-  const height = range(frame, [70, 108], [302, 392]);
+  const left = range(frame, [70, 108], [310, 294]);
+  const top = range(frame, [70, 108], [264, 214]);
+  const width = range(frame, [70, 108], [106, 692]);
+  const height = range(frame, [70, 108], [286, 392]);
 
   return (
     <div
@@ -133,7 +133,7 @@ function AlbumTransition({ frame }: { frame: number }) {
         clipPath: `inset(0 ${Math.max(0, (1 - progress) * 8)}% 0 0)`,
       }}
     >
-      <img src="/assets/gallery-new/weathering-scene-01.webp" alt="" />
+      <img src="/assets/gallery-new/cover-kaguya.webp" alt="" />
       <i style={{ transform: `translateX(${progress * 108}%)` }} />
     </div>
   );
@@ -144,17 +144,17 @@ function GalleryFooter({ photoMode = false }: { photoMode?: boolean }) {
     <footer className="gallery-demo-footer">
       <p>ALBUM COLLECTION<br />07 ALBUMS</p>
       <dl>
-        <div><dt>A</dt><dd>UPDATED</dd><strong>2026.07.05</strong></div>
-        <div><dt>B</dt><dd>PHOTOS</dd><strong>05 PHOTOS</strong></div>
+        <div><dt>A</dt><dd>UPDATED</dd><strong>2026.07.11</strong></div>
+        <div><dt>B</dt><dd>PHOTOS</dd><strong>06 PHOTOS</strong></div>
         <div><dt>C</dt><dd>ACCESS</dd><strong>PUBLIC ALBUM</strong></div>
-        <div><dt>D</dt><dd>ALBUM</dd><strong>002 / 007</strong></div>
+        <div><dt>D</dt><dd>ALBUM</dd><strong>001 / 007</strong></div>
       </dl>
       <div className="gallery-demo-view-label">
         <span>↗</span>
         <b>{photoMode ? "OPEN IMAGE" : "VIEW PHOTOS"}</b>
       </div>
-      <p>官网宣传素材私人收藏 · SOURCE: TENKINOKO.COM</p>
-      <p>天气之子<br />05 PHOTOS<br />02 / 07</p>
+      <p>官方宣传图收藏 · SOURCE: CHO-KAGUYAHIME.COM</p>
+      <p>超时空辉夜姬!<br />06 PHOTOS<br />01 / 07</p>
     </footer>
   );
 }
@@ -167,9 +167,9 @@ function AlbumDetail({ frame }: { frame: number }) {
   return (
     <AbsoluteFill className="gallery-demo-detail" style={{ opacity }}>
       <GalleryTopbar detail />
-      <h3 style={{ transform: `translateX(${titleX}px)` }}>天气之子</h3>
+      <h3 className="is-kaguya" style={{ transform: `translateX(${titleX}px)` }}>超时空辉夜姬!</h3>
       <div className="gallery-demo-detail-image" style={{ transform: `translateY(${imageY}px)` }}>
-        <img src="/assets/gallery-new/weathering-scene-01.webp" alt="" />
+        <img src="/assets/gallery-new/cover-kaguya.webp" alt="" />
       </div>
       <PhotoRail activeIndex={0} muted />
       <GalleryFooter />
@@ -180,7 +180,7 @@ function AlbumDetail({ frame }: { frame: number }) {
 function PhotoRail({ activeIndex, muted = false }: { activeIndex: number; muted?: boolean }) {
   return (
     <div className={`gallery-demo-photo-rail ${muted ? "is-muted" : ""}`}>
-      {weatheringPhotos.map((photo, index) => (
+      {kaguyaPhotos.map((photo, index) => (
         <div className={index === activeIndex ? "is-active" : ""} key={photo.title}>
           <img src={photo.image} alt="" />
         </div>
@@ -204,9 +204,9 @@ function PhotoStage({ frame }: { frame: number }) {
   return (
     <AbsoluteFill className="gallery-demo-photo-stage" style={{ opacity }}>
       <GalleryTopbar detail />
-      <h3>天气之子</h3>
-      <div className={`gallery-demo-photo-main ${activePhoto === 0 ? "is-portrait" : ""}`}>
-        {weatheringPhotos.map((photo, index) => (
+      <h3 className="is-kaguya">超时空辉夜姬!</h3>
+      <div className={`gallery-demo-photo-main ${activePhoto >= 4 ? "is-character" : ""}`}>
+        {kaguyaPhotos.map((photo, index) => (
           <img
             src={photo.image}
             alt=""
@@ -230,7 +230,7 @@ function GalleryCursor() {
   const x = range(
     frame,
     [0, 14, 32, 42, 68, 94, 142, 164, 176, 218, 246, 272, 292, 310, 336, 356, 374, 400, 430, 470, 500],
-    [1010, 360, 360, 458, 458, 458, 640, 640, 640, 640, 1192, 1192, 1192, 1192, 1192, 1192, 1192, 1192, 1192, 1192, 1010],
+    [1010, 360, 360, 360, 360, 360, 640, 640, 640, 640, 1192, 1192, 1192, 1192, 1192, 1192, 1192, 1192, 1192, 1192, 1010],
   );
   const y = range(
     frame,

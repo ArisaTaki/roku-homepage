@@ -901,7 +901,7 @@ main {
 
 .gallery-demo-detail,
 .gallery-demo-photo-stage {
-  background: #df443a;
+  background: #0d59d3;
 }
 
 .gallery-demo-topbar {
@@ -1087,6 +1087,11 @@ main {
   white-space: nowrap;
 }
 
+.gallery-demo-detail h3.is-kaguya,
+.gallery-demo-photo-stage h3.is-kaguya {
+  font-size: 98px;
+}
+
 .gallery-demo-detail-image {
   position: absolute;
   left: 290px;
@@ -1229,6 +1234,14 @@ main {
 
 .gallery-demo-photo-main.is-portrait img {
   object-fit: cover;
+}
+
+.gallery-demo-photo-main.is-character {
+  background: rgba(8, 43, 111, 0.58);
+}
+
+.gallery-demo-photo-main.is-character img {
+  object-fit: contain;
 }
 
 .gallery-demo-photo-main img.is-active {

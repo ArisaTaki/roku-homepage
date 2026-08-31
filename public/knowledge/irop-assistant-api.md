@@ -4,24 +4,26 @@ The frontend works without a server. When `VITE_IROP_ASSISTANT_ENDPOINT` is conf
 
 Do not put model API keys in the browser. The endpoint should be a server you control.
 
-This repo includes a Vercel-style serverless entry at `api/iroha-assistant.ts`. Without model settings it still answers from the same public knowledge base on the server. With server-only model settings it calls a DeepSeek/OpenAI-compatible chat-completions endpoint.
+This repo includes a Vercel-style serverless entry at `api/iroha-assistant.ts`. Without model settings it still answers from the same public knowledge base on the server. With server-only model settings it calls an OpenAI-compatible chat-completions endpoint.
 
 ## Environment
 
 ```bash
 VITE_IROP_ASSISTANT_ENDPOINT=/api/iroha-assistant
 AI_API_KEY=server-side-secret
-AI_MODEL=deepseek-v4-flash
-AI_CHAT_COMPLETIONS_ENDPOINT=https://api.deepseek.com/chat/completions
+AI_MODEL=k3-256k
+AI_CHAT_COMPLETIONS_ENDPOINT=https://api.kimi.com/coding/v1/chat/completions
 AI_THINKING=disabled
+AI_REASONING_EFFORT=none
+AI_TEMPERATURE=0.6
 AI_RATE_LIMIT_MAX=10
 AI_RATE_LIMIT_WINDOW_HOURS=6
-AI_TIMEOUT_MS=12000
+AI_TIMEOUT_MS=30000
 ```
 
 Static deployments can leave `VITE_IROP_ASSISTANT_ENDPOINT` blank to use browser-only local KB mode. Deployments with `api/iroha-assistant.ts` available should set `VITE_IROP_ASSISTANT_ENDPOINT=/api/iroha-assistant`.
 
-If only `AI_API_KEY` is provided, the included endpoint defaults to `https://api.deepseek.com/chat/completions` and `deepseek-v4-flash`. Override `AI_CHAT_COMPLETIONS_ENDPOINT` and `AI_MODEL` when using a different provider or model. `AI_THINKING` defaults to `disabled` so the small assistant receives direct `content` replies instead of spending its output budget on `reasoning_content`.
+Set `AI_CHAT_COMPLETIONS_ENDPOINT` and `AI_MODEL` alongside the matching server-only key. The production example uses Kimi K3 256K with `AI_REASONING_EFFORT=none` and `AI_TEMPERATURE=0.6`, so the small assistant receives direct `content` replies instead of spending its output budget on `reasoning_content`. Providers that use a `thinking` object can omit `AI_REASONING_EFFORT` and set `AI_THINKING` instead.
 
 `AI_RATE_LIMIT_MAX` and `AI_RATE_LIMIT_WINDOW_HOURS` guard model usage per client IP. The default is 10 remote model questions per 6 hours. Short greetings and over-long questions are handled locally and do not consume the remote model quota. Other questions are sent to the server model when configured, so the model can classify the intent and either answer from public memory or refuse politely.
 

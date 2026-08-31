@@ -31,10 +31,12 @@ jobs:
       API_PORT: ${{ secrets.API_PORT || '8787' }}
       NODE_RUNTIME_PATH: /opt/irop-one/node
       AI_API_KEY: ${{ secrets.AI_API_KEY }}
-      AI_MODEL: ${{ secrets.AI_MODEL || 'deepseek-v4-flash' }}
-      AI_CHAT_COMPLETIONS_ENDPOINT: ${{ secrets.AI_CHAT_COMPLETIONS_ENDPOINT || 'https://api.deepseek.com/chat/completions' }}
+      AI_MODEL: ${{ secrets.AI_MODEL || 'k3-256k' }}
+      AI_CHAT_COMPLETIONS_ENDPOINT: ${{ secrets.AI_CHAT_COMPLETIONS_ENDPOINT || 'https://api.kimi.com/coding/v1/chat/completions' }}
       AI_THINKING: ${{ secrets.AI_THINKING || 'disabled' }}
-      AI_TIMEOUT_MS: ${{ secrets.AI_TIMEOUT_MS || '12000' }}
+      AI_REASONING_EFFORT: ${{ secrets.AI_REASONING_EFFORT || 'none' }}
+      AI_TEMPERATURE: ${{ secrets.AI_TEMPERATURE || '0.6' }}
+      AI_TIMEOUT_MS: ${{ secrets.AI_TIMEOUT_MS || '30000' }}
       AI_RATE_LIMIT_MAX: ${{ secrets.AI_RATE_LIMIT_MAX || '10' }}
       AI_RATE_LIMIT_WINDOW_HOURS: ${{ secrets.AI_RATE_LIMIT_WINDOW_HOURS || '6' }}
       NODE_VERSION: 24
@@ -57,6 +59,7 @@ jobs:
           AI_API_KEY: ""
           AI_MODEL: ""
           AI_CHAT_COMPLETIONS_ENDPOINT: ""
+          AI_REASONING_EFFORT: ""
         run: npm run check:iroha
 
       - name: Build
@@ -105,6 +108,8 @@ jobs:
             printf 'AI_MODEL=%s\n' "$AI_MODEL"
             printf 'AI_CHAT_COMPLETIONS_ENDPOINT=%s\n' "$AI_CHAT_COMPLETIONS_ENDPOINT"
             printf 'AI_THINKING=%s\n' "$AI_THINKING"
+            printf 'AI_REASONING_EFFORT=%s\n' "$AI_REASONING_EFFORT"
+            printf 'AI_TEMPERATURE=%s\n' "$AI_TEMPERATURE"
             printf 'AI_TIMEOUT_MS=%s\n' "$AI_TIMEOUT_MS"
             printf 'AI_RATE_LIMIT_MAX=%s\n' "$AI_RATE_LIMIT_MAX"
             printf 'AI_RATE_LIMIT_WINDOW_HOURS=%s\n' "$AI_RATE_LIMIT_WINDOW_HOURS"

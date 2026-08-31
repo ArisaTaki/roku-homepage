@@ -1,14 +1,16 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import {
+  buildChatCompletionBody,
+  providerNameFromEndpoint,
+  type ChatCompletionMessage,
+} from "./chat-completion";
 
 const DEFAULT_TIMEOUT_MS = 12000;
-const DEFAULT_DEEPSEEK_ENDPOINT = "https://api.deepseek.com/chat/completions";
-const DEFAULT_DEEPSEEK_MODEL = "deepseek-v4-flash";
 const NATURE_LIVE2D_PACKAGE_NAME = "@kuguya-ai/nature-live2d";
 const DEFAULT_PROJECT_DIR = "/Users/hacchiroku/AI/nature-live2d";
 const DEFAULT_TEXT = "咦？这个表情真的会跟着一句话变化吗……刚刚有点被吓到。可是没关系，我会认真听你说，也会陪你把这段流程跑完。嗯，现在放心啦，我们一起笑一下吧。";
-const DEFAULT_MODEL_THINKING = "disabled";
 
 const defaultEmotionCurve = [
   {
@@ -211,7 +213,7 @@ type NatureLive2DDemoBeat = {
 
 export type NatureLive2DDemoPayload = {
   inputText: string;
-  runtime: "nature-live2d-deepseek" | "nature-live2d-mock" | "nature-live2d-fallback";
+  runtime: "nature-live2d-remote" | "nature-live2d-mock" | "nature-live2d-fallback";
   runtimeLabel: string;
   analyzerLabel: string;
   characterName: string;
@@ -421,7 +423,7 @@ function parseCurveFromText(value: string): DemoCurveSample[] | null {
   return normalizeCurve(parseJsonFromText(value));
 }
 
-function buildDeepSeekMessages(text: string) {
+function buildRemoteModelMessages(text: string): ChatCompletionMessage[] {
   return [
     {
       role: "system",
@@ -441,7 +443,7 @@ function buildDeepSeekMessages(text: string) {
   ];
 }
 
-function buildDeepSeekCurveMessages(text: string) {
+function buildRemoteModelCurveMessages(text: string): ChatCompletionMessage[] {
   return [
     {
       role: "system",
@@ -463,11 +465,12 @@ function buildDeepSeekCurveMessages(text: string) {
   ];
 }
 
-class DeepSeekEmotionAnalyzer {
+class RemoteEmotionAnalyzer {
   constructor(
     private readonly endpoint: string,
     private readonly model: string,
     private readonly apiKey: string,
+    private readonly providerName: string,
   ) {}
 
   async analyze(text: string): Promise<EmotionIntent> {
@@ -484,23 +487,25 @@ class DeepSeekEmotionAnalyzer {
           "Authorization": `Bearer ${this.apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+        body: JSON.stringify(buildChatCompletionBody({
           model: this.model,
-          messages: buildDeepSeekMessages(text),
-          thinking: { type: process.env.AI_THINKING || DEFAULT_MODEL_THINKING },
-          temperature: 0.2,
-          max_tokens: 180,
-        }),
+          messages: buildRemoteModelMessages(text),
+          defaultTemperature: 0.2,
+          temperature: process.env.NATURE_LIVE2D_TEMPERATURE || process.env.AI_TEMPERATURE,
+          reasoningEffort: process.env.NATURE_LIVE2D_REASONING_EFFORT || process.env.AI_REASONING_EFFORT,
+          thinking: process.env.AI_THINKING,
+          maxTokens: 180,
+        })),
         signal: controller.signal,
       });
 
       if (!response.ok) {
-        throw new Error(`DeepSeek endpoint returned ${response.status}`);
+        throw new Error(`${this.providerName} endpoint returned ${response.status}`);
       }
 
       const payload = (await response.json()) as ChatCompletionPayload;
       const intent = parseIntentFromText(extractChatText(payload));
-      if (!intent) throw new Error("DeepSeek did not return a valid EmotionIntent JSON object");
+      if (!intent) throw new Error(`${this.providerName} did not return a valid EmotionIntent JSON object`);
       return intent;
     } finally {
       clearTimeout(timeout);
@@ -521,23 +526,25 @@ class DeepSeekEmotionAnalyzer {
           "Authorization": `Bearer ${this.apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+        body: JSON.stringify(buildChatCompletionBody({
           model: this.model,
-          messages: buildDeepSeekCurveMessages(text),
-          thinking: { type: process.env.AI_THINKING || DEFAULT_MODEL_THINKING },
-          temperature: 0.18,
-          max_tokens: 900,
-        }),
+          messages: buildRemoteModelCurveMessages(text),
+          defaultTemperature: 0.18,
+          temperature: process.env.NATURE_LIVE2D_TEMPERATURE || process.env.AI_TEMPERATURE,
+          reasoningEffort: process.env.NATURE_LIVE2D_REASONING_EFFORT || process.env.AI_REASONING_EFFORT,
+          thinking: process.env.AI_THINKING,
+          maxTokens: 900,
+        })),
         signal: controller.signal,
       });
 
       if (!response.ok) {
-        throw new Error(`DeepSeek endpoint returned ${response.status}`);
+        throw new Error(`${this.providerName} endpoint returned ${response.status}`);
       }
 
       const payload = (await response.json()) as ChatCompletionPayload;
       const curve = parseCurveFromText(extractChatText(payload));
-      if (!curve) throw new Error("DeepSeek did not return a valid emotion curve JSON object");
+      if (!curve) throw new Error(`${this.providerName} did not return a valid emotion curve JSON object`);
       return curve;
     } finally {
       clearTimeout(timeout);
@@ -607,19 +614,19 @@ function adapterParamsFor(params: DemoParameter[]): string[] {
   return (matches.length ? matches : params.map((param) => param.id)).slice(0, 4);
 }
 
-function configuredDeepSeek() {
+function configuredRemoteModel() {
   const apiKey = process.env.NATURE_LIVE2D_API_KEY || process.env.LIVE2D_LLM_API_KEY || process.env.AI_API_KEY;
   const endpoint = process.env.NATURE_LIVE2D_ENDPOINT
     || process.env.LIVE2D_LLM_BASE_URL
     || process.env.AI_CHAT_COMPLETIONS_ENDPOINT
-    || (apiKey ? DEFAULT_DEEPSEEK_ENDPOINT : "");
+    || "";
   const model = process.env.NATURE_LIVE2D_MODEL
     || process.env.LIVE2D_LLM_MODEL
     || process.env.AI_MODEL
-    || (apiKey ? DEFAULT_DEEPSEEK_MODEL : "");
+    || "";
 
   return endpoint && apiKey && model
-    ? { endpoint, apiKey, model }
+    ? { endpoint, apiKey, model, providerName: providerNameFromEndpoint(endpoint) }
     : null;
 }
 
@@ -667,7 +674,7 @@ async function generateDemoPayload(text: string): Promise<NatureLive2DDemoPayloa
   const projectDir = process.env.NATURE_LIVE2D_PROJECT_DIR || DEFAULT_PROJECT_DIR;
   const yachiyoDir = process.env.NATURE_LIVE2D_MODEL_DIR || resolve(projectDir, "yachiyo");
   const natureLive2D = await loadNatureLive2DModule(projectDir);
-  const deepSeekConfig = configuredDeepSeek();
+  const remoteModelConfig = configuredRemoteModel();
   const mockAnalyzer = new natureLive2D.MockEmotionAnalyzer();
   let analyzer: { analyze(text: string): EmotionIntent | Promise<EmotionIntent> } = mockAnalyzer;
   let analyzerLabel = "MockEmotionAnalyzer";
@@ -676,26 +683,27 @@ async function generateDemoPayload(text: string): Promise<NatureLive2DDemoPayloa
   const warnings: string[] = [];
   let curveSamples = defaultCurveSamples();
 
-  if (deepSeekConfig) {
-    const deepSeekAnalyzer = new DeepSeekEmotionAnalyzer(
-      deepSeekConfig.endpoint,
-      deepSeekConfig.model,
-      deepSeekConfig.apiKey,
+  if (remoteModelConfig) {
+    const remoteAnalyzer = new RemoteEmotionAnalyzer(
+      remoteModelConfig.endpoint,
+      remoteModelConfig.model,
+      remoteModelConfig.apiKey,
+      remoteModelConfig.providerName,
     );
-    analyzer = deepSeekAnalyzer;
-    analyzerLabel = `DeepSeek · ${deepSeekConfig.model}`;
-    runtime = "nature-live2d-deepseek";
-    runtimeLabel = "DEEPSEEK + NATURE";
+    analyzer = remoteAnalyzer;
+    analyzerLabel = `${remoteModelConfig.providerName} · ${remoteModelConfig.model}`;
+    runtime = "nature-live2d-remote";
+    runtimeLabel = `${remoteModelConfig.providerName.toUpperCase()} + NATURE`;
 
     try {
-      curveSamples = await deepSeekAnalyzer.analyzeCurve(text);
+      curveSamples = await remoteAnalyzer.analyzeCurve(text);
     } catch (error) {
       curveSamples = defaultCurveSamples();
       analyzer = mockAnalyzer;
       analyzerLabel = "MockEmotionAnalyzer fallback";
       runtime = "nature-live2d-fallback";
       runtimeLabel = "NATURE FALLBACK";
-      warnings.push(error instanceof Error ? error.message : "DeepSeek curve analyzer failed");
+      warnings.push(error instanceof Error ? error.message : "Remote emotion curve analyzer failed");
     }
   }
 
@@ -727,8 +735,8 @@ async function generateDemoPayload(text: string): Promise<NatureLive2DDemoPayloa
     adapterParams: leadBeat.adapterParams,
     beats,
     warnings: [...warnings, ...beats.flatMap((beat) => beat.warnings)],
-    note: runtime === "nature-live2d-deepseek"
-      ? "DeepSeek analyzed one continuous dialogue into an emotion curve; nature-live2d generated safe timelines that the frontend blends continuously."
+    note: runtime === "nature-live2d-remote"
+      ? `${remoteModelConfig?.providerName || "The remote model"} analyzed one continuous dialogue into an emotion curve; nature-live2d generated safe timelines that the frontend blends continuously.`
       : "nature-live2d generated one built-in continuous emotion curve; the frontend blends it continuously.",
   };
 }
@@ -736,7 +744,7 @@ async function generateDemoPayload(text: string): Promise<NatureLive2DDemoPayloa
 async function demoPayload(text: string): Promise<NatureLive2DDemoPayload> {
   const cacheKey = [
     text,
-    configuredDeepSeek()?.model || "mock",
+    configuredRemoteModel()?.model || "mock",
     process.env.NATURE_LIVE2D_PROJECT_DIR || DEFAULT_PROJECT_DIR,
   ].join("|");
 

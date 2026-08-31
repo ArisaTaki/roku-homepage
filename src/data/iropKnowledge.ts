@@ -67,7 +67,7 @@ export const starterQuestions = [
 export const assistantSkill = {
   name: "irop-portal-skill",
   version: "0.4.0",
-  runtime: "local retrieval with optional DeepSeek-compatible server assistant endpoint",
+  runtime: "local retrieval with an optional OpenAI-compatible server assistant endpoint",
   specHref: "/knowledge/irop-skill.md",
   manifestHref: "/knowledge/irop-skill.json",
   apiHref: "/knowledge/irop-assistant-api.md",
@@ -86,7 +86,7 @@ export const assistantSkill = {
     "Public career and experience summary",
     "Blog, gallery and shader navigation",
     "Sensitive-question refusal",
-    "Optional DeepSeek-backed answer generation",
+    "Optional Kimi K3-backed answer generation",
   ],
 } satisfies AssistantSkill;
 
@@ -423,7 +423,7 @@ export const knowledgeEntries: KnowledgeEntry[] = [
       "问答",
     ],
     answer:
-      "The Iroha pet is the portal assistant prototype. It answers from a curated public knowledge base and can optionally ask a server-side DeepSeek-compatible model.",
+      "The Iroha pet is the portal assistant prototype. It answers from a curated public knowledge base and can optionally ask a server-side Kimi K3 model.",
     details: [
       "The sprite comes from the provided iroha.zip spritesheet.",
       "The assistant should answer only about 八六, public projects, tech stack, blog/gallery/shader routes, collaboration direction and contact.",

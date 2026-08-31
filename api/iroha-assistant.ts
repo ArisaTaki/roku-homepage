@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { buildChatCompletionBody, type ChatCompletionMessage } from "./chat-completion";
 import { assistantSkill, iropProfile, knowledgeEntries, type KnowledgeEntry } from "../src/data/iropKnowledge";
 import {
   answerVisitorQuestion,
@@ -11,9 +12,6 @@ import {
 } from "../src/lib/iropAssistant";
 
 const DEFAULT_TIMEOUT_MS = 12000;
-const DEFAULT_DEEPSEEK_ENDPOINT = "https://api.deepseek.com/chat/completions";
-const DEFAULT_DEEPSEEK_MODEL = "deepseek-v4-flash";
-const DEFAULT_MODEL_THINKING = "disabled";
 const DEFAULT_RATE_LIMIT_MAX = 10;
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 6 * 60 * 60 * 1000;
 
@@ -334,7 +332,7 @@ function parseModelAnswer(payload: ChatCompletionPayload): ParsedModelAnswer | n
   };
 }
 
-function buildModelMessages(context: ServerContext) {
+function buildModelMessages(context: ServerContext): ChatCompletionMessage[] {
   const publicMemory = context.localAnswer.kind === "answer" && context.matchedEntries.length
     ? context.matchedEntries
     : knowledgeEntries
@@ -386,8 +384,8 @@ async function askConfiguredModel(context: ServerContext, identifier: string): P
   }
 
   const apiKey = process.env.AI_API_KEY;
-  const endpoint = process.env.AI_CHAT_COMPLETIONS_ENDPOINT || (apiKey ? DEFAULT_DEEPSEEK_ENDPOINT : "");
-  const model = process.env.AI_MODEL || (apiKey ? DEFAULT_DEEPSEEK_MODEL : "");
+  const endpoint = process.env.AI_CHAT_COMPLETIONS_ENDPOINT || "";
+  const model = process.env.AI_MODEL || "";
 
   if (!endpoint || !apiKey || !model) {
     return {
@@ -418,13 +416,15 @@ async function askConfiguredModel(context: ServerContext, identifier: string): P
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
+      body: JSON.stringify(buildChatCompletionBody({
         model,
         messages: buildModelMessages(context),
-        thinking: { type: process.env.AI_THINKING || DEFAULT_MODEL_THINKING },
-        temperature: 0.55,
-        max_tokens: 320,
-      }),
+        defaultTemperature: 0.55,
+        temperature: process.env.AI_TEMPERATURE,
+        reasoningEffort: process.env.AI_REASONING_EFFORT,
+        thinking: process.env.AI_THINKING,
+        maxTokens: 320,
+      })),
       signal: controller.signal,
     });
 

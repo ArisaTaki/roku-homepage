@@ -13,7 +13,7 @@ Answer visitor questions about 八六 / HacchiRoku, public projects, technical s
 - `src/data/iropKnowledge.ts`: curated public knowledge entries, collections and skill policy.
 - `src/lib/iropAssistant.ts`: local keyword retrieval, refusal policy and answer composition.
 - `src/lib/iropAssistantClient.ts`: optional remote assistant adapter with local fallback.
-- `api/iroha-assistant.ts`: serverless assistant endpoint with optional DeepSeek-compatible model call.
+- `api/iroha-assistant.ts`: serverless assistant endpoint with an optional OpenAI-compatible model call.
 - `PetAssistant`: the Iroha pixel pet UI and mood state used on desktop and mobile.
 - `/knowledge/irop-skill.json`: public manifest for future indexing or backend replacement.
 - `/knowledge/irop-assistant-api.md`: POST contract for the server-side assistant endpoint.
@@ -49,4 +49,4 @@ Answer visitor questions about 八六 / HacchiRoku, public projects, technical s
 
 ## Model Upgrade Path
 
-The frontend works with deterministic local retrieval by default. A server deployment can set `AI_API_KEY` and optionally `AI_MODEL` / `AI_CHAT_COMPLETIONS_ENDPOINT` to let `api/iroha-assistant.ts` call a DeepSeek-compatible chat-completions endpoint. Short greetings and over-long inputs stay local; other questions go to the model for intent classification, public-memory answers and polite refusals. Remote model calls are limited per client IP, defaulting to 10 questions per 6 hours.
+The frontend works with deterministic local retrieval by default. A server deployment can set `AI_API_KEY`, `AI_MODEL` and `AI_CHAT_COMPLETIONS_ENDPOINT` to let `api/iroha-assistant.ts` call an OpenAI-compatible chat-completions endpoint. The production configuration uses Kimi K3 256K. Short greetings and over-long inputs stay local; other questions go to the model for intent classification, public-memory answers and polite refusals. Remote model calls are limited per client IP, defaulting to 10 questions per 6 hours.

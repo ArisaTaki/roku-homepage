@@ -136,6 +136,16 @@ const workShells: WorkBase[] = [
   },
 ];
 
+const workNavGlyphs: Record<WorkId, string> = {
+  "hermes-yachiyo": "AI",
+  "nature-live2d": "2D",
+  "mimo-usage-watcher": "Q",
+  blog: "TXT",
+  gallery: "IMG",
+  shader: "GL",
+  portal: "@",
+};
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
@@ -186,6 +196,32 @@ function useMediaQuery(query: string): boolean {
   }, [query]);
 
   return matches;
+}
+
+function useViewportWidth(): number {
+  const [width, setWidth] = useState(() => (
+    typeof window === "undefined" ? 1440 : window.innerWidth
+  ));
+
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      setWidth(window.innerWidth);
+    };
+    const schedule = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(update);
+    };
+
+    window.addEventListener("resize", schedule);
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", schedule);
+    };
+  }, []);
+
+  return width;
 }
 
 function useSmoothWheelScrolling(enabled: boolean): void {
@@ -906,21 +942,24 @@ function PetAssistant({
   );
 }
 
-function AboutColumns({ copy }: { copy: UiCopy }) {
+function AboutColumns({ copy, contactId }: { copy: UiCopy; contactId?: string }) {
   return (
     <div className="about-columns" aria-label={copy.aboutColumnsAria}>
-      {copy.aboutColumns.map((column) => (
-        <article key={column.title}>
-          <h3>{column.title}</h3>
-          {"body" in column ? (
-            <p>{column.body}</p>
-          ) : (
-            <p>
-              {column.beforeEmail} <a href="mailto:me@irop.one">me@irop.one</a>. {column.afterEmail}
-            </p>
-          )}
-        </article>
-      ))}
+      {copy.aboutColumns.map((column) => {
+        const isContact = "beforeEmail" in column;
+        return (
+          <article id={isContact ? contactId : undefined} key={column.title}>
+            <h3>{column.title}</h3>
+            {"body" in column ? (
+              <p>{column.body}</p>
+            ) : (
+              <p>
+                {column.beforeEmail} <a href="mailto:me@irop.one">me@irop.one</a>. {column.afterEmail}
+              </p>
+            )}
+          </article>
+        );
+      })}
     </div>
   );
 }
@@ -1148,12 +1187,14 @@ function LanguageSwitcher({
 function FloatingNav({
   compact,
   showMini,
+  works,
   locale,
   onLocaleChange,
   copy,
 }: {
   compact: boolean;
   showMini: boolean;
+  works: Work[];
   locale: Locale;
   onLocaleChange: (locale: Locale) => void;
   copy: UiCopy;
@@ -1164,17 +1205,24 @@ function FloatingNav({
         <HeroMark className="mini-name-mark" text="HacchiRoku" />
       </a>
       <nav className={`nav-card ${compact ? "compact" : ""}`} aria-label={copy.nav.primary}>
-        <a className="nav-row" href="#project">
-          <span>{copy.nav.works}</span>
-          <span className="arrow">→</span>
-          <span className="icon-strip" aria-hidden="true">
-            <i>AI</i>
-            <i>2D</i>
-            <i>GL</i>
-            <i>画</i>
-            <i>?</i>
+        <div className="nav-row nav-row-menu nav-row-works">
+          <a className="nav-row-main" href={`#work-${works[0].id}`}>
+            <span>{copy.nav.works}</span>
+            <span className="arrow">→</span>
+          </a>
+          <span className="icon-strip work-anchor-strip" aria-label={copy.nav.works}>
+            {works.map((work) => (
+              <a
+                href={`#work-${work.id}`}
+                aria-label={`${copy.nav.works}: ${work.title}`}
+                title={work.title}
+                key={work.id}
+              >
+                {workNavGlyphs[work.id]}
+              </a>
+            ))}
           </span>
-        </a>
+        </div>
         <div className="nav-row nav-row-menu">
           <a className="nav-row-main" href="#about">
             <span>{copy.nav.me}</span>
@@ -1189,7 +1237,7 @@ function FloatingNav({
             </a>
           </span>
         </div>
-        <a className="nav-row resume" href="mailto:me@irop.one">
+        <a className="nav-row resume" href="#contact">
           <span>{copy.nav.email}</span>
           <span className="download">→</span>
         </a>
@@ -1200,6 +1248,32 @@ function FloatingNav({
         <span>?</span>
       </a>
     </>
+  );
+}
+
+function DesktopProjectAnchors({ works }: { works: Work[] }) {
+  const viewportWidth = useViewportWidth();
+
+  return (
+    <div className="project-anchor-rail" aria-hidden="true">
+      {works.map((work) => {
+        const progress = clamp(
+          (work.left + work.width / 2 - viewportWidth / 2) / TRAVEL_DISTANCE,
+          0,
+          1
+        );
+        const offset = Number((progress * 100).toFixed(4));
+
+        return (
+          <span
+            id={`work-${work.id}`}
+            className="project-scroll-anchor"
+            style={{ top: `calc(${offset}% - ${offset}vh)` }}
+            key={work.id}
+          />
+        );
+      })}
+    </div>
   );
 }
 
@@ -1285,6 +1359,7 @@ function MobilePage({
       <section id="mobile-works" className="mobile-works" aria-label={copy.nav.works}>
         {works.map((work) => (
           <a
+            id={`work-${work.id}`}
             className={workCardClass("mobile-work", work)}
             href={work.href}
             key={work.id}
@@ -1307,7 +1382,7 @@ function MobilePage({
           <br />
           {copy.about.mobileEnd}
         </h2>
-        <AboutColumns copy={copy} />
+        <AboutColumns copy={copy} contactId="contact" />
         <a className="mobile-mail" href="mailto:me@irop.one">
           me@irop.one
         </a>
@@ -1316,7 +1391,7 @@ function MobilePage({
   );
 }
 
-function AboutPanel({ copy }: { copy: UiCopy }) {
+function AboutPanel({ copy, contactId }: { copy: UiCopy; contactId?: string }) {
   return (
     <section id="about" className="about-panel" aria-label={copy.about.aria}>
       <div className="about-shell">
@@ -1330,7 +1405,7 @@ function AboutPanel({ copy }: { copy: UiCopy }) {
           <br />
           {copy.about.headline[3]}
         </h2>
-        <AboutColumns copy={copy} />
+        <AboutColumns copy={copy} contactId={contactId} />
       </div>
     </section>
   );
@@ -1402,13 +1477,14 @@ export default function App({ isBooting = false, onReady }: AppProps) {
       <FloatingNav
         compact={compactNav}
         showMini={showMiniLogo}
+        works={works}
         locale={locale}
         onLocaleChange={setLocale}
         copy={copy}
       />
       <div className={`app-shell ${isBooting ? "is-booting" : "is-ready"}`} ref={appRef}>
         <LightFishBackground progress={progress} />
-        <a className="skip-link" href="#project">
+        <a className="skip-link" href={`#work-${works[0].id}`}>
           {copy.skip}
         </a>
         <div id="top" />
@@ -1422,16 +1498,19 @@ export default function App({ isBooting = false, onReady }: AppProps) {
                 eagerPreview={eagerPreviewCards}
               />
             ) : (
-              <DesktopScene
-                progress={progress}
-                works={works}
-                copy={copy}
-                petSessionKey={petSessionKey}
-                eagerPreview={eagerPreviewCards}
-              />
+              <>
+                <DesktopProjectAnchors works={works} />
+                <DesktopScene
+                  progress={progress}
+                  works={works}
+                  copy={copy}
+                  petSessionKey={petSessionKey}
+                  eagerPreview={eagerPreviewCards}
+                />
+              </>
             )}
           </section>
-          <AboutPanel copy={copy} />
+          <AboutPanel copy={copy} contactId={isMobileLayout ? undefined : "contact"} />
         </main>
       </div>
     </>

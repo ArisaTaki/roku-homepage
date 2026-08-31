@@ -1,4 +1,5 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type RefObject } from "react";
+import Lenis from "lenis";
+import { lazy, memo, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type RefObject } from "react";
 import {
   isLocale,
   localeLabels,
@@ -187,6 +188,27 @@ function useMediaQuery(query: string): boolean {
   return matches;
 }
 
+function useSmoothWheelScrolling(enabled: boolean): void {
+  useEffect(() => {
+    if (!enabled) return undefined;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reduceMotion.matches) return undefined;
+
+    const lenis = new Lenis({
+      anchors: true,
+      autoRaf: true,
+      lerp: 0.12,
+      overscroll: false,
+      smoothWheel: true,
+      syncTouch: false,
+      wheelMultiplier: 0.92,
+    });
+
+    return () => lenis.destroy();
+  }, [enabled]);
+}
+
 function preloadInteractiveWorkVisuals() {
   void Promise.allSettled([
     preloadDeferredAppAssets(),
@@ -304,12 +326,12 @@ function LightFishBackground({ progress }: { progress: number }) {
       canvas.style.height = `${height}px`;
       context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 
-      const areaCount = Math.floor((width * height) / 5600);
+      const areaCount = Math.floor((width * height) / (width < 760 ? 5600 : 7200));
       const targetCount = reduceMotion.matches
         ? 48
         : width < 760
           ? Math.min(170, Math.max(96, areaCount))
-          : Math.min(320, Math.max(160, areaCount));
+          : Math.min(240, Math.max(140, areaCount));
       if (fish.length > targetCount) {
         fish.splice(targetCount);
       }
@@ -534,11 +556,7 @@ function LightFishBackground({ progress }: { progress: number }) {
     const handleProgress = () => {
       const nextProgress = progressRef.current;
       const moved = Math.abs(nextProgress - previousProgress) > 0.0004;
-      if (moved) {
-        scheduleRender(true);
-      } else {
-        scheduleRender();
-      }
+      if (moved) scheduleRender(true);
     };
 
     const handleVisibilityChange = () => {
@@ -816,7 +834,13 @@ function PetAssistant({
           <span>{copy.title}</span>
           <b>{runtimeLabel}</b>
         </div>
-        <div className="pet-messages" aria-live="polite" aria-busy={isThinking} ref={messagesRef}>
+        <div
+          className="pet-messages"
+          aria-live="polite"
+          aria-busy={isThinking}
+          data-lenis-prevent-wheel
+          ref={messagesRef}
+        >
           {messages.map((message, index) => (
             <p
               className={`pet-message ${message.role} ${message.pending ? "pending" : ""}`}
@@ -1055,6 +1079,33 @@ function WorkVisual({
   return <WorkVisualPlaceholder work={work} />;
 }
 
+const MemoPetAssistant = memo(PetAssistant);
+
+const DesktopWorkCard = memo(function DesktopWorkCard({
+  work,
+  copy,
+  eagerPreview,
+}: {
+  work: Work;
+  copy: UiCopy;
+  eagerPreview: boolean;
+}) {
+  return (
+    <a
+      className={workCardClass("work-card", work)}
+      href={work.href}
+      style={{ left: `${work.left}px`, width: `${work.width}px` }}
+      target={work.href?.startsWith("http") ? "_blank" : undefined}
+      rel={work.href?.startsWith("http") ? "noreferrer" : undefined}
+    >
+      <WorkVisual work={work} copy={copy} layout="desktop" eagerPreview={eagerPreview} />
+      <h2>{work.title}</h2>
+      <p>{work.description}</p>
+      <small>{work.meta}</small>
+    </a>
+  );
+});
+
 function workCardClass(baseClass: string, work: Work): string {
   return `${baseClass} ${work.visual === "visual-hermes" ? "is-hermes" : ""} ${
     work.visual === "visual-live2d" ? "is-nature-live2d" : ""
@@ -1179,7 +1230,7 @@ function DesktopScene({
           {copy.hero.intro[2]}
         </p>
         <HeroMark className="desktop-mark desktop-name-mark" text="HacchiRoku" />
-        <PetAssistant className="hero-assistant" copy={copy.pet} sessionKey={petSessionKey} />
+        <MemoPetAssistant className="hero-assistant" copy={copy.pet} sessionKey={petSessionKey} />
         <div className="this-way">
           <span>
             {copy.hero.thisWay[0]}
@@ -1189,19 +1240,7 @@ function DesktopScene({
           <b aria-hidden="true">→</b>
         </div>
         {works.map((work) => (
-          <a
-            className={workCardClass("work-card", work)}
-            href={work.href}
-            key={work.id}
-            style={{ left: `${work.left}px`, width: `${work.width}px` }}
-            target={work.href?.startsWith("http") ? "_blank" : undefined}
-            rel={work.href?.startsWith("http") ? "noreferrer" : undefined}
-          >
-            <WorkVisual work={work} copy={copy} layout="desktop" eagerPreview={eagerPreview} />
-            <h2>{work.title}</h2>
-            <p>{work.description}</p>
-            <small>{work.meta}</small>
-          </a>
+          <DesktopWorkCard work={work} copy={copy} eagerPreview={eagerPreview} key={work.id} />
         ))}
       </div>
     </div>
@@ -1304,6 +1343,7 @@ export default function App({ isBooting = false, onReady }: AppProps) {
   const sceneRef = useRef<HTMLElement | null>(null);
   const progress = useSceneProgress(sceneRef);
   const isMobileLayout = useMediaQuery(MOBILE_QUERY);
+  useSmoothWheelScrolling(!isBooting && !isMobileLayout);
   const copy = uiCopy[locale];
   const petSessionKey = `${IROHA_SESSION_STORAGE_PREFIX}-${locale}`;
   const works = useMemo(

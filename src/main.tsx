@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import "lenis/dist/lenis.css";
 import "./index.css";
 
 const MIN_LOADING_MS = 1000;

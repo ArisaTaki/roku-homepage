@@ -85,6 +85,10 @@ html {
   background: var(--paper);
 }
 
+html.lenis {
+  scroll-behavior: auto;
+}
+
 body {
   margin: 0;
   min-width: 320px;

@@ -7,7 +7,8 @@ import {
 import { answerVisitorQuestion, isLocalOnlyAnswer, type AssistantAnswer } from "./iropAssistant";
 
 const DEFAULT_TIMEOUT_MS = 15000;
-const STREAM_STEP_MS = 16;
+const MAX_STREAM_REVEAL_MS = 320;
+const MAX_STREAM_REVEAL_STEPS = 16;
 
 export type AssistantAnswerWithRuntime = AssistantAnswer & {
   runtime?: string;
@@ -174,21 +175,20 @@ function streamDelay(ms: number): Promise<void> {
 async function emitAssistantText(text: string, onToken?: (text: string) => void): Promise<void> {
   if (!onToken) return;
 
-  let rendered = "";
   const characters = Array.from(text);
+  if (!characters.length) return;
 
-  for (const character of characters) {
-    rendered += character;
-    onToken(rendered);
+  const chunkSize = Math.max(1, Math.ceil(characters.length / MAX_STREAM_REVEAL_STEPS));
+  const stepCount = Math.ceil(characters.length / chunkSize);
+  const totalDuration = Math.min(MAX_STREAM_REVEAL_MS, characters.length * 7);
+  const stepDelay = Math.max(8, Math.floor(totalDuration / stepCount));
 
-    const delay = /[。！？.!?]/.test(character)
-      ? STREAM_STEP_MS * 4
-      : /[，、,;；:：]/.test(character)
-        ? STREAM_STEP_MS * 2
-        : STREAM_STEP_MS;
-
-    await streamDelay(delay);
+  for (let end = chunkSize; end < characters.length; end += chunkSize) {
+    onToken(characters.slice(0, end).join(""));
+    await streamDelay(stepDelay);
   }
+
+  onToken(text);
 }
 
 export async function askIroha(

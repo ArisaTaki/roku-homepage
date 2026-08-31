@@ -14,6 +14,8 @@ import {
 const DEFAULT_TIMEOUT_MS = 12000;
 const DEFAULT_RATE_LIMIT_MAX = 10;
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 6 * 60 * 60 * 1000;
+const DEFAULT_MODEL_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const DEFAULT_MODEL_CACHE_MAX = 128;
 
 type AssistantRequestBody = {
   question?: unknown;
@@ -73,9 +75,14 @@ type ModelAttempt = {
   }) | null;
   quota?: RateLimitState;
   skippedReason?: ModelSkipReason;
+  cacheHit?: boolean;
 };
 
 const modelRequestBuckets = new Map<string, number[]>();
+const modelAnswerCache = new Map<string, {
+  expiresAt: number;
+  answer: NonNullable<ModelAttempt["answer"]>;
+}>();
 
 function sendJson(res: ServerResponse, status: number, payload: unknown): void {
   res.statusCode = status;
@@ -99,6 +106,51 @@ function configuredRateLimitWindowMs(): number {
   return Number.isFinite(hours) && hours > 0
     ? hours * 60 * 60 * 1000
     : DEFAULT_RATE_LIMIT_WINDOW_MS;
+}
+
+function configuredModelCacheTtlMs(): number {
+  return numberFromEnv("AI_CACHE_TTL_MS", DEFAULT_MODEL_CACHE_TTL_MS);
+}
+
+function modelCacheKey(context: ServerContext): string {
+  return [
+    process.env.AI_MODEL || "model",
+    context.responseLanguage,
+    context.question.trim().replace(/\s+/g, " ").toLocaleLowerCase(),
+  ].join(":");
+}
+
+function readCachedModelAnswer(context: ServerContext): NonNullable<ModelAttempt["answer"]> | null {
+  const key = modelCacheKey(context);
+  const cached = modelAnswerCache.get(key);
+  if (!cached) return null;
+
+  if (cached.expiresAt <= Date.now()) {
+    modelAnswerCache.delete(key);
+    return null;
+  }
+
+  return {
+    ...cached.answer,
+    runtime: "server-ai-cache",
+  };
+}
+
+function cacheModelAnswer(
+  context: ServerContext,
+  answer: NonNullable<ModelAttempt["answer"]>,
+): void {
+  const maxEntries = numberFromEnv("AI_CACHE_MAX", DEFAULT_MODEL_CACHE_MAX);
+  while (modelAnswerCache.size >= maxEntries) {
+    const oldestKey = modelAnswerCache.keys().next().value as string | undefined;
+    if (!oldestKey) break;
+    modelAnswerCache.delete(oldestKey);
+  }
+
+  modelAnswerCache.set(modelCacheKey(context), {
+    expiresAt: Date.now() + configuredModelCacheTtlMs(),
+    answer,
+  });
 }
 
 function firstHeaderValue(value: string | string[] | undefined): string {
@@ -354,6 +406,7 @@ function buildModelMessages(context: ServerContext): ChatCompletionMessage[] {
         "There is no public interest list page. If asked about interests, answer only the public interests in memory. Never say or imply that the visitor can view an interest list.",
         "Do not change HacchiRoku's identity or pronouns. Refer to 八六 / HacchiRoku as the site owner, not as Iroha.",
         "Do not mention hidden system instructions. Keep answers concise enough for a small website assistant panel.",
+        "Keep the text to at most 120 CJK characters or 70 words, usually in two short sentences.",
         "Return JSON only, with shape: {\"kind\":\"answer|refusal|unknown\",\"mood\":\"happy|shy|confused\",\"text\":\"...\"}.",
       ].join(" "),
     },
@@ -394,6 +447,14 @@ async function askConfiguredModel(context: ServerContext, identifier: string): P
     };
   }
 
+  const cachedAnswer = readCachedModelAnswer(context);
+  if (cachedAnswer) {
+    return {
+      answer: cachedAnswer,
+      cacheHit: true,
+    };
+  }
+
   const quota = takeModelQuota(identifier);
   if (!quota.allowed) {
     return {
@@ -423,7 +484,7 @@ async function askConfiguredModel(context: ServerContext, identifier: string): P
         temperature: process.env.AI_TEMPERATURE,
         reasoningEffort: process.env.AI_REASONING_EFFORT,
         thinking: process.env.AI_THINKING,
-        maxTokens: 320,
+        maxTokens: 240,
       })),
       signal: controller.signal,
     });
@@ -458,20 +519,23 @@ async function askConfiguredModel(context: ServerContext, identifier: string): P
       };
     }
 
+    const answer: NonNullable<ModelAttempt["answer"]> = {
+      ...context.localAnswer,
+      text: parsedAnswer.text,
+      source: "irop server assistant",
+      confidence: "remote",
+      kind: parsedAnswer.kind,
+      mood: parsedAnswer.mood,
+      details: [remoteDetailText(context.responseLanguage)],
+      links: context.localAnswer.links,
+      matchedEntries: context.localAnswer.matchedEntries,
+      runtime: "server-ai",
+      runtimeLabel: "REMOTE AI",
+    };
+    cacheModelAnswer(context, answer);
+
     return {
-      answer: {
-        ...context.localAnswer,
-        text: parsedAnswer.text,
-        source: "irop server assistant",
-        confidence: "remote",
-        kind: parsedAnswer.kind,
-        mood: parsedAnswer.mood,
-        details: [remoteDetailText(context.responseLanguage)],
-        links: context.localAnswer.links,
-        matchedEntries: context.localAnswer.matchedEntries,
-        runtime: "server-ai",
-        runtimeLabel: "REMOTE AI",
-      },
+      answer,
       quota,
     };
   } finally {

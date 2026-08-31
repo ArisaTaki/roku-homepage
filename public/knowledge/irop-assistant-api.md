@@ -18,6 +18,8 @@ AI_REASONING_EFFORT=none
 AI_TEMPERATURE=0.6
 AI_RATE_LIMIT_MAX=10
 AI_RATE_LIMIT_WINDOW_HOURS=6
+AI_CACHE_TTL_MS=21600000
+AI_CACHE_MAX=128
 AI_TIMEOUT_MS=30000
 ```
 
@@ -26,6 +28,8 @@ Static deployments can leave `VITE_IROP_ASSISTANT_ENDPOINT` blank to use browser
 Set `AI_CHAT_COMPLETIONS_ENDPOINT` and `AI_MODEL` alongside the matching server-only key. The production example uses Kimi K3 256K with `AI_REASONING_EFFORT=none` and `AI_TEMPERATURE=0.6`, so the small assistant receives direct `content` replies instead of spending its output budget on `reasoning_content`. Providers that use a `thinking` object can omit `AI_REASONING_EFFORT` and set `AI_THINKING` instead.
 
 `AI_RATE_LIMIT_MAX` and `AI_RATE_LIMIT_WINDOW_HOURS` guard model usage per client IP. The default is 10 remote model questions per 6 hours. Short greetings and over-long questions are handled locally and do not consume the remote model quota. Other questions are sent to the server model when configured, so the model can classify the intent and either answer from public memory or refuse politely.
+
+Successful remote answers are cached in memory by normalized question, language and model. The default cache keeps up to 128 answers for 6 hours, so repeated starter questions return immediately without consuming another model request.
 
 ## Request
 

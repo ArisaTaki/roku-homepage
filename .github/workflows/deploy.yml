@@ -39,6 +39,8 @@ jobs:
       AI_TIMEOUT_MS: ${{ secrets.AI_TIMEOUT_MS || '30000' }}
       AI_RATE_LIMIT_MAX: ${{ secrets.AI_RATE_LIMIT_MAX || '10' }}
       AI_RATE_LIMIT_WINDOW_HOURS: ${{ secrets.AI_RATE_LIMIT_WINDOW_HOURS || '6' }}
+      AI_CACHE_TTL_MS: ${{ secrets.AI_CACHE_TTL_MS || '21600000' }}
+      AI_CACHE_MAX: ${{ secrets.AI_CACHE_MAX || '128' }}
       NODE_VERSION: 24
 
     steps:
@@ -113,6 +115,8 @@ jobs:
             printf 'AI_TIMEOUT_MS=%s\n' "$AI_TIMEOUT_MS"
             printf 'AI_RATE_LIMIT_MAX=%s\n' "$AI_RATE_LIMIT_MAX"
             printf 'AI_RATE_LIMIT_WINDOW_HOURS=%s\n' "$AI_RATE_LIMIT_WINDOW_HOURS"
+            printf 'AI_CACHE_TTL_MS=%s\n' "$AI_CACHE_TTL_MS"
+            printf 'AI_CACHE_MAX=%s\n' "$AI_CACHE_MAX"
             printf 'NATURE_LIVE2D_MODEL_DIR=%s\n' "$DEPLOY_PATH/models/yachiyo-web"
           } > irop-one-assistant.env
           chmod 600 irop-one-assistant.env

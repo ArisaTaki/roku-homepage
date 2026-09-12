@@ -1,4 +1,5 @@
 import { Player, type PlayerRef } from "@remotion/player";
+import { usePreviewPlayback, usePreviewVisibility } from "./usePreviewVisibility";
 import {
   AbsoluteFill,
   Easing,
@@ -6,7 +7,9 @@ import {
   spring,
   useCurrentFrame,
 } from "remotion";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createLive2DResourceCache } from "./lib/live2dResourceCache";
+import { previewImageUrl } from "./lib/previewImages";
 
 const FPS = 30;
 const DURATION_IN_FRAMES = 360;
@@ -51,6 +54,7 @@ type PixiApplication = {
   renderer: {
     resize: (width: number, height: number) => void;
     render: (stage: unknown) => void;
+    plugins?: { interaction?: { useSystemTicker: boolean } };
   };
   ticker?: {
     stop: () => void;
@@ -60,6 +64,10 @@ type PixiApplication = {
 };
 
 let cubismCorePromise: Promise<void> | null = null;
+const modelResources = createLive2DResourceCache();
+let live2DRuntimePromise: ReturnType<typeof loadLive2DRuntime> | null = null;
+let naturePreloadPromise: Promise<void> | null = null;
+let resourceMiddlewareInstalled = false;
 
 type NatureDemoIntent = {
   emotion: string;
@@ -321,29 +329,102 @@ function ensureCubismCore(): Promise<void> {
 
   cubismCorePromise = new Promise((resolve, reject) => {
     const existingScript = document.querySelector<HTMLScriptElement>(`script[src="${CUBISM_CORE_URL}"]`);
-
-    if (existingScript?.dataset.loaded === "true") {
-      void waitForCubismCoreReady().then(resolve, reject);
-      return;
-    }
-
     const script = existingScript ?? document.createElement("script");
-    script.src = CUBISM_CORE_URL;
-    script.async = true;
-    script.dataset.loaded = "false";
-    script.addEventListener("load", () => {
-      script.dataset.loaded = "true";
-      void waitForCubismCoreReady().then(resolve, reject);
-    }, { once: true });
-    script.addEventListener("error", () => {
+    let settled = false;
+    const cleanup = () => {
+      window.clearTimeout(timeout);
+      script.removeEventListener("load", handleLoad);
+      script.removeEventListener("error", handleError);
+    };
+    const fail = (error: unknown) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      script.remove();
       cubismCorePromise = null;
-      reject(new Error("Unable to load Live2D Cubism Core"));
-    }, { once: true });
-
-    if (!existingScript) document.head.appendChild(script);
+      reject(error);
+    };
+    const handleLoad = () => {
+      script.dataset.loaded = "true";
+      void waitForCubismCoreReady().then(() => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve();
+      }, fail);
+    };
+    const handleError = () => fail(new Error("Unable to load Live2D Cubism Core"));
+    const timeout = window.setTimeout(() => fail(new Error("Live2D Cubism Core timed out")), 45_000);
+    if (script.dataset.loaded === "true") {
+      handleLoad();
+    } else {
+      script.addEventListener("load", handleLoad, { once: true });
+      script.addEventListener("error", handleError, { once: true });
+      if (!existingScript) {
+        script.src = CUBISM_CORE_URL;
+        script.async = true;
+        document.head.appendChild(script);
+      }
+    }
   });
 
   return cubismCorePromise;
+}
+
+async function loadLive2DRuntime() {
+  const [, PIXI] = await Promise.all([ensureCubismCore(), import("pixi.js")]);
+  window.PIXI = PIXI;
+  const { Live2DModel, Live2DLoader } = await import("pixi-live2d-display/cubism4");
+  if (!resourceMiddlewareInstalled) {
+    const modelDirectory = new URL("./", new URL(LIVE2D_MODEL_URL, window.location.href)).href;
+    Live2DLoader.middlewares.unshift(async (context, next) => {
+      const url = new URL(context.settings?.resolveURL(context.url) ?? context.url, window.location.href).href;
+      if (!url.startsWith(modelDirectory) || (context.type !== "json" && context.type !== "arraybuffer")) {
+        return next();
+      }
+      context.result = await modelResources.load(url, context.type);
+    });
+    resourceMiddlewareInstalled = true;
+  }
+  return { PIXI, Live2DModel };
+}
+
+function ensureLive2DRuntime() {
+  live2DRuntimePromise ??= loadLive2DRuntime().catch((error: unknown) => {
+    live2DRuntimePromise = null;
+    throw error;
+  });
+  return live2DRuntimePromise;
+}
+
+// Prepare files and libraries without mounting a player, creating a WebGL
+// renderer, or requesting an AI-generated demonstration.
+export function preloadNatureLive2D(): Promise<void> {
+  if (naturePreloadPromise) return naturePreloadPromise;
+  const runtime = ensureLive2DRuntime();
+  const files = (async () => {
+    const modelUrl = new URL(LIVE2D_MODEL_URL, window.location.href).href;
+    const settings = await modelResources.load(modelUrl, "json") as {
+      FileReferences: { Moc: string; Physics?: string; Textures: string[] };
+    };
+    const references = settings.FileReferences;
+    const resolve = (path: string) => new URL(path, modelUrl).href;
+    await Promise.all([
+      modelResources.load(resolve(references.Moc), "arraybuffer"),
+      (async () => {
+        if (references.Physics) await modelResources.load(resolve(references.Physics), "json");
+        const { PIXI } = await runtime;
+        for (const texture of references.Textures) {
+          await PIXI.Texture.fromURL(resolve(texture));
+        }
+      })(),
+    ]);
+  })();
+  naturePreloadPromise = Promise.all([runtime, files]).then(() => undefined).catch((error: unknown) => {
+    naturePreloadPromise = null;
+    throw error;
+  });
+  return naturePreloadPromise;
 }
 
 function applyParamsToLive2DModel(model: Live2DParameterTarget, params: Record<string, number>, weight = 1): void {
@@ -593,7 +674,7 @@ function Live2DPlaceholderStage({ data }: { data: NatureDemoData }) {
       <div className="nl2d-stage-grid" aria-hidden="true" />
       <div className="nl2d-model-card nl2d-model-card-placeholder">
         <span className="nl2d-model-aura" />
-        <img src="/models/yachiyo-web/avatar.webp" alt="" />
+        <img src={previewImageUrl("/models/yachiyo-web/avatar.webp")} alt="" />
         <span className="nl2d-runtime-badge">real Cubism ready</span>
       </div>
       <div className="nl2d-stage-meta">
@@ -612,7 +693,8 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
   const modelRef = useRef<Live2DParameterTarget | null>(null);
   const smoothedParamsRef = useRef<Record<string, number>>({});
   const [runtimeStatus, setRuntimeStatus] = useState<"loading" | "ready" | "error">("loading");
-  const actingState = continuousActingState(data, frame);
+  // Status-only updates must not redraw the same expensive WebGL frame.
+  const actingState = useMemo(() => continuousActingState(data, frame), [data, frame]);
   const emotion = actingState.beat.intent.emotion;
   const expressionClass = `is-beat-${actingState.beat.id} is-emotion-${emotion}`;
   const mouthOpen = actingState.params.ParamMouthOpenY ?? 0;
@@ -622,6 +704,36 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
 
     let disposed = false;
     let resizeObserver: ResizeObserver | null = null;
+    let ownedApp: PixiApplication | null = null;
+    let ownedModel: Live2DParameterTarget | null = null;
+    let paintFrame = 0;
+    let paintTask = 0;
+    let finishPaintWait: (() => void) | null = null;
+
+    // Cached resources can resolve in the same task. Give scrolling and paint
+    // a turn between WebGL creation, model construction and texture upload.
+    const yieldForPaint = () => new Promise<void>((resolve) => {
+      finishPaintWait = resolve;
+      paintFrame = window.requestAnimationFrame(() => {
+        paintFrame = 0;
+        paintTask = window.setTimeout(() => {
+          paintTask = 0;
+          finishPaintWait = null;
+          resolve();
+        }, 0);
+      });
+    });
+
+    const releaseResources = () => {
+      resizeObserver?.disconnect();
+      ownedModel?.destroy?.({ children: true, texture: false, baseTexture: false });
+      ownedApp?.destroy(false, { children: true, texture: false, baseTexture: false });
+      ownedModel = null;
+      ownedApp = null;
+      modelRef.current = null;
+      appRef.current = null;
+      smoothedParamsRef.current = {};
+    };
 
     const setupLive2D = async () => {
       const canvas = canvasRef.current;
@@ -629,18 +741,21 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
       if (!canvas || !stageCard) return;
 
       try {
-        await ensureCubismCore();
-        const PIXI = await import("pixi.js");
-        window.PIXI = PIXI;
-        const { Live2DModel } = await import("pixi-live2d-display/cubism4");
+        const { PIXI, Live2DModel } = await ensureLive2DRuntime();
 
+        if (disposed) return;
+        await yieldForPaint();
         if (disposed) return;
 
         Live2DModel.registerTicker(PIXI.Ticker);
 
-        const rect = stageCard.getBoundingClientRect();
-        const width = Math.max(320, Math.round(rect.width || 360));
-        const height = Math.max(420, Math.round(rect.height || 620));
+        // Remotion scales the outer composition. Use its unscaled content box
+        // here and in ResizeObserver so the initial callback doesn't resize it.
+        const style = window.getComputedStyle(stageCard);
+        let width = Math.max(320, stageCard.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight));
+        let height = Math.max(420, stageCard.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom));
+        width = Math.round(width);
+        height = Math.round(height);
         const app = new PIXI.Application({
           view: canvas,
           width,
@@ -650,26 +765,40 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
           backgroundAlpha: 0,
           resolution: Math.min(window.devicePixelRatio || 1, LIVE2D_RENDER_RESOLUTION),
         }) as unknown as PixiApplication;
+        ownedApp = app;
 
         app.stop?.();
         app.ticker?.stop();
+        // DOM handlers own preview interaction; Pixi's independent hit-testing
+        // ticker would otherwise keep running even while this model is paused.
+        const interaction = app.renderer.plugins?.interaction;
+        if (interaction) interaction.useSystemTicker = false;
 
-        const model = await Live2DModel.from(LIVE2D_MODEL_URL, {
+        await yieldForPaint();
+        if (disposed) return;
+        const model = await Live2DModel.from(new URL(LIVE2D_MODEL_URL, window.location.href).href, {
           autoInteract: false,
           autoUpdate: false,
         } as never) as unknown as Live2DParameterTarget;
 
         if (disposed) {
-          model.destroy?.({ children: true, texture: true, baseTexture: true });
-          app.destroy(false, { children: true, texture: true, baseTexture: true });
+          model.destroy?.({ children: true, texture: false, baseTexture: false });
           return;
         }
+        ownedModel = model;
+
+        await yieldForPaint();
+        if (disposed) return;
 
         model.autoUpdate = false;
         app.stage.addChild(model);
         fitLive2DModel(model, width, height);
         app.renderer.render(app.stage);
 
+        // The first acting pose performs another Cubism update. Keep it out of
+        // the texture-upload frame, with the poster covering both setup steps.
+        await yieldForPaint();
+        if (disposed) return;
         appRef.current = app;
         modelRef.current = model;
         smoothedParamsRef.current = {};
@@ -678,6 +807,9 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
         resizeObserver = new ResizeObserver(([entry]) => {
           const nextWidth = Math.max(320, Math.round(entry.contentRect.width || width));
           const nextHeight = Math.max(420, Math.round(entry.contentRect.height || height));
+          if (nextWidth === width && nextHeight === height) return;
+          width = nextWidth;
+          height = nextHeight;
           app.renderer.resize(nextWidth, nextHeight);
           fitLive2DModel(model, nextWidth, nextHeight);
           app.renderer.render(app.stage);
@@ -685,6 +817,7 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
         resizeObserver.observe(stageCard);
       } catch (error) {
         if (!disposed) {
+          releaseResources();
           console.error("Failed to initialize real Live2D preview", error);
           setRuntimeStatus("error");
         }
@@ -695,19 +828,19 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
 
     return () => {
       disposed = true;
-      resizeObserver?.disconnect();
-      modelRef.current?.destroy?.({ children: true, texture: true, baseTexture: true });
-      appRef.current?.destroy(false, { children: true, texture: true, baseTexture: true });
-      modelRef.current = null;
-      appRef.current = null;
-      smoothedParamsRef.current = {};
+      if (paintFrame) window.cancelAnimationFrame(paintFrame);
+      if (paintTask) window.clearTimeout(paintTask);
+      finishPaintWait?.();
+      // Texture.fromURL shares page-level textures with background preparation
+      // and responsive remounts. Dispose the renderer/model, retain that cache.
+      releaseResources();
     };
   }, [enabled]);
 
   useEffect(() => {
     const app = appRef.current;
     const model = modelRef.current;
-    if (!enabled || !app || !model) return;
+    if (!enabled || runtimeStatus !== "ready" || !app || !model) return;
 
     model.update?.(1000 / FPS);
     const smoothedParams = smoothParamRecords(
@@ -718,7 +851,7 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
     smoothedParamsRef.current = smoothedParams;
     applyParamsToLive2DModel(model, smoothedParams, 1);
     app.renderer.render(app.stage);
-  }, [actingState.params, enabled, frame]);
+  }, [actingState.params, enabled, frame, runtimeStatus]);
 
   return (
     <section className="nl2d-stage">
@@ -732,6 +865,9 @@ function Live2DModelStage({ data, enabled }: { data: NatureDemoData; enabled: bo
       >
         <span className="nl2d-model-aura" />
         <canvas className="nl2d-live-canvas" ref={canvasRef} />
+        {runtimeStatus !== "ready" ? (
+          <img className="nl2d-model-poster" src={previewImageUrl("/models/yachiyo-web/avatar.webp")} alt="" decoding="async" />
+        ) : null}
         <span className={`nl2d-runtime-badge is-${runtimeStatus}`}>
           {runtimeStatus === "ready" ? "real Cubism model" : runtimeStatus === "error" ? "runtime fallback" : "loading moc3"}
         </span>
@@ -939,6 +1075,7 @@ function NatureLive2DComposition({ data = DEFAULT_DEMO_DATA, enableLive2D = fals
 
 export function NatureLive2DReplay() {
   const playerRef = useRef<PlayerRef | null>(null);
+  const { previewRef, isVisible } = usePreviewVisibility();
   const [isPlaying, setIsPlaying] = useState(false);
   const [playSession, setPlaySession] = useState(0);
   const [demoData, setDemoData] = useState<NatureDemoData>(DEFAULT_DEMO_DATA);
@@ -970,29 +1107,14 @@ export function NatureLive2DReplay() {
     return requestRef.current;
   }, []);
 
-  useEffect(() => {
-    let raf = 0;
-    let startedAt = 0;
-
-    const tick = (timestamp: number) => {
-      if (!startedAt) startedAt = timestamp;
-      const elapsedSeconds = (timestamp - startedAt) / 1000;
-      const nextFrame = Math.floor(elapsedSeconds * FPS) % DURATION_IN_FRAMES;
-      playerRef.current?.seekTo(nextFrame);
-      raf = window.requestAnimationFrame(tick);
-    };
-
-    if (isPlaying) {
-      playerRef.current?.seekTo(0);
-      raf = window.requestAnimationFrame(tick);
-    } else {
-      playerRef.current?.seekTo(0);
-    }
-
-    return () => {
-      if (raf) window.cancelAnimationFrame(raf);
-    };
-  }, [isPlaying, playSession]);
+  usePreviewPlayback({
+    playerRef,
+    isPlaying,
+    isVisible,
+    playSession,
+    fps: FPS,
+    durationInFrames: DURATION_IN_FRAMES,
+  });
 
   const startReplay = useCallback(() => {
     if (isPlayingRef.current) return;
@@ -1003,13 +1125,16 @@ export function NatureLive2DReplay() {
   }, [loadDemoData]);
 
   useEffect(() => {
+    if (!isVisible) return;
     const autoStart = window.setTimeout(startReplay, 180);
     return () => window.clearTimeout(autoStart);
-  }, [startReplay]);
+  }, [isVisible, startReplay]);
 
   return (
     <div
       className={`nature-live2d-remotion-shell ${isPlaying ? "is-playing" : "is-idle"}`}
+      ref={previewRef}
+      data-preview-active={isPlaying && isVisible}
       aria-hidden="true"
       onMouseEnter={startReplay}
       onMouseMove={startReplay}

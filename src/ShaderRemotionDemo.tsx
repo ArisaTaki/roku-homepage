@@ -1,4 +1,5 @@
 import { Player, type PlayerRef } from "@remotion/player";
+import { usePreviewPlayback, usePreviewVisibility } from "./usePreviewVisibility";
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame } from "remotion";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -1256,6 +1257,7 @@ function ShaderComposition() {
 
 export function ShaderReplay() {
   const playerRef = useRef<PlayerRef | null>(null);
+  const { previewRef, isVisible } = usePreviewVisibility();
   const [isPlaying, setIsPlaying] = useState(false);
   const [playSession, setPlaySession] = useState(0);
   const isPlayingRef = useRef(isPlaying);
@@ -1264,29 +1266,14 @@ export function ShaderReplay() {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
 
-  useEffect(() => {
-    let raf = 0;
-    let startedAt = 0;
-
-    const tick = (timestamp: number) => {
-      if (!startedAt) startedAt = timestamp;
-      const elapsedSeconds = (timestamp - startedAt) / 1000;
-      const nextFrame = Math.floor(elapsedSeconds * FPS) % DURATION_IN_FRAMES;
-      playerRef.current?.seekTo(nextFrame);
-      raf = window.requestAnimationFrame(tick);
-    };
-
-    if (isPlaying) {
-      playerRef.current?.seekTo(0);
-      raf = window.requestAnimationFrame(tick);
-    } else {
-      playerRef.current?.seekTo(0);
-    }
-
-    return () => {
-      if (raf) window.cancelAnimationFrame(raf);
-    };
-  }, [isPlaying, playSession]);
+  usePreviewPlayback({
+    playerRef,
+    isPlaying,
+    isVisible,
+    playSession,
+    fps: FPS,
+    durationInFrames: DURATION_IN_FRAMES,
+  });
 
   const startReplay = () => {
     if (isPlayingRef.current) return;
@@ -1303,6 +1290,8 @@ export function ShaderReplay() {
   return (
     <div
       className={`shader-remotion-shell ${isPlaying ? "is-playing" : "is-idle"}`}
+      ref={previewRef}
+      data-preview-active={isPlaying && isVisible}
       aria-hidden="true"
       onMouseEnter={startReplay}
       onMouseMove={startReplay}

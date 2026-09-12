@@ -8,7 +8,7 @@ import {
   Waves,
   type LucideIcon,
 } from "lucide-react";
-import { lazy, memo, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type RefObject } from "react";
+import { Component, lazy, memo, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type RefObject } from "react";
 import {
   isLocale,
   localeLabels,
@@ -21,8 +21,20 @@ import {
   type WorkCopy,
   type WorkId,
 } from "./i18n";
-import { preloadDeferredAppAssets, waitForInitialAppReady } from "./bootReadiness";
+import { waitForInitialAppReady } from "./bootReadiness";
+import { FestivalArtwork } from "./FestivalArtwork";
 import { askIrohaStream, type AssistantAnswerWithRuntime } from "./lib/iropAssistantClient";
+import { previewImageUrl } from "./lib/previewImages";
+import {
+  loadGalleryReplay,
+  loadHermesReplay,
+  loadNatureLive2DReplay,
+  loadShaderReplay,
+  preloadWorkPreview,
+  isWorkPreviewReady,
+  subscribeWorkPreview,
+  schedulePreviewPreloads,
+} from "./previewPreload";
 
 const TRAVEL_DISTANCE = 5900;
 const LOCALE_STORAGE_KEY = "irop-locale";
@@ -30,17 +42,6 @@ const IROHA_SESSION_STORAGE_PREFIX = "irop-iroha-session";
 const MOBILE_QUERY = "(max-width: 760px)";
 const FISH_BACKGROUND_MAX_PIXELS = 1_600_000;
 const FISH_BACKGROUND_PROGRESS_EVENT = "irop:fish-progress";
-
-const loadHermesReplay = () => import("./HermesRemotionDemo");
-const loadNatureLive2DReplay = () => import("./NatureLive2DDemo");
-const loadShaderReplay = () => import("./ShaderRemotionDemo");
-const loadGalleryReplay = () => import("./GalleryRemotionDemo");
-const interactivePreviewLoaders: Array<() => Promise<unknown>> = [
-  loadHermesReplay,
-  loadNatureLive2DReplay,
-  loadGalleryReplay,
-  loadShaderReplay,
-];
 
 const HermesReplay = lazy(() => loadHermesReplay().then((module) => ({ default: module.HermesReplay })));
 const NatureLive2DReplay = lazy(() => (
@@ -246,14 +247,13 @@ function useSmoothWheelScrolling(enabled: boolean): void {
   }, [enabled]);
 }
 
-function preloadInteractiveWorkVisuals() {
-  void Promise.allSettled([
-    preloadDeferredAppAssets(),
-    ...interactivePreviewLoaders.map((loadPreview) => loadPreview()),
-  ]);
+function prepareWorkPreview(id: WorkId): void {
+  void preloadWorkPreview(id).catch(() => {
+    // The card keeps its static preview if optional resources are unavailable.
+  });
 }
 
-function useHasEnteredViewport<T extends Element>(): [RefObject<T | null>, boolean] {
+function useHasEnteredViewport<T extends Element>(workId: WorkId): [RefObject<T | null>, boolean] {
   const ref = useRef<T | null>(null);
   const [hasEntered, setHasEntered] = useState(false);
 
@@ -264,19 +264,61 @@ function useHasEnteredViewport<T extends Element>(): [RefObject<T | null>, boole
     if (!node) return undefined;
 
     if (!("IntersectionObserver" in window)) {
+      prepareWorkPreview(workId);
       setHasEntered(true);
       return undefined;
     }
 
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry?.isIntersecting) return;
+    // Warm the next card ahead of time, but mount its runtime only when visible.
+    // The desktop stage clips its track and must be the observers' explicit root.
+    const stage = node.closest(".stage");
+    let stageIsVisible = !stage;
+    let previewIsNear = false;
+    let previewIsVisible = false;
+    let hasPrepared = false;
+    let stageObserver: IntersectionObserver | undefined;
+    const revealIfVisible = () => {
+      if (!stageIsVisible) return;
+      if (!hasPrepared && (previewIsNear || previewIsVisible)) {
+        hasPrepared = true;
+        prepareWorkPreview(workId);
+      }
+      if (!previewIsVisible) return;
       setHasEntered(true);
-      observer.disconnect();
-    }, { rootMargin: "900px 600px", threshold: 0.01 });
+      nearObserver.disconnect();
+      visibleObserver.disconnect();
+      stageObserver?.disconnect();
+    };
+    const nearObserver = new IntersectionObserver(([entry]) => {
+      previewIsNear = entry?.isIntersecting ?? false;
+      revealIfVisible();
+    }, { root: stage, rootMargin: "500px 800px", threshold: 0.01 });
+    const visibleObserver = new IntersectionObserver(([entry]) => {
+      previewIsVisible = Boolean(
+        entry?.isIntersecting && entry.intersectionRect.width > 0 && entry.intersectionRect.height > 0
+      );
+      revealIfVisible();
+    }, { root: stage, rootMargin: "0px", threshold: 0.01 });
 
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [hasEntered]);
+    if (stage) {
+      // An explicit root can intersect its children while it is offscreen.
+      stageObserver = new IntersectionObserver(([entry]) => {
+        stageIsVisible = Boolean(
+          entry?.isIntersecting && entry.intersectionRect.width > 0 && entry.intersectionRect.height > 0
+        );
+        revealIfVisible();
+      }, { threshold: 0.01 });
+      stageObserver.observe(stage);
+    }
+
+    nearObserver.observe(node);
+    visibleObserver.observe(node);
+    return () => {
+      nearObserver.disconnect();
+      visibleObserver.disconnect();
+      stageObserver?.disconnect();
+    };
+  }, [hasEntered, workId]);
 
   return [ref, hasEntered];
 }
@@ -617,6 +659,15 @@ function LightFishBackground({ progress }: { progress: number }) {
   }, []);
 
   return <canvas className="light-fish-canvas" ref={canvasRef} aria-hidden="true" />;
+}
+
+function FestivalWordmark({ className = "" }: { className?: string }) {
+  return (
+    <div className={`festival-wordmark ${className}`} aria-label="HacchiRoku">
+      <span>Hacchi</span>
+      <span>Roku<b aria-hidden="true">!</b></span>
+    </div>
+  );
 }
 
 function HeroMark({ className = "", text = "irop" }: { className?: string; text?: string }) {
@@ -973,13 +1024,13 @@ function HermesMobilePreview({ copy }: { copy: UiCopy["hermesMobile"] }) {
         <span />
         <span />
         <b>
-          <img src="/assets/hermes/logo.png" alt="" />
+          <img src={previewImageUrl("/assets/hermes/logo.png")} alt="" loading="lazy" decoding="async" />
           Hermes Yachiyo
         </b>
       </div>
       <div className="hm-body">
         <aside className="hm-rail">
-          <img src="/assets/hermes/logo.png" alt="" />
+          <img src={previewImageUrl("/assets/hermes/logo.png")} alt="" loading="lazy" decoding="async" />
           {copy.nav.map((item, index) => (
             <span className={index === 0 ? "is-active" : ""} key={item}>
               {item}
@@ -988,7 +1039,7 @@ function HermesMobilePreview({ copy }: { copy: UiCopy["hermesMobile"] }) {
         </aside>
         <main className="hm-panel">
           <header>
-            <img src="/assets/hermes/yachiyo-default.jpg" alt="" />
+            <img src={previewImageUrl("/assets/hermes/yachiyo-default.jpg")} alt="" loading="lazy" decoding="async" />
             <div>
               <b>月見八千代</b>
               <span>{copy.status}</span>
@@ -1033,50 +1084,95 @@ function WorkVisualLoading({
   work: Work;
   previewRef?: RefObject<HTMLDivElement | null>;
 }) {
+  const poster = work.id === "hermes-yachiyo"
+    ? "/assets/hermes/yachiyo-default.jpg"
+    : work.id === "nature-live2d"
+      ? "/models/yachiyo-web/avatar.webp"
+      : work.id === "gallery"
+        ? "/assets/gallery-new/cover-kaguya.webp"
+        : undefined;
+
   return (
     <div ref={previewRef} className={`work-preview-loading ${work.visual ?? ""}`} aria-hidden="true">
-      <span />
+      <div className="work-preview-art">
+        {poster ? (
+          <img
+            className="work-preview-poster"
+            src={previewImageUrl(poster)}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            onError={(event) => { event.currentTarget.style.visibility = "hidden"; }}
+          />
+        ) : <div className="work-preview-shader-orb" />}
+      </div>
+      <div className="work-preview-copy">
+        <small>{work.meta.split(",")[0]}</small>
+        <strong>{work.title}</strong>
+        <p>{work.description}</p>
+      </div>
     </div>
   );
+}
+
+class WorkPreviewBoundary extends Component<{
+  children: ReactNode;
+  fallback: ReactNode;
+}, { hasError: boolean }> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    return this.state.hasError ? this.props.fallback : this.props.children;
+  }
 }
 
 function DeferredWorkPreview({
   work,
   children,
-  forceLoad = false,
 }: {
   work: Work;
   children: ReactNode;
-  forceLoad?: boolean;
 }) {
-  const [ref, hasEntered] = useHasEnteredViewport<HTMLDivElement>();
-  const [hasForcedLoad, setHasForcedLoad] = useState(forceLoad);
+  const [ref, hasEntered] = useHasEnteredViewport<HTMLDivElement>(work.id);
+  const [preparedWork, setPreparedWork] = useState(() => isWorkPreviewReady(work.id));
+  const needsImages = work.id === "hermes-yachiyo" || work.id === "gallery";
   const fallback = <WorkVisualLoading work={work} />;
 
   useEffect(() => {
-    if (forceLoad) setHasForcedLoad(true);
-  }, [forceLoad]);
+    if (!needsImages) return undefined;
+    const update = () => setPreparedWork(isWorkPreviewReady(work.id));
+    const unsubscribe = subscribeWorkPreview(work.id, update);
+    update();
+    if (hasEntered) prepareWorkPreview(work.id);
+    return unsubscribe;
+  }, [hasEntered, needsImages, work.id]);
 
-  if (!hasEntered && !hasForcedLoad) {
+  if (!hasEntered || (needsImages && !preparedWork)) {
     return <WorkVisualLoading work={work} previewRef={ref} />;
   }
 
-  return <Suspense fallback={fallback}>{children}</Suspense>;
+  return (
+    <WorkPreviewBoundary fallback={fallback}>
+      <Suspense fallback={fallback}>{children}</Suspense>
+    </WorkPreviewBoundary>
+  );
 }
 
 function WorkVisual({
   work,
   copy,
   layout,
-  eagerPreview = false,
 }: {
   work: Work;
   copy: UiCopy;
   layout: "desktop" | "mobile";
-  eagerPreview?: boolean;
 }) {
   if (work.image) {
-    return <img src={work.image} alt="" />;
+    return <img src={previewImageUrl(work.image)} alt="" loading="lazy" decoding="async" />;
   }
 
   if (work.visual === "visual-hermes") {
@@ -1085,7 +1181,7 @@ function WorkVisual({
     }
 
     return (
-      <DeferredWorkPreview work={work} forceLoad={eagerPreview}>
+      <DeferredWorkPreview work={work}>
         <HermesReplay />
         <HermesMobilePreview copy={copy.hermesMobile} />
       </DeferredWorkPreview>
@@ -1094,7 +1190,7 @@ function WorkVisual({
 
   if (work.visual === "visual-live2d") {
     return (
-      <DeferredWorkPreview work={work} forceLoad={eagerPreview}>
+      <DeferredWorkPreview work={work}>
         <NatureLive2DReplay />
       </DeferredWorkPreview>
     );
@@ -1102,7 +1198,7 @@ function WorkVisual({
 
   if (work.visual === "visual-gallery") {
     return (
-      <DeferredWorkPreview work={work} forceLoad={eagerPreview}>
+      <DeferredWorkPreview work={work}>
         <GalleryReplay />
       </DeferredWorkPreview>
     );
@@ -1110,7 +1206,7 @@ function WorkVisual({
 
   if (work.visual === "visual-shader") {
     return (
-      <DeferredWorkPreview work={work} forceLoad={eagerPreview}>
+      <DeferredWorkPreview work={work}>
         <ShaderReplay />
       </DeferredWorkPreview>
     );
@@ -1124,22 +1220,47 @@ const MemoPetAssistant = memo(PetAssistant);
 const DesktopWorkCard = memo(function DesktopWorkCard({
   work,
   copy,
-  eagerPreview,
+  index,
+  total,
 }: {
   work: Work;
   copy: UiCopy;
-  eagerPreview: boolean;
+  index: number;
+  total: number;
 }) {
   return (
     <a
       className={workCardClass("work-card", work)}
+      data-work-id={work.id}
+      data-exhibit-number={String(index + 1).padStart(2, "0")}
       href={work.href}
       style={{ left: `${work.left}px`, width: `${work.width}px` }}
       target={work.href?.startsWith("http") ? "_blank" : undefined}
       rel={work.href?.startsWith("http") ? "noreferrer" : undefined}
+      onFocus={(event) => {
+        if (event.currentTarget.contains(event.relatedTarget)) return;
+        prepareWorkPreview(work.id);
+        if (!event.target.matches(":focus-visible")) return;
+
+        const bounds = event.currentTarget.getBoundingClientRect();
+        if (bounds.width > window.innerWidth - 48) return;
+        if (bounds.left >= 24 && bounds.right <= window.innerWidth - 24) return;
+
+        const anchor = document.getElementById(`work-${work.id}`);
+        if (anchor?.classList.contains("project-scroll-anchor")) {
+          anchor.scrollIntoView({ block: "start", behavior: "instant" });
+        }
+      }}
     >
-      <WorkVisual work={work} copy={copy} layout="desktop" eagerPreview={eagerPreview} />
-      <h2>{work.title}</h2>
+      <div className="work-overline" aria-hidden="true">
+        <span className="work-number">{String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}</span>
+        <span className="work-category">{work.meta.split(",")[0]}</span>
+      </div>
+      <WorkVisual work={work} copy={copy} layout="desktop" />
+      <div className="work-heading">
+        <h2>{work.title}</h2>
+        <span className="work-open-arrow" aria-hidden="true">↗</span>
+      </div>
       <p>{work.description}</p>
       <small>{work.meta}</small>
     </a>
@@ -1207,7 +1328,13 @@ function FloatingNav({
       </a>
       <nav className={`nav-card ${compact ? "compact" : ""}`} aria-label={copy.nav.primary}>
         <div className="nav-row nav-row-menu nav-row-works">
-          <a className="nav-row-main" href={`#work-${works[0].id}`}>
+          <a
+            className="nav-row-main"
+            href={`#work-${works[0].id}`}
+            onMouseEnter={() => prepareWorkPreview(works[0].id)}
+            onFocus={() => prepareWorkPreview(works[0].id)}
+            onClick={() => prepareWorkPreview(works[0].id)}
+          >
             <span>{copy.nav.works}</span>
             <span className="arrow">→</span>
           </a>
@@ -1219,6 +1346,9 @@ function FloatingNav({
                   href={`#work-${work.id}`}
                   aria-label={`${copy.nav.works}: ${work.title}`}
                   title={work.title}
+                  onMouseEnter={() => prepareWorkPreview(work.id)}
+                  onFocus={() => prepareWorkPreview(work.id)}
+                  onClick={() => prepareWorkPreview(work.id)}
                   key={work.id}
                 >
                   <WorkIcon aria-hidden="true" />
@@ -1286,19 +1416,34 @@ function DesktopScene({
   works,
   copy,
   petSessionKey,
-  eagerPreview,
 }: {
   progress: number;
   works: Work[];
   copy: UiCopy;
   petSessionKey: string;
-  eagerPreview: boolean;
 }) {
   const transform = useMemo(() => `translate3d(${-progress * TRAVEL_DISTANCE}px, 0, 0)`, [progress]);
+  const viewportWidth = useViewportWidth();
+  const viewportCenter = progress * TRAVEL_DISTANCE + viewportWidth / 2;
+  const activeIndex = progress < 0.08 ? -1 : works.reduce((nearest, work, index) => (
+    Math.abs(work.left + work.width / 2 - viewportCenter)
+      < Math.abs(works[nearest].left + works[nearest].width / 2 - viewportCenter)
+      ? index
+      : nearest
+  ), 0);
 
   return (
     <div className="stage" aria-label={copy.hero.stageAria}>
       <div className="desktop-track" style={{ transform }}>
+        <div className="festival-backdrop" aria-hidden="true">
+          <span className="festival-cloud cloud-one" />
+          <span className="festival-cloud cloud-two" />
+          <span className="festival-spark spark-one">✧</span>
+          <span className="festival-spark spark-two">✧</span>
+          <span className="festival-petals" />
+        </div>
+        <FestivalArtwork className="desktop-artwork" copy={copy.hero} />
+        <div className="hero-eyebrow"><span className="hero-signal" />{copy.hero.eyebrow}</div>
         <h1 className="desktop-title">irop.one</h1>
         <p className="desktop-intro">
           {copy.hero.intro[0]}
@@ -1307,20 +1452,51 @@ function DesktopScene({
           <br />
           {copy.hero.intro[2]}
         </p>
-        <HeroMark className="desktop-mark desktop-name-mark" text="HacchiRoku" />
+        <FestivalWordmark className="desktop-festival-wordmark" />
+        <p className="hero-caption">{copy.hero.caption}</p>
         <MemoPetAssistant className="hero-assistant" copy={copy.pet} sessionKey={petSessionKey} />
-        <div className="this-way">
+        <a
+          className="this-way"
+          href={`#work-${works[0].id}`}
+          onMouseEnter={() => prepareWorkPreview(works[0].id)}
+          onFocus={() => prepareWorkPreview(works[0].id)}
+          onClick={() => prepareWorkPreview(works[0].id)}
+        >
           <span>
-            {copy.hero.thisWay[0]}
+            {copy.hero.thisWay[0]}{" "}
             <br />
             {copy.hero.thisWay[1]}
           </span>
           <b aria-hidden="true">→</b>
-        </div>
-        {works.map((work) => (
-          <DesktopWorkCard work={work} copy={copy} eagerPreview={eagerPreview} key={work.id} />
+          <small>{copy.hero.exploreHint}</small>
+        </a>
+        {works.map((work, index) => (
+          <DesktopWorkCard work={work} copy={copy} index={index} total={works.length} key={work.id} />
         ))}
       </div>
+      <nav className="exhibition-nav" aria-label={copy.hero.indexAria}>
+        <div className="exhibition-position">
+          <small>{copy.nav.works}</small>
+          <span>{activeIndex < 0 ? copy.hero.prologue : works[activeIndex].title}</span>
+        </div>
+        <div className="exhibition-stops">
+          {works.map((work, index) => (
+            <a
+              href={`#work-${work.id}`}
+              className={index === activeIndex ? "is-active" : undefined}
+              title={work.title}
+              aria-label={work.title}
+              aria-current={index === activeIndex ? "location" : undefined}
+              onMouseEnter={() => prepareWorkPreview(work.id)}
+              onFocus={() => prepareWorkPreview(work.id)}
+              onClick={() => prepareWorkPreview(work.id)}
+              key={work.id}
+            >
+              {String(index + 1).padStart(2, "0")}
+            </a>
+          ))}
+        </div>
+      </nav>
     </div>
   );
 }
@@ -1329,16 +1505,22 @@ function MobilePage({
   works,
   copy,
   petSessionKey,
-  eagerPreview,
 }: {
   works: Work[];
   copy: UiCopy;
   petSessionKey: string;
-  eagerPreview: boolean;
 }) {
   return (
     <div className="mobile-page">
       <section className="mobile-hero" aria-labelledby="mobile-title">
+        <div className="festival-backdrop" aria-hidden="true">
+          <span className="festival-cloud cloud-one" />
+          <span className="festival-cloud cloud-two" />
+          <span className="festival-spark spark-one">✧</span>
+          <span className="festival-spark spark-two">✧</span>
+          <span className="festival-petals" />
+        </div>
+        <div className="hero-eyebrow"><span className="hero-signal" />{copy.hero.eyebrow}</div>
         <h1 id="mobile-title">irop.one</h1>
         <p>
           {copy.hero.mobileIntro[0]}
@@ -1348,30 +1530,42 @@ function MobilePage({
           {copy.hero.mobileIntro[2]}
         </p>
         <div className="mobile-logo-wrap">
-          <HeroMark className="mobile-mark mobile-name-mark" text="HacchiRoku" />
+          <FestivalWordmark className="mobile-festival-wordmark" />
         </div>
-        <PetAssistant className="mobile-hero-assistant" compact copy={copy.pet} sessionKey={petSessionKey} />
+        <p className="hero-caption">{copy.hero.caption}</p>
+        <FestivalArtwork className="mobile-artwork" copy={copy.hero} />
         <a className="mobile-this-way" href="#mobile-works">
           <span>
-            {copy.hero.thisWay[0]}
+            {copy.hero.thisWay[0]}{" "}
             <br />
             {copy.hero.thisWay[1]}
           </span>
           <b aria-hidden="true">↓</b>
+          <small>{copy.hero.exploreHint}</small>
         </a>
+        <PetAssistant className="mobile-hero-assistant" compact copy={copy.pet} sessionKey={petSessionKey} />
       </section>
       <section id="mobile-works" className="mobile-works" aria-label={copy.nav.works}>
-        {works.map((work) => (
+        {works.map((work, index) => (
           <a
             id={`work-${work.id}`}
             className={workCardClass("mobile-work", work)}
+            data-work-id={work.id}
+            data-exhibit-number={String(index + 1).padStart(2, "0")}
             href={work.href}
             key={work.id}
             target={work.href?.startsWith("http") ? "_blank" : undefined}
             rel={work.href?.startsWith("http") ? "noreferrer" : undefined}
           >
-            <WorkVisual work={work} copy={copy} layout="mobile" eagerPreview={eagerPreview} />
-            <h2>{work.title}</h2>
+            <div className="work-overline" aria-hidden="true">
+              <span className="work-number">{String(index + 1).padStart(2, "0")} / {String(works.length).padStart(2, "0")}</span>
+              <span className="work-category">{work.meta.split(",")[0]}</span>
+            </div>
+            <WorkVisual work={work} copy={copy} layout="mobile" />
+            <div className="work-heading">
+              <h2>{work.title}</h2>
+              <span className="work-open-arrow" aria-hidden="true">↗</span>
+            </div>
             <p>{work.description}</p>
             <small>{work.meta}</small>
           </a>
@@ -1417,7 +1611,6 @@ function AboutPanel({ copy, contactId }: { copy: UiCopy; contactId?: string }) {
 
 export default function App({ isBooting = false, onReady }: AppProps) {
   const [locale, setLocale] = useLocale();
-  const [eagerPreviewCards, setEagerPreviewCards] = useState(isBooting);
   const appRef = useRef<HTMLDivElement | null>(null);
   const sceneRef = useRef<HTMLElement | null>(null);
   const progress = useSceneProgress(sceneRef);
@@ -1435,45 +1628,17 @@ export default function App({ isBooting = false, onReady }: AppProps) {
   useEffect(() => {
     if (!isBooting) return undefined;
 
-    let cancelled = false;
-    setEagerPreviewCards(true);
+    const controller = new AbortController();
+    void waitForInitialAppReady(appRef.current, controller.signal).then(() => {
+      if (!controller.signal.aborted) onReady?.();
+    });
 
-    void waitForInitialAppReady(appRef.current)
-      .catch((error) => {
-        console.error("Initial app readiness check failed", error);
-      })
-      .finally(() => {
-        if (!cancelled) onReady?.();
-      });
-
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [isBooting, onReady]);
 
   useEffect(() => {
     if (isBooting) return undefined;
-
-    const previewMountHandle = window.setTimeout(() => {
-      setEagerPreviewCards(true);
-    }, 300);
-
-    const idleWindow = window as Window & {
-      requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
-      cancelIdleCallback?: (handle: number) => void;
-    };
-    let timeoutHandle = 0;
-    const idleHandle = idleWindow.requestIdleCallback?.(preloadInteractiveWorkVisuals, { timeout: 1200 });
-
-    if (!idleHandle) {
-      timeoutHandle = window.setTimeout(preloadInteractiveWorkVisuals, 650);
-    }
-
-    return () => {
-      window.clearTimeout(previewMountHandle);
-      if (idleHandle) idleWindow.cancelIdleCallback?.(idleHandle);
-      if (timeoutHandle) window.clearTimeout(timeoutHandle);
-    };
+    return schedulePreviewPreloads();
   }, [isBooting]);
 
   return (
@@ -1499,7 +1664,6 @@ export default function App({ isBooting = false, onReady }: AppProps) {
                 works={works}
                 copy={copy}
                 petSessionKey={petSessionKey}
-                eagerPreview={eagerPreviewCards}
               />
             ) : (
               <>
@@ -1509,7 +1673,6 @@ export default function App({ isBooting = false, onReady }: AppProps) {
                   works={works}
                   copy={copy}
                   petSessionKey={petSessionKey}
-                  eagerPreview={eagerPreviewCards}
                 />
               </>
             )}

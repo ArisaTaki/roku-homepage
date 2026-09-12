@@ -1,4 +1,5 @@
 import { Player, type PlayerRef } from "@remotion/player";
+import { usePreviewPlayback, usePreviewVisibility } from "./usePreviewVisibility";
 import {
   AbsoluteFill,
   Easing,
@@ -8,6 +9,7 @@ import {
   useCurrentFrame,
 } from "remotion";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { previewImageUrl } from "./lib/previewImages";
 
 const FPS = 30;
 const DURATION_IN_FRAMES = 600;
@@ -82,7 +84,7 @@ function WindowFrame({
             <span />
           </div>
           <b>
-            <img src="/assets/hermes/logo.png" alt="" />
+            <img src={previewImageUrl("/assets/hermes/logo.png")} alt="" />
             Hermes Yachiyo — {activeNav}
           </b>
           <div className="hy-demo-top-actions">
@@ -93,11 +95,11 @@ function WindowFrame({
         <div className="hy-demo-body">
           <aside className="hy-demo-sidebar">
             <div className="hy-demo-brand">
-              <img src="/assets/hermes/logo.png" alt="" />
+              <img src={previewImageUrl("/assets/hermes/logo.png")} alt="" />
               <strong>Hermes Yachiyo</strong>
             </div>
             <div className="hy-demo-persona">
-              <img src="/assets/hermes/yachiyo-default.jpg" alt="" />
+              <img src={previewImageUrl("/assets/hermes/yachiyo-default.jpg")} alt="" />
               <div>
                 <b>月見八千代</b>
                 <span>八千代待机中</span>
@@ -151,7 +153,7 @@ function ChatScene() {
           </div>
           {["发布说明整理", "博客账号记录", "图像识别测试"].map((item, index) => (
             <article className={index === 0 ? "is-active" : ""} key={item}>
-              <img src="/assets/hermes/yachiyo-default.jpg" alt="" />
+              <img src={previewImageUrl("/assets/hermes/yachiyo-default.jpg")} alt="" />
               <div>
                 <strong>{item}</strong>
                 <p>{index === 0 ? "正在输入新的问题..." : "已完成"}</p>
@@ -162,7 +164,7 @@ function ChatScene() {
         </div>
         <div className="hy-demo-chat-panel">
           <header>
-            <img src="/assets/hermes/yachiyo-default.jpg" alt="" />
+            <img src={previewImageUrl("/assets/hermes/yachiyo-default.jpg")} alt="" />
             <div>
               <b>把 Agent 更新整理成发布说明</b>
               <span>就绪 · Hermes · ~6.4k tok</span>
@@ -242,7 +244,7 @@ function AgentStudioAgentsScreen() {
         <div className="hy-demo-agent-list">
           {agents.map(([name, base, category, avatar], index) => (
             <article className={index === 0 ? "is-active" : ""} key={name}>
-              {avatar ? <img src={avatar} alt="" /> : <b>{name.slice(0, 1)}</b>}
+              {avatar ? <img src={previewImageUrl(avatar)} alt="" /> : <b>{name.slice(0, 1)}</b>}
               <div>
                 <strong>{name}</strong>
                 <small>{base}</small>
@@ -473,7 +475,7 @@ function AgentStudioRunsScreen() {
           <h4>Run Detail</h4>
         </header>
         <div className="hy-demo-run-hero">
-          <img src="/assets/iroha/iroha.png" alt="" />
+          <img src={previewImageUrl("/assets/iroha/iroha.png")} alt="" />
           <div>
             <span>Agent Run · 06/07 00:29</span>
             <strong>Coding Agent</strong>
@@ -550,7 +552,7 @@ function BubbleScene() {
         </div>
         <div className="hy-demo-bubble-window">
           <header>
-            <img src="/assets/hermes/yachiyo-default.jpg" alt="" />
+            <img src={previewImageUrl("/assets/hermes/yachiyo-default.jpg")} alt="" />
             <div>
               <b>月見八千代</b>
               <span>就绪</span>
@@ -568,7 +570,7 @@ function BubbleScene() {
             </p>
           </div>
           <div className="hy-demo-bubble-avatar" style={{ transform: `translateY(${avatarLift}px)` }}>
-            <img src="/assets/hermes/yachiyo-default.jpg" alt="" />
+            <img src={previewImageUrl("/assets/hermes/yachiyo-default.jpg")} alt="" />
           </div>
         </div>
       </div>
@@ -588,7 +590,7 @@ function Live2DScene() {
         <div className="hy-demo-live2d-stage">
           <span className="hy-demo-live2d-aura" />
           <span className="hy-demo-live2d-guide" />
-          <img src="/assets/hermes/hermes-live2d-character.png" alt="" style={{ transform: `scale(${imageScale})` }} />
+          <img src={previewImageUrl("/assets/hermes/hermes-live2d-character.png")} alt="" style={{ transform: `scale(${imageScale})` }} />
         </div>
         <section className="hy-demo-live2d-copy">
           <h4>Live2D 模式</h4>
@@ -626,6 +628,7 @@ function HermesDemoComposition() {
 
 export function HermesReplay() {
   const playerRef = useRef<PlayerRef | null>(null);
+  const { previewRef, isVisible } = usePreviewVisibility();
   const [isPlaying, setIsPlaying] = useState(false);
   const [playSession, setPlaySession] = useState(0);
   const isPlayingRef = useRef(isPlaying);
@@ -644,29 +647,14 @@ export function HermesReplay() {
     return undefined;
   }, []);
 
-  useEffect(() => {
-    let raf = 0;
-    let startedAt = 0;
-
-    const tick = (timestamp: number) => {
-      if (!startedAt) startedAt = timestamp;
-      const elapsedSeconds = (timestamp - startedAt) / 1000;
-      const nextFrame = Math.floor(elapsedSeconds * FPS) % DURATION_IN_FRAMES;
-      playerRef.current?.seekTo(nextFrame);
-      raf = window.requestAnimationFrame(tick);
-    };
-
-    if (isPlaying) {
-      playerRef.current?.seekTo(0);
-      raf = window.requestAnimationFrame(tick);
-    } else {
-      playerRef.current?.seekTo(0);
-    }
-
-    return () => {
-      if (raf) window.cancelAnimationFrame(raf);
-    };
-  }, [isPlaying, playSession]);
+  usePreviewPlayback({
+    playerRef,
+    isPlaying,
+    isVisible,
+    playSession,
+    fps: FPS,
+    durationInFrames: DURATION_IN_FRAMES,
+  });
 
   const startReplay = () => {
     if (isPlayingRef.current) return;
@@ -683,6 +671,8 @@ export function HermesReplay() {
   return (
     <div
       className={`hermes-remotion-shell ${isPlaying ? "is-playing" : "is-idle"}`}
+      ref={previewRef}
+      data-preview-active={isPlaying && isVisible}
       aria-hidden="true"
       onMouseEnter={startReplay}
       onMouseLeave={stopReplay}

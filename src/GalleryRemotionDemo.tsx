@@ -1,6 +1,8 @@
 import { Player, type PlayerRef } from "@remotion/player";
+import { usePreviewPlayback, usePreviewVisibility } from "./usePreviewVisibility";
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame } from "remotion";
 import { useEffect, useRef, useState } from "react";
+import { previewImageUrl } from "./lib/previewImages";
 
 const FPS = 30;
 const DURATION_IN_FRAMES = 510;
@@ -95,7 +97,7 @@ function AlbumIndex({ frame }: { frame: number }) {
           const isActive = index === activeAlbum;
           return (
             <div className={`gallery-demo-album ${isActive ? "is-active" : ""}`} key={album.title}>
-              <img src={album.image} alt="" />
+              <img src={previewImageUrl(album.image)} alt="" />
               <span>{String(index + 1).padStart(2, "0")}</span>
             </div>
           );
@@ -133,7 +135,7 @@ function AlbumTransition({ frame }: { frame: number }) {
         clipPath: `inset(0 ${Math.max(0, (1 - progress) * 8)}% 0 0)`,
       }}
     >
-      <img src="/assets/gallery-new/cover-kaguya.webp" alt="" />
+      <img src={previewImageUrl("/assets/gallery-new/cover-kaguya.webp")} alt="" />
       <i style={{ transform: `translateX(${progress * 108}%)` }} />
     </div>
   );
@@ -169,7 +171,7 @@ function AlbumDetail({ frame }: { frame: number }) {
       <GalleryTopbar detail />
       <h3 className="is-kaguya" style={{ transform: `translateX(${titleX}px)` }}>超时空辉夜姬!</h3>
       <div className="gallery-demo-detail-image" style={{ transform: `translateY(${imageY}px)` }}>
-        <img src="/assets/gallery-new/cover-kaguya.webp" alt="" />
+        <img src={previewImageUrl("/assets/gallery-new/cover-kaguya.webp")} alt="" />
       </div>
       <PhotoRail activeIndex={0} muted />
       <GalleryFooter />
@@ -182,7 +184,7 @@ function PhotoRail({ activeIndex, muted = false }: { activeIndex: number; muted?
     <div className={`gallery-demo-photo-rail ${muted ? "is-muted" : ""}`}>
       {kaguyaPhotos.map((photo, index) => (
         <div className={index === activeIndex ? "is-active" : ""} key={photo.title}>
-          <img src={photo.image} alt="" />
+          <img src={previewImageUrl(photo.image)} alt="" />
         </div>
       ))}
     </div>
@@ -208,7 +210,7 @@ function PhotoStage({ frame }: { frame: number }) {
       <div className={`gallery-demo-photo-main ${activePhoto >= 4 ? "is-character" : ""}`}>
         {kaguyaPhotos.map((photo, index) => (
           <img
-            src={photo.image}
+            src={previewImageUrl(photo.image)}
             alt=""
             className={index === activePhoto ? "is-active" : ""}
             style={index === activePhoto ? {
@@ -272,6 +274,7 @@ function GalleryComposition() {
 
 export function GalleryReplay() {
   const playerRef = useRef<PlayerRef | null>(null);
+  const { previewRef, isVisible } = usePreviewVisibility();
   const [isPlaying, setIsPlaying] = useState(false);
   const [playSession, setPlaySession] = useState(0);
   const isPlayingRef = useRef(isPlaying);
@@ -280,29 +283,14 @@ export function GalleryReplay() {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
 
-  useEffect(() => {
-    let raf = 0;
-    let startedAt = 0;
-
-    const tick = (timestamp: number) => {
-      if (!startedAt) startedAt = timestamp;
-      const elapsedSeconds = (timestamp - startedAt) / 1000;
-      const nextFrame = Math.floor(elapsedSeconds * FPS) % DURATION_IN_FRAMES;
-      playerRef.current?.seekTo(nextFrame);
-      raf = window.requestAnimationFrame(tick);
-    };
-
-    if (isPlaying) {
-      playerRef.current?.seekTo(0);
-      raf = window.requestAnimationFrame(tick);
-    } else {
-      playerRef.current?.seekTo(0);
-    }
-
-    return () => {
-      if (raf) window.cancelAnimationFrame(raf);
-    };
-  }, [isPlaying, playSession]);
+  usePreviewPlayback({
+    playerRef,
+    isPlaying,
+    isVisible,
+    playSession,
+    fps: FPS,
+    durationInFrames: DURATION_IN_FRAMES,
+  });
 
   const startReplay = () => {
     if (isPlayingRef.current) return;
@@ -319,6 +307,8 @@ export function GalleryReplay() {
   return (
     <div
       className={`gallery-remotion-shell ${isPlaying ? "is-playing" : "is-idle"}`}
+      ref={previewRef}
+      data-preview-active={isPlaying && isVisible}
       aria-hidden="true"
       onMouseEnter={startReplay}
       onMouseMove={startReplay}

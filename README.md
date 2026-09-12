@@ -15,6 +15,30 @@ npm run dev
 npm run build
 ```
 
+## Exhibition layout
+
+The homepage keeps a horizontal exhibition on desktop and vertically stacked works on phones. Its poster styling combines an oval character visual, tilted two-color headings, cloud motifs, halftone dots, Japanese geometric patterns, ticket navigation and consistent exhibition labels. The hero reuses the existing gallery image `kaguya-visual-02.webp` (about 265KB), prepares it with priority and shares its decoded image cache with Gallery; there are no new media files or dependencies. Phones show the hero, work entrance and assistant in that order.
+
+With `npm run preview`, check Chinese, English and Japanese titles for wrapping, use the exhibition entrance and ticket navigation to reach each work, and verify card layout and links at phone widths. Disable browser caching and confirm the shared hero/Gallery image and prepared gallery images download only once; block resources and check that the page remains usable.
+
+## Loading performance
+
+After React mounts, the opening overlay waits for two animation frames, with a 1.2-second fallback, independently of fonts, images and Live2D.
+
+Background resource preparation starts 800ms after the homepage becomes ready, with at most two previews in progress. Approaching a card or using project navigation starts its preparation immediately. Save-Data and 2G connections skip automatic preparation; hidden pages defer new background preview jobs. Preparation loads code and assets without mounting animations or calling the AI demo API. Live2D preparation and rendering share in-flight and cached model bytes.
+
+Cards retain a static cover with their title and description while preparing. Hermes and Gallery switch to animation once their resources are ready, reusing decoded Blob URLs instead of downloading their images again. Live2D retains its avatar while the model loads or if it fails. Background downloads continue after the first screen appears, so total transferred bytes increase over time.
+
+Previews pause animation updates when their cards leave the viewport or the page is hidden, retaining mounted models and prepared resources to resume on return. Replay previews skip duplicate seeks within each 30fps frame. Nature yields to browser rendering between its initial WebGL, model and first-frame preparation stages and keeps its poster visible until the first frame is ready.
+
+Validate with `npm run build`, `npm run check:iroha` and `npx tsx --test tools/check-boot-readiness.ts tools/check-live2d-resource-cache.ts`. Run `npm run preview` for manual checks at desktop and phone widths:
+
+- Reload with cache disabled, stay on the homepage, then scroll through the works; check background preparation and preview transitions.
+- Use project navigation immediately after the homepage appears; check its cover, preview, language switching and layout.
+- Delay or block resources; check that useful covers remain and the homepage and other projects stay usable.
+
+For a loading report, run `npx tsx tools/check-loading.ts --dist dist --port 4181 --report /tmp/roku-loading.json`, then open the printed URL. Optional flags include `--delay-model-ms 1500`, `--delay-code-ms 4000`, `--delay-media-ms 4000` and `--block media`. Reports count uncompressed response body bytes and reset on each homepage navigation; save a copy before scrolling and record how long the page has been open.
+
 ## Iroha Assistant
 
 The Iroha pet works in browser-only local KB mode by default, with refusal rules for private or unrelated questions.

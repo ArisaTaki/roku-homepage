@@ -1,235 +1,37 @@
 const FRAME_DELAY_COUNT = 2;
-const READY_TIMEOUT_MS = 120_000;
+const READY_TIMEOUT_MS = 1200;
 
-const CRITICAL_BOOT_IMAGE_URLS = [
-  "/assets/pet/iroha/spritesheet.webp",
-] as const;
+// React has committed the homepage before this runs. Give it two paint frames;
+// offscreen previews, images and fonts must not hold the page behind the loader.
+export function waitForInitialAppReady(
+  root: HTMLElement | null,
+  signal?: AbortSignal,
+): Promise<void> {
+  if (!root || signal?.aborted) return Promise.resolve();
 
-const DEFERRED_IMAGE_URLS = [
-  "/assets/hermes/logo.png",
-  "/assets/hermes/yachiyo-default.jpg",
-  "/assets/hermes/hermes-live2d-character.png",
-  "/assets/hermes/hermes-live2d-model-preview.png",
-  "/assets/iroha/iroha.png",
-  "/assets/screenshots/blog-irop.png",
-  "/assets/gallery-new/cover-kaguya.webp",
-  "/assets/gallery-new/weathering-main.webp",
-  "/assets/gallery-new/cover-your-name.webp",
-  "/assets/gallery-new/cover-wandering-witch.webp",
-  "/assets/gallery-new/cover-bocchi.webp",
-  "/assets/gallery-new/cover-girls-band-cry.webp",
-  "/assets/gallery-new/cover-makeine.webp",
-  "/assets/gallery-new/kaguya-visual-02.webp",
-  "/assets/gallery-new/kaguya-visual-03.webp",
-  "/assets/gallery-new/kaguya-story.webp",
-  "/assets/gallery-new/kaguya-character.webp",
-  "/assets/gallery-new/kaguya-iroha.webp",
-  "/models/yachiyo-web/avatar.webp",
-  "/models/yachiyo-web/textures/texture_00.webp",
-  "/models/yachiyo-web/textures/texture_01.webp",
-] as const;
-
-const LIVE2D_FETCH_URLS = [
-  "/assets/vendor/live2dcubismcore.min.js",
-  "/models/yachiyo-web/yachiyo.model3.json",
-  "/models/yachiyo-web/yachiyo.moc3",
-  "/models/yachiyo-web/yachiyo.physics3.json",
-  "/models/yachiyo-web/yachiyo.cdi3.json",
-] as const;
-
-let bootAssetPromise: Promise<void> | null = null;
-let deferredAssetPromise: Promise<void> | null = null;
-
-class ReadinessTimeoutError extends Error {
-  constructor(label: string) {
-    super(`Timed out waiting for ${label}`);
-    this.name = "ReadinessTimeoutError";
-  }
-}
-
-function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const timeout = window.setTimeout(() => {
-      reject(new ReadinessTimeoutError(label));
-    }, timeoutMs);
-
-    promise
-      .then(resolve, reject)
-      .finally(() => window.clearTimeout(timeout));
-  });
-}
-
-function waitForFrames(count = FRAME_DELAY_COUNT): Promise<void> {
   return new Promise((resolve) => {
-    let remaining = count;
+    let remaining = FRAME_DELAY_COUNT;
+    let frame = 0;
+    let timeout = 0;
+
+    const finish = () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timeout);
+      signal?.removeEventListener("abort", finish);
+      resolve();
+    };
     const tick = () => {
       remaining -= 1;
       if (remaining <= 0) {
-        resolve();
-        return;
+        finish();
+      } else {
+        frame = window.requestAnimationFrame(tick);
       }
-
-      window.requestAnimationFrame(tick);
     };
 
-    window.requestAnimationFrame(tick);
+    signal?.addEventListener("abort", finish, { once: true });
+    // Animation frames may pause in a background tab.
+    timeout = window.setTimeout(finish, READY_TIMEOUT_MS);
+    frame = window.requestAnimationFrame(tick);
   });
-}
-
-function loadImage(src: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.decoding = "async";
-    image.onload = () => {
-      const decode = image.decode?.();
-      if (decode) {
-        void decode.then(resolve).catch(resolve);
-        return;
-      }
-
-      resolve();
-    };
-    image.onerror = () => reject(new Error(`Unable to load image: ${src}`));
-    image.src = src;
-  });
-}
-
-function waitForImageElement(image: HTMLImageElement): Promise<void> {
-  if (image.complete && image.naturalWidth > 0) {
-    const decode = image.decode?.();
-    return decode ? decode.catch(() => undefined) : Promise.resolve();
-  }
-
-  return new Promise((resolve, reject) => {
-    const cleanup = () => {
-      image.removeEventListener("load", handleLoad);
-      image.removeEventListener("error", handleError);
-    };
-    const handleLoad = () => {
-      cleanup();
-      const decode = image.decode?.();
-      if (decode) {
-        void decode.then(resolve).catch(resolve);
-        return;
-      }
-
-      resolve();
-    };
-    const handleError = () => {
-      cleanup();
-      reject(new Error(`Unable to load DOM image: ${image.currentSrc || image.src}`));
-    };
-
-    image.addEventListener("load", handleLoad, { once: true });
-    image.addEventListener("error", handleError, { once: true });
-  });
-}
-
-async function fetchWarm(url: string): Promise<void> {
-  const response = await fetch(url, { cache: "force-cache" });
-  if (!response.ok) {
-    throw new Error(`Unable to warm ${url}: ${response.status}`);
-  }
-
-  await response.arrayBuffer();
-}
-
-async function preloadBootAssets(): Promise<void> {
-  if (bootAssetPromise) return bootAssetPromise;
-
-  bootAssetPromise = Promise.all([
-    "fonts" in document ? document.fonts.ready.then(() => undefined) : Promise.resolve(),
-    Promise.all([...CRITICAL_BOOT_IMAGE_URLS, ...DEFERRED_IMAGE_URLS].map((src) => loadImage(src))).then(() => undefined),
-    import("./HermesRemotionDemo").then(() => undefined),
-    import("./GalleryRemotionDemo").then(() => undefined),
-    import("./ShaderRemotionDemo").then(() => undefined),
-    import("./NatureLive2DDemo").then(() => undefined),
-  ]).then(() => undefined);
-
-  return bootAssetPromise;
-}
-
-export function preloadDeferredAppAssets(): Promise<void> {
-  if (deferredAssetPromise) return deferredAssetPromise;
-  if (bootAssetPromise) return bootAssetPromise;
-
-  deferredAssetPromise = Promise.allSettled([
-    ...DEFERRED_IMAGE_URLS.map((src) => loadImage(src)),
-    Promise.all(LIVE2D_FETCH_URLS.map((url) => fetchWarm(url))).then(() => undefined),
-    import("./HermesRemotionDemo").then(() => undefined),
-    import("./GalleryRemotionDemo").then(() => undefined),
-    import("./ShaderRemotionDemo").then(() => undefined),
-    import("./NatureLive2DDemo").then(() => undefined),
-  ]).then(() => undefined);
-
-  return deferredAssetPromise;
-}
-
-function queryRequired<T extends Element>(root: ParentNode, selector: string): T | null {
-  return root.querySelector<T>(selector);
-}
-
-function waitForSelector<T extends Element>(
-  root: ParentNode,
-  selector: string,
-  predicate: (element: T) => boolean = () => true,
-): Promise<T> {
-  const existing = queryRequired<T>(root, selector);
-  if (existing && predicate(existing)) return Promise.resolve(existing);
-
-  return new Promise((resolve) => {
-    const observer = new MutationObserver(() => {
-      const element = queryRequired<T>(root, selector);
-      if (!element || !predicate(element)) return;
-      observer.disconnect();
-      resolve(element);
-    });
-
-    observer.observe(root, { attributes: true, childList: true, subtree: true });
-  });
-}
-
-function waitForNoSelector(root: ParentNode, selector: string): Promise<void> {
-  if (!root.querySelector(selector)) return Promise.resolve();
-
-  return new Promise((resolve) => {
-    const observer = new MutationObserver(() => {
-      if (root.querySelector(selector)) return;
-      observer.disconnect();
-      resolve();
-    });
-
-    observer.observe(root, { attributes: true, childList: true, subtree: true });
-  });
-}
-
-function hasRenderableBox(element: Element): boolean {
-  const rect = element.getBoundingClientRect();
-  return rect.width > 0 && rect.height > 0;
-}
-
-async function waitForDomImages(root: ParentNode): Promise<void> {
-  const images = Array.from(root.querySelectorAll<HTMLImageElement>("img"));
-  await Promise.all(images.map((image) => waitForImageElement(image)));
-}
-
-async function waitForRenderedApp(root: HTMLElement): Promise<void> {
-  await waitForSelector<HTMLElement>(root, ".pet-assistant .pixel-pet", hasRenderableBox);
-  await waitForNoSelector(root, ".work-preview-loading");
-  await waitForSelector<HTMLElement>(root, ".nature-live2d-remotion-shell .nl2d-runtime-badge.is-ready", hasRenderableBox);
-  await waitForDomImages(root);
-  await waitForFrames();
-}
-
-export async function waitForInitialAppReady(root: HTMLElement | null): Promise<void> {
-  if (!root) return;
-
-  await withTimeout(
-    Promise.all([
-      preloadBootAssets(),
-      waitForRenderedApp(root),
-    ]).then(() => undefined),
-    READY_TIMEOUT_MS,
-    "all homepage resources"
-  );
 }

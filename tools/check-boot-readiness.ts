@@ -9,6 +9,7 @@ function browserClock(context: TestContext, mockTimers = true) {
   const frames = new Map<number, FrameRequestCallback>();
   const timers = new Set<number>();
   let nextFrame = 0;
+  let elapsed = 0;
   const browser = {
     requestAnimationFrame(callback: FrameRequestCallback) {
       frames.set(++nextFrame, callback);
@@ -27,138 +28,157 @@ function browserClock(context: TestContext, mockTimers = true) {
     if (previousWindow) Object.defineProperty(globalThis, "window", previousWindow);
     else Reflect.deleteProperty(globalThis, "window");
   });
+  const advance = (ms: number) => {
+    elapsed += ms;
+    if (mockTimers) context.mock.timers.tick(ms);
+  };
+  const paint = (ms = 16) => {
+    advance(ms);
+    const callbacks = [...frames.values()];
+    frames.clear();
+    callbacks.forEach((callback) => callback(mockTimers ? elapsed : performance.now()));
+  };
   return {
-    frames, timers,
-    paint() {
-      const callbacks = [...frames.values()];
-      frames.clear();
-      callbacks.forEach((callback) => callback(0));
-    },
-    advance(ms: number) { context.mock.timers.tick(ms); },
+    frames, timers, paint, advance,
+    steady(ms: number) { for (let duration = 0; duration < ms; duration += 16) paint(); },
   };
 }
 
-test("a prepared page retains a short opening instead of flashing the loader", async (context) => {
+async function flush() { await Promise.resolve(); await Promise.resolve(); }
+
+function observe(preparation?: Promise<unknown>, signal?: AbortSignal) {
+  let completed = false;
+  let status: unknown;
+  const readiness = waitForInitialAppReady({} as HTMLElement, signal, preparation)
+    .then((result) => { completed = true; status = result; });
+  return { readiness, get completed() { return completed; }, get status() { return status; } };
+}
+
+test("fast preparation still retains a 700ms opening", async (context) => {
   const clock = browserClock(context);
-  let ready = false;
-  const readiness = waitForInitialAppReady({} as HTMLElement, undefined, Promise.resolve())
-    .then(() => { ready = true; });
+  const result = observe(Promise.resolve());
+  await flush();
+  clock.steady(688);
+  await flush();
+  assert.equal(result.completed, false);
   clock.paint();
-  clock.paint();
-  await Promise.resolve();
-  clock.advance(699);
-  await Promise.resolve();
-  assert.equal(ready, false, "fast cache hits still leave time for the opening");
-  clock.advance(1);
-  await readiness;
-  assert.equal(ready, true);
-  assert.equal(clock.frames.size + clock.timers.size, 0, "completion releases scheduled work");
+  await flush();
+  assert.equal(result.status, "ready");
+  assert.equal(clock.frames.size + clock.timers.size, 0);
 });
 
-test("resources may finish after the minimum opening and before the deadline", async (context) => {
+test("resources taking longer than 1.8 seconds must actually finish before normal release", async (context) => {
   const clock = browserClock(context);
   let finishPreparation!: () => void;
-  const preparation = new Promise<void>((resolve) => { finishPreparation = resolve; });
-  let ready = false;
-  const readiness = waitForInitialAppReady({} as HTMLElement, undefined, preparation)
-    .then(() => { ready = true; });
-  clock.paint();
-  clock.paint();
-  clock.advance(1100);
-  await Promise.resolve();
-  assert.equal(ready, false, "preparation gets a bounded chance to finish");
+  const result = observe(new Promise<void>((resolve) => { finishPreparation = resolve; }));
+  clock.steady(3600);
+  await flush();
+  assert.equal(result.completed, false, "the old 1.8 second timer must not report readiness");
   finishPreparation();
-  await readiness;
-  assert.equal(ready, true);
+  await flush();
+  assert.equal(result.completed, false, "prepared assets must have time to appear in the DOM");
+  clock.steady(192);
+  await flush();
+  assert.equal(result.status, "ready");
   assert.equal(clock.frames.size + clock.timers.size, 0);
 });
 
-test("stalled preparation releases the loader at the resource deadline", async (context) => {
+test("frames painted before preparation do not count toward the stable window", async (context) => {
   const clock = browserClock(context);
-  let ready = false;
-  const readiness = waitForInitialAppReady({} as HTMLElement, undefined, new Promise(() => {}))
-    .then(() => { ready = true; });
+  let finishPreparation!: () => void;
+  const result = observe(new Promise<void>((resolve) => { finishPreparation = resolve; }));
+  clock.steady(900);
+  finishPreparation();
+  await flush();
   clock.paint();
   clock.paint();
-  clock.advance(1799);
-  await Promise.resolve();
-  assert.equal(ready, false);
+  await flush();
+  assert.equal(result.completed, false, "two early frames alone do not prove rendering has settled");
+  clock.steady(160);
+  await flush();
+  assert.equal(result.status, "ready");
+});
+
+test("a long frame restarts the post-preparation stability window", async (context) => {
+  const clock = browserClock(context);
+  const result = observe(Promise.resolve());
+  await flush();
+  clock.advance(700);
+  clock.steady(96);
+  clock.paint(100);
+  clock.steady(128);
+  await flush();
+  assert.equal(result.completed, false, "recent initialization work must settle before revealing the page");
+  clock.steady(48);
+  await flush();
+  assert.equal(result.status, "ready");
+});
+
+test("failed preparation releases a painted fallback and never claims resources are ready", async (context) => {
+  const clock = browserClock(context);
+  const result = observe(Promise.reject(new Error("image unavailable")));
+  await flush();
+  clock.steady(704);
+  await flush();
+  assert.equal(result.status, "fallback");
+  assert.equal(clock.frames.size + clock.timers.size, 0);
+});
+
+test("a stalled resource has a 12 second escape hatch explicitly marked as timeout", async (context) => {
+  const clock = browserClock(context);
+  const result = observe(new Promise(() => {}));
+  clock.advance(11_999);
+  await flush();
+  assert.equal(result.completed, false);
   clock.advance(1);
-  await readiness;
-  assert.equal(ready, true);
+  await flush();
+  assert.equal(result.status, "timeout");
   assert.equal(clock.frames.size + clock.timers.size, 0);
 });
 
-test("failed preparation still shows the page after the minimum opening", async (context) => {
+test("suspended animation frames also terminate through the timeout path", async (context) => {
   const clock = browserClock(context);
-  const readiness = waitForInitialAppReady(
-    {} as HTMLElement, undefined, Promise.reject(new Error("image unavailable")),
-  );
-  clock.paint();
-  clock.paint();
-  await Promise.resolve();
-  clock.advance(700);
-  await readiness;
+  const result = observe(Promise.resolve());
+  await flush();
+  clock.advance(12_000);
+  await flush();
+  assert.equal(result.status, "timeout");
   assert.equal(clock.frames.size + clock.timers.size, 0);
 });
 
-test("a committed page gets paint frames even after the minimum opening", async (context) => {
-  const clock = browserClock(context);
-  let ready = false;
-  const readiness = waitForInitialAppReady({} as HTMLElement).then(() => { ready = true; });
-  clock.advance(700);
-  clock.paint();
-  await Promise.resolve();
-  assert.equal(ready, false);
-  clock.paint();
-  await readiness;
-  assert.equal(ready, true);
-  assert.equal(clock.frames.size + clock.timers.size, 0);
-});
-
-test("a background tab becomes ready when animation frames remain suspended", async (context) => {
-  const clock = browserClock(context);
-  let ready = false;
-  const readiness = waitForInitialAppReady({} as HTMLElement).then(() => { ready = true; });
-  clock.advance(1800);
-  await readiness;
-  assert.equal(ready, true, "suspended frames must not leave the loader indefinitely");
-  assert.equal(clock.frames.size + clock.timers.size, 0);
-});
-
-test("unmounting aborts readiness, even when preparation completes later", async (context) => {
+test("unmounting cancels timers and frames even when preparation settles later", async (context) => {
   const clock = browserClock(context);
   const controller = new AbortController();
   let finishPreparation!: () => void;
-  const preparation = new Promise<void>((resolve) => { finishPreparation = resolve; });
-  let completions = 0;
-  const readiness = waitForInitialAppReady({} as HTMLElement, controller.signal, preparation)
-    .then(() => { completions += 1; });
-  assert.ok(clock.frames.size + clock.timers.size > 0);
+  const result = observe(new Promise<void>((resolve) => { finishPreparation = resolve; }), controller.signal);
+  assert.ok(clock.timers.size > 0);
   controller.abort();
-  await readiness;
+  await flush();
+  assert.equal(result.status, "aborted");
   assert.equal(clock.frames.size + clock.timers.size, 0);
   finishPreparation();
-  clock.advance(2000);
-  await Promise.resolve();
-  assert.equal(completions, 1);
+  await flush();
+  clock.advance(12_000);
+  assert.equal(result.status, "aborted");
   assert.equal(clock.frames.size + clock.timers.size, 0);
 });
 
-test("an already-aborted mount or absent root schedules no browser work", async (context) => {
+test("an absent root or already-aborted mount schedules no work and handles rejection", async (context) => {
   const clock = browserClock(context);
-  await waitForInitialAppReady({} as HTMLElement, AbortSignal.abort(), Promise.reject(new Error("aborted asset")));
-  await waitForInitialAppReady(null, undefined, Promise.reject(new Error("unmounted asset")));
+  assert.equal(await waitForInitialAppReady({} as HTMLElement, AbortSignal.abort(), Promise.reject(new Error("aborted"))), "aborted");
+  assert.equal(await waitForInitialAppReady(null, undefined, Promise.reject(new Error("unmounted"))), "aborted");
   assert.equal(clock.frames.size + clock.timers.size, 0);
 });
 
-test("the opening minimum also holds with real event-loop timers", async (context) => {
+test("real event-loop timers preserve the opening and release only after stable paint", async (context) => {
   const clock = browserClock(context, false);
   const started = performance.now();
   const readiness = waitForInitialAppReady({} as HTMLElement, undefined, Promise.resolve());
-  clock.paint();
-  clock.paint();
-  await readiness;
-  assert.ok(performance.now() - started >= 690, "real timer integration must preserve the opening cadence");
+  const painting = setInterval(() => clock.paint(), 16);
+  context.after(() => clearInterval(painting));
+  const status = await readiness;
+  clearInterval(painting);
+  assert.equal(status, "ready");
+  assert.ok(performance.now() - started >= 690);
   assert.equal(clock.frames.size + clock.timers.size, 0);
 });

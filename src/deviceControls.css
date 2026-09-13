@@ -47,6 +47,17 @@ html, body { overscroll-behavior-y: auto; }
 .preview-controls button > span { font-size: 16px; }
 .mobile-work > a.work-heading { display: flex; }
 
+/* Keep the original exhibition navigation on larger screens. Tablet cards
+   occupy a hero cell so the fixed desktop panel cannot cover the artwork. */
+.floating-navigation.is-flow { grid-area: 1 / 2 / 4 / 3; justify-self: end; align-self: start; position: relative; z-index: 10; }
+.floating-navigation.is-flow .nav-card { display: block; position: relative; top: auto; right: auto; }
+.floating-navigation.is-flow .mini-logo { display: block; }
+.floating-navigation.is-flow .where-card { top: 24px; right: 32px; width: 154px; height: 56px; padding: 0 17px; font-size: 19px; }
+.floating-navigation.is-flow .where-card:not(.visible) { opacity: 0; visibility: hidden; pointer-events: none; }
+.mobile-hero.has-floating-navigation { align-content: start; }
+.mobile-hero.has-floating-navigation .mobile-artwork { grid-area: 4 / 2 / 6 / 3; height: clamp(320px, 32svh, 500px); min-height: 320px; aspect-ratio: auto; }
+.floating-navigation :is(a, button):focus-visible { outline: 2px solid var(--festival-cyan); outline-offset: 3px; }
+
 @media (max-width: 480px) {
   .site-nav { right: max(12px, env(safe-area-inset-right)); width: calc(100% - 24px); top: max(12px, env(safe-area-inset-top)); }
   .site-nav-bar { gap: 7px; min-height: 52px; padding-left: 10px; }

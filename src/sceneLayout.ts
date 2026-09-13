@@ -1,4 +1,5 @@
 export const FLOW_LAYOUT_QUERY = "(max-width: 1100px), (pointer: coarse) and (max-width: 1400px), (max-width: 1400px) and (orientation: portrait)";
+export const PHONE_NAV_QUERY = "(max-width: 699px), (pointer: coarse) and (max-width: 1000px) and (max-height: 500px)";
 
 const DESIGN_WIDTH = 1440;
 const DESIGN_HEIGHT = 900;

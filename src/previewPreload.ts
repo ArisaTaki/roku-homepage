@@ -112,18 +112,46 @@ export function preloadWorkPreview(id: WorkId): Promise<void> {
   return pending;
 }
 
-/** Prepare the opening artwork/type and the first exhibit, without mounting a player. */
+/** Prepare the visible opening first, then warm the other lightweight exhibits. */
 export const prepareInitialScreen = sharedImport(async (): Promise<void> => {
   const fonts = document.fonts;
-  const results = await Promise.allSettled([
+  const dataLimited = limitedConnection();
+  const results: PromiseSettledResult<unknown>[] = await Promise.allSettled([
     preloadPreviewImage("/assets/gallery-new/kaguya-visual-02.webp", "high"),
+    preloadPreviewImage("/assets/pet/iroha/spritesheet.webp", "high"),
     ...(fonts ? [
+      fonts.load('400 32px "GT Haptik"', "Hacchi Roku!"),
       fonts.load('500 32px "GT Haptik"', "Hacchi Roku!"),
       fonts.load('400 16px "Diana Inter"', "irop.one"),
     ] : []),
     // Respect explicit data saving while still preparing the visible first screen.
-    ...(limitedConnection() ? [] : [preloadWorkPreview("hermes-yachiyo")]),
+    ...(dataLimited ? [] : [preloadWorkPreview("hermes-yachiyo")]),
   ]);
+  if (!dataLimited) {
+    const remaining = [
+      () => preloadWorkPreview("gallery"),
+      () => preloadWorkPreview("shader"),
+      () => preloadWorkPreview("blog"),
+      () => preloadWorkPreview("mimo-usage-watcher"),
+      // The module and poster belong to the opening; its large model does not.
+      () => Promise.all([loadNatureLive2DReplay(), preloadImages("nature-live2d")]),
+    ];
+    let next = 0;
+    const worker = async () => {
+      while (next < remaining.length) {
+        const prepare = remaining[next++];
+        results.push(...await Promise.allSettled([prepare()]));
+      }
+    };
+    await Promise.all([worker(), worker()]);
+
+    // Start the model before the opening's paint check, using the same bounded
+    // background queue. The screen's owner can retain that scheduler afterwards.
+    const release = schedulePreviewPreloads();
+    const modelWarmup = workPreloads.get("nature-live2d");
+    if (modelWarmup) void modelWarmup.catch(() => {}).finally(release);
+    else release();
+  }
   const failure = results.find((result) => result.status === "rejected");
   if (failure?.status === "rejected") throw failure.reason;
 });
@@ -159,24 +187,20 @@ function startBackgroundWork(): void {
   }
 }
 
-/** Start bounded warming after the first screen settles; cleanup only cancels pending work. */
+/** Continue bounded warming immediately; cleanup only cancels pending work. */
 export function schedulePreviewPreloads(): () => void {
   if (typeof window === "undefined" || limitedConnection()) return () => {};
   if (!scheduler) {
-    const current: Scheduler = { ready: false, users: 0, dispose: () => {} };
-    const timer = window.setTimeout(() => {
-      current.ready = true;
-      startBackgroundWork();
-    }, 800);
+    const current: Scheduler = { ready: true, users: 0, dispose: () => {} };
     document.addEventListener("visibilitychange", startBackgroundWork);
     current.dispose = () => {
-      window.clearTimeout(timer);
       document.removeEventListener("visibilitychange", startBackgroundWork);
     };
     scheduler = current;
   }
   const current = scheduler;
   current.users += 1;
+  startBackgroundWork();
   let cancelled = false;
   return () => {
     if (cancelled) return;

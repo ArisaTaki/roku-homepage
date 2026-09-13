@@ -123,6 +123,13 @@ const probe = String.raw`<script>
     send(event, {
       loaderPresent: !!document.querySelector('.boot-loader'),
       appReady: !!document.querySelector('.app-shell.is-ready'),
+      openingState: document.querySelector('[data-opening-state]')?.getAttribute('data-opening-state'),
+      heroImageReady: [...document.querySelectorAll('.festival-keyvisual')]
+        .some(image => image.complete && image.naturalWidth > 0),
+      petImageReady: document.querySelector('.pixel-pet')?.getAttribute('data-image-ready') === 'true',
+      mountedPreviews: [...document.querySelectorAll('[data-preview-active]')].map(node => ({
+        className: String(node.className), active: node.getAttribute('data-preview-active') === 'true'
+      })),
       scrollY: window.scrollY,
       viewport: {width: window.innerWidth, height: window.innerHeight},
       paints,

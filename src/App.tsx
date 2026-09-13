@@ -20,9 +20,10 @@ import {
   type WorkCopy,
   type WorkId,
 } from "./i18n";
-import { waitForInitialAppReady } from "./bootReadiness";
+import { waitForInitialAppReady, type InitialAppReadiness } from "./bootReadiness";
+import { usePreparedPreviewImage } from "./usePreparedPreviewImage";
 import { FestivalArtwork } from "./FestivalArtwork";
-import { FLOW_LAYOUT_QUERY, getSceneLayout, type SceneLayout } from "./sceneLayout";
+import { FLOW_LAYOUT_QUERY, PHONE_NAV_QUERY, getSceneLayout, type SceneLayout } from "./sceneLayout";
 import { SCENE_PROGRESS_EVENT, useSceneMotion } from "./useSceneMotion";
 import { askIrohaStream, type AssistantAnswerWithRuntime } from "./lib/iropAssistantClient";
 import { previewImageUrl } from "./lib/previewImages";
@@ -65,7 +66,7 @@ type Work = WorkBase & WorkCopy;
 
 type AppProps = {
   isBooting?: boolean;
-  onReady?: () => void;
+  onReady?: (status: InitialAppReadiness) => void;
 };
 
 type PetMessage = Partial<AssistantAnswerWithRuntime> & {
@@ -246,12 +247,12 @@ function prepareWorkPreview(id: WorkId): void {
   });
 }
 
-function useHasEnteredViewport<T extends Element>(workId: WorkId): [RefObject<T | null>, boolean] {
+function useHasEnteredViewport<T extends Element>(workId: WorkId, prepared = false): [RefObject<T | null>, boolean] {
   const ref = useRef<T | null>(null);
   const [hasEntered, setHasEntered] = useState(false);
 
   useEffect(() => {
-    if (hasEntered) return undefined;
+    if (hasEntered || prepared) return undefined;
 
     const node = ref.current;
     if (!node) return undefined;
@@ -311,7 +312,7 @@ function useHasEnteredViewport<T extends Element>(workId: WorkId): [RefObject<T 
       visibleObserver.disconnect();
       stageObserver?.disconnect();
     };
-  }, [hasEntered, workId]);
+  }, [hasEntered, prepared, workId]);
 
   return [ref, hasEntered];
 }
@@ -334,6 +335,8 @@ function LightFishBackground({ progressRef }: { progressRef: RefObject<number> }
 
     const context = canvas.getContext("2d", { alpha: true, desynchronized: true });
     if (!context) return undefined;
+    const waterCanvas = document.createElement("canvas");
+    const waterContext = waterCanvas.getContext("2d", { alpha: true });
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const fish: LightFish[] = [];
@@ -348,16 +351,66 @@ function LightFishBackground({ progressRef }: { progressRef: RefObject<number> }
     const palette = [184, 198, 214, 292, 324, 44, 162];
     const random = (min: number, max: number) => min + Math.random() * (max - min);
 
+    // These three full-screen gradients depend only on viewport geometry.
+    // Preserve their original source-over → screen composition in one bitmap.
+    const drawStaticWater = (target: CanvasRenderingContext2D) => {
+      target.save();
+      target.globalCompositeOperation = "source-over";
+      const vignette = target.createRadialGradient(
+        width * 0.48,
+        height * 0.42,
+        Math.min(width, height) * 0.08,
+        width * 0.5,
+        height * 0.48,
+        Math.max(width, height) * 0.76
+      );
+      vignette.addColorStop(0, "rgba(104, 204, 220, 0.09)");
+      vignette.addColorStop(0.48, "rgba(12, 20, 34, 0.02)");
+      vignette.addColorStop(1, "rgba(3, 7, 14, 0.58)");
+      target.fillStyle = vignette;
+      target.fillRect(0, 0, width, height);
+
+      target.globalCompositeOperation = "screen";
+      const topWash = target.createLinearGradient(0, 0, 0, height);
+      topWash.addColorStop(0, "rgba(184, 248, 255, 0.18)");
+      topWash.addColorStop(0.12, "rgba(255, 244, 184, 0.08)");
+      topWash.addColorStop(0.34, "rgba(104, 204, 220, 0.035)");
+      topWash.addColorStop(0.72, "rgba(104, 204, 220, 0)");
+      target.fillStyle = topWash;
+      target.fillRect(0, 0, width, height);
+
+      const bloom = target.createRadialGradient(
+        width * 0.48,
+        -height * 0.06,
+        Math.min(width, height) * 0.02,
+        width * 0.5,
+        height * 0.03,
+        Math.max(width, height) * 0.52
+      );
+      bloom.addColorStop(0, "rgba(255, 246, 202, 0.16)");
+      bloom.addColorStop(0.42, "rgba(116, 225, 238, 0.08)");
+      bloom.addColorStop(1, "rgba(116, 225, 238, 0)");
+      target.fillStyle = bloom;
+      target.fillRect(0, 0, width, height);
+      target.restore();
+    };
+
     const resize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
       const pixelBudgetRatio = Math.sqrt(FISH_BACKGROUND_MAX_PIXELS / Math.max(1, width * height));
-      pixelRatio = Math.max(0.5, Math.min(window.devicePixelRatio || 1, 1, pixelBudgetRatio));
+      pixelRatio = Math.min(window.devicePixelRatio || 1, 1, pixelBudgetRatio);
       canvas.width = Math.floor(width * pixelRatio);
       canvas.height = Math.floor(height * pixelRatio);
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      waterCanvas.width = canvas.width;
+      waterCanvas.height = canvas.height;
+      if (waterContext) {
+        waterContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+        drawStaticWater(waterContext);
+      }
 
       const areaCount = Math.floor((width * height) / (width < 760 ? 5600 : 7200));
       const targetCount = reduceMotion.matches
@@ -465,28 +518,6 @@ function LightFishBackground({ progressRef }: { progressRef: RefObject<number> }
       context.save();
       context.globalCompositeOperation = "screen";
 
-      const topWash = context.createLinearGradient(0, 0, 0, height);
-      topWash.addColorStop(0, "rgba(184, 248, 255, 0.18)");
-      topWash.addColorStop(0.12, "rgba(255, 244, 184, 0.08)");
-      topWash.addColorStop(0.34, "rgba(104, 204, 220, 0.035)");
-      topWash.addColorStop(0.72, "rgba(104, 204, 220, 0)");
-      context.fillStyle = topWash;
-      context.fillRect(0, 0, width, height);
-
-      const bloom = context.createRadialGradient(
-        width * 0.48,
-        -height * 0.06,
-        Math.min(width, height) * 0.02,
-        width * 0.5,
-        height * 0.03,
-        Math.max(width, height) * 0.52
-      );
-      bloom.addColorStop(0, "rgba(255, 246, 202, 0.16)");
-      bloom.addColorStop(0.42, "rgba(116, 225, 238, 0.08)");
-      bloom.addColorStop(1, "rgba(116, 225, 238, 0)");
-      context.fillStyle = bloom;
-      context.fillRect(0, 0, width, height);
-
       context.lineCap = "round";
       for (let index = 0; index < 6; index += 1) {
         const y = height * (0.035 + index * 0.045);
@@ -534,20 +565,12 @@ function LightFishBackground({ progressRef }: { progressRef: RefObject<number> }
 
       context.clearRect(0, 0, width, height);
       context.globalCompositeOperation = "source-over";
-
-      const vignette = context.createRadialGradient(
-        width * 0.48,
-        height * 0.42,
-        Math.min(width, height) * 0.08,
-        width * 0.5,
-        height * 0.48,
-        Math.max(width, height) * 0.76
-      );
-      vignette.addColorStop(0, "rgba(104, 204, 220, 0.09)");
-      vignette.addColorStop(0.48, "rgba(12, 20, 34, 0.02)");
-      vignette.addColorStop(1, "rgba(3, 7, 14, 0.58)");
-      context.fillStyle = vignette;
-      context.fillRect(0, 0, width, height);
+      if (waterContext && waterCanvas.width > 0 && waterCanvas.height > 0) {
+        // Map the cached pixels 1:1 under the main canvas's pixel-ratio transform.
+        context.drawImage(waterCanvas, 0, 0, waterCanvas.width / pixelRatio, waterCanvas.height / pixelRatio);
+      } else {
+        drawStaticWater(context);
+      }
 
       drawSurfaceLight(currentProgress, scrollCurrent);
       drawCurrent(scrollCurrent * 0.28);
@@ -639,7 +662,9 @@ function HeroMark({ className = "", text = "irop" }: { className?: string; text?
 }
 
 function PixelPet({ className = "", mood = "idle" }: { className?: string; mood?: PetMood }) {
-  return <span className={`pixel-pet ${className}`} data-mood={mood} aria-hidden="true" />;
+  const image = usePreparedPreviewImage("/assets/pet/iroha/spritesheet.webp", { prepare: true, priority: "high" });
+  return <span className={`pixel-pet ${className}`} data-mood={mood} data-image-ready={Boolean(image)}
+    style={{ backgroundImage: image ? `url("${image}")` : "none" }} aria-hidden="true" />;
 }
 
 function initialPetMessages(copy: UiCopy["pet"]): PetMessage[] {
@@ -1044,15 +1069,16 @@ function WorkVisualLoading({
       ? "/models/yachiyo-web/avatar.webp"
       : work.id === "gallery"
         ? "/assets/gallery-new/cover-kaguya.webp"
-        : undefined;
+        : "";
+  const preparedPoster = usePreparedPreviewImage(poster);
 
   return (
     <div ref={previewRef} className={`work-preview-loading ${work.visual ?? ""}`} aria-hidden="true">
       <div className="work-preview-art">
-        {poster ? (
+        {preparedPoster ? (
           <img
             className="work-preview-poster"
-            src={previewImageUrl(poster)}
+            src={preparedPoster}
             alt=""
             loading="lazy"
             decoding="async"
@@ -1091,21 +1117,23 @@ function DeferredWorkPreview({
   work: Work;
   children: ReactNode;
 }) {
-  const [ref, hasEntered] = useHasEnteredViewport<HTMLDivElement>(work.id);
   const [preparedWork, setPreparedWork] = useState(() => isWorkPreviewReady(work.id));
+  const canPremount = preparedWork && work.id !== "nature-live2d";
+  const [ref, hasEntered] = useHasEnteredViewport<HTMLDivElement>(work.id, canPremount);
   const needsImages = work.id === "hermes-yachiyo" || work.id === "gallery";
   const fallback = <WorkVisualLoading work={work} />;
 
   useEffect(() => {
-    if (!needsImages) return undefined;
     const update = () => setPreparedWork(isWorkPreviewReady(work.id));
     const unsubscribe = subscribeWorkPreview(work.id, update);
     update();
     if (hasEntered) prepareWorkPreview(work.id);
     return unsubscribe;
-  }, [hasEntered, needsImages, work.id]);
+  }, [hasEntered, work.id]);
 
-  if (!hasEntered || (needsImages && !preparedWork)) {
+  // Lightweight players build their initial DOM behind the opening. Keep the
+  // Live2D renderer deferred so background byte warming cannot initialize WebGL.
+  if ((!hasEntered && !canPremount) || (needsImages && !preparedWork)) {
     return <WorkVisualLoading work={work} previewRef={ref} />;
   }
 
@@ -1114,6 +1142,12 @@ function DeferredWorkPreview({
       <Suspense fallback={fallback}>{children}</Suspense>
     </WorkPreviewBoundary>
   );
+}
+
+function PreparedWorkImage({ work }: { work: Work }) {
+  const [ref, hasEntered] = useHasEnteredViewport<HTMLImageElement>(work.id);
+  const image = usePreparedPreviewImage(work.image!, { prepare: hasEntered });
+  return <img ref={ref} src={image} alt="" decoding="async" />;
 }
 
 function WorkVisual({
@@ -1128,7 +1162,7 @@ function WorkVisual({
   playing?: boolean;
 }) {
   if (work.image) {
-    return <img src={previewImageUrl(work.image)} alt="" loading="lazy" decoding="async" />;
+    return <PreparedWorkImage work={work} />;
   }
 
   if (work.visual === "visual-hermes") {
@@ -1253,6 +1287,114 @@ function LanguageSwitcher({
           {localeLabels[item]}
         </button>
       ))}
+    </div>
+  );
+}
+
+function FloatingNav({
+  flow,
+  progressRef,
+  works,
+  locale,
+  onLocaleChange,
+  copy,
+}: {
+  flow: boolean;
+  progressRef: RefObject<number>;
+  works: Work[];
+  locale: Locale;
+  onLocaleChange: (locale: Locale) => void;
+  copy: UiCopy;
+}) {
+  const navRef = useRef<HTMLDivElement | null>(null);
+  const [{ compact, showMini }, setPosition] = useState({ compact: false, showMini: false });
+
+  useEffect(() => {
+    const update = (nextCompact: boolean, nextMini: boolean) => {
+      setPosition((current) => current.compact === nextCompact && current.showMini === nextMini
+        ? current : { compact: nextCompact, showMini: nextMini });
+    };
+    if (flow) {
+      const node = navRef.current;
+      if (!node) return;
+      // The tablet card occupies its own hero cell. Show the home controls only
+      // after that cell has scrolled away, without moving the remaining content.
+      const observer = new IntersectionObserver(([entry]) => {
+        const passed = entry.boundingClientRect.bottom <= 0;
+        update(passed, passed);
+      }, { threshold: 0 });
+      observer.observe(node);
+      return () => observer.disconnect();
+    }
+    const onProgress = () => {
+      const progress = progressRef.current;
+      update(progress > 0.13, progress > 0.13 && progress < 1);
+    };
+    onProgress();
+    window.addEventListener(SCENE_PROGRESS_EVENT, onProgress);
+    return () => window.removeEventListener(SCENE_PROGRESS_EVENT, onProgress);
+  }, [flow, progressRef]);
+
+  return (
+    <div ref={navRef} className={`floating-navigation${flow ? " is-flow" : ""}`}>
+      <a className={`mini-logo ${showMini ? "visible" : ""}`} href="#top" aria-label={copy.nav.home}>
+        <HeroMark className="mini-name-mark" text="HacchiRoku" />
+      </a>
+      <nav className={`nav-card ${compact ? "compact" : ""}`} aria-label={copy.nav.primary}>
+        <div className="nav-row nav-row-menu nav-row-works">
+          <a
+            className="nav-row-main"
+            href={flow ? "#mobile-works" : `#work-${works[0].id}`}
+            onMouseEnter={() => prepareWorkPreview(works[0].id)}
+            onFocus={() => prepareWorkPreview(works[0].id)}
+            onClick={() => prepareWorkPreview(works[0].id)}
+          >
+            <span>{copy.nav.works}</span>
+            <span className="arrow">→</span>
+          </a>
+          <span className="icon-strip work-anchor-strip" aria-label={copy.nav.works}>
+            {works.map((work) => {
+              const WorkIcon = workNavIcons[work.id];
+              return (
+                <a
+                  href={`#work-${work.id}`}
+                  aria-label={`${copy.nav.works}: ${work.title}`}
+                  title={work.title}
+                  onMouseEnter={() => prepareWorkPreview(work.id)}
+                  onFocus={() => prepareWorkPreview(work.id)}
+                  onClick={() => prepareWorkPreview(work.id)}
+                  key={work.id}
+                >
+                  <WorkIcon aria-hidden="true" />
+                </a>
+              );
+            })}
+          </span>
+        </div>
+        <div className="nav-row nav-row-menu">
+          <a className="nav-row-main" href={flow ? "#mobile-about" : "#about"}>
+            <span>{copy.nav.me}</span>
+            <span className="arrow">→</span>
+          </a>
+          <span className="icon-strip social-strip">
+            <a href="https://github.com/kuguya-AI-app-develop" target="_blank" rel="noreferrer">
+              gh
+            </a>
+            <a href="https://blog.irop.one/" target="_blank" rel="noreferrer">
+              blog
+            </a>
+          </span>
+        </div>
+        <a className="nav-row resume" href="#contact">
+          <span>{copy.nav.email}</span>
+          <span className="download">→</span>
+        </a>
+        <LanguageSwitcher locale={locale} onLocaleChange={onLocaleChange} label={copy.nav.language} />
+      </nav>
+      <a className={`where-card ${compact ? "visible" : ""}`} href="#top" aria-label={copy.nav.backHome}>
+        <span aria-hidden="true">←</span>
+        <span>{copy.nav.where}</span>
+      </a>
     </div>
   );
 }
@@ -1442,14 +1584,17 @@ function MobilePage({
   works,
   copy,
   petSessionKey,
+  navigation,
 }: {
   works: Work[];
   copy: UiCopy;
   petSessionKey: string;
+  navigation?: ReactNode;
 }) {
   return (
     <div className="mobile-page">
-      <section className="mobile-hero" aria-labelledby="mobile-title">
+      <section className={`mobile-hero${navigation ? " has-floating-navigation" : ""}`} aria-labelledby="mobile-title">
+        {navigation}
         <div className="festival-backdrop" aria-hidden="true">
           <span className="festival-cloud cloud-one" />
           <span className="festival-cloud cloud-two" />
@@ -1535,6 +1680,7 @@ export default function App({ isBooting = false, onReady }: AppProps) {
   const viewport = useViewportSize(readingAnchorRef, resizeAnchorRef);
   const layout = useMemo(() => getSceneLayout(viewport.width, viewport.height), [viewport.width, viewport.height]);
   const isMobileLayout = useMediaQuery(FLOW_LAYOUT_QUERY);
+  const isPhoneNavigation = useMediaQuery(PHONE_NAV_QUERY);
   const copy = uiCopy[locale];
   const petSessionKey = `${IROHA_SESSION_STORAGE_PREFIX}-${locale}`;
   const works = useMemo(() => workShells.map((work) => ({
@@ -1549,10 +1695,31 @@ export default function App({ isBooting = false, onReady }: AppProps) {
   useEffect(() => {
     if (!isBooting) return;
     const controller = new AbortController();
-    void waitForInitialAppReady(appRef.current, controller.signal, prepareInitialScreen()).then(() => {
-      if (!controller.signal.aborted) onReady?.();
-    });
-    return () => controller.abort();
+    const preparation = prepareInitialScreen();
+    let timedOut = false;
+    let checking = false;
+    const check = async () => {
+      if (checking || controller.signal.aborted) return;
+      checking = true;
+      const status = await waitForInitialAppReady(appRef.current, controller.signal, preparation);
+      checking = false;
+      if (controller.signal.aborted) return;
+      timedOut = status === "timeout";
+      onReady?.(status);
+      // Downloads can already be complete when a long frame stalls the paint
+      // check. Keep observing recovery while visible, even without new I/O.
+      if (timedOut && !document.hidden) void check();
+    };
+    void check();
+    // A slow download may finish after the wait notice appears. Resume the
+    // readiness check automatically rather than making the visitor reload it.
+    const resume = () => { if (timedOut && !document.hidden) void check(); };
+    void preparation.then(resume, resume);
+    document.addEventListener("visibilitychange", resume);
+    return () => {
+      controller.abort();
+      document.removeEventListener("visibilitychange", resume);
+    };
   }, [isBooting, onReady]);
 
   useEffect(() => {
@@ -1584,14 +1751,18 @@ export default function App({ isBooting = false, onReady }: AppProps) {
 
   return (
     <>
-      <SiteNavigation works={works} locale={locale} onLocaleChange={setLocale} copy={copy} flow={isMobileLayout} />
+      {isPhoneNavigation
+        ? <SiteNavigation works={works} locale={locale} onLocaleChange={setLocale} copy={copy} flow={isMobileLayout} />
+        : !isMobileLayout && <FloatingNav works={works} locale={locale} onLocaleChange={setLocale} copy={copy} flow={false} progressRef={progressRef} />}
       <div className={`app-shell ${isBooting ? "is-booting" : "is-ready"}`} ref={appRef} data-layout={isMobileLayout ? "flow" : "desktop"}>
         <LightFishBackground progressRef={progressRef} />
         <a className="skip-link" href={isMobileLayout ? "#mobile-works" : `#work-${works[0].id}`}>{copy.skip}</a>
         <div id="top" />
         <main>
           <section id="project" ref={sceneRef} className="scroll-scene" style={isMobileLayout ? undefined : { height: layout.sectionHeight }}>
-            {isMobileLayout ? <MobilePage works={works} copy={copy} petSessionKey={petSessionKey} /> : (
+            {isMobileLayout ? <MobilePage works={works} copy={copy} petSessionKey={petSessionKey}
+              navigation={!isPhoneNavigation ? <FloatingNav works={works} locale={locale} onLocaleChange={setLocale}
+                copy={copy} flow progressRef={progressRef} /> : undefined} /> : (
               <>
                 <DesktopProjectAnchors works={works} layout={layout} />
                 <DesktopScene layout={layout} activeIndex={activeIndex} works={works} copy={copy} petSessionKey={petSessionKey} />

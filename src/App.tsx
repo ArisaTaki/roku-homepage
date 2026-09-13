@@ -1,4 +1,3 @@
-import Lenis from "lenis";
 import {
   Bot,
   FileText,
@@ -8,7 +7,7 @@ import {
   Waves,
   type LucideIcon,
 } from "lucide-react";
-import { Component, lazy, memo, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type RefObject } from "react";
+import { Component, lazy, memo, Suspense, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent, type ReactNode, type RefObject } from "react";
 import {
   isLocale,
   localeLabels,
@@ -23,6 +22,8 @@ import {
 } from "./i18n";
 import { waitForInitialAppReady } from "./bootReadiness";
 import { FestivalArtwork } from "./FestivalArtwork";
+import { FLOW_LAYOUT_QUERY, getSceneLayout, type SceneLayout } from "./sceneLayout";
+import { SCENE_PROGRESS_EVENT, useSceneMotion } from "./useSceneMotion";
 import { askIrohaStream, type AssistantAnswerWithRuntime } from "./lib/iropAssistantClient";
 import { previewImageUrl } from "./lib/previewImages";
 import {
@@ -34,14 +35,13 @@ import {
   isWorkPreviewReady,
   subscribeWorkPreview,
   schedulePreviewPreloads,
+  prepareInitialScreen,
 } from "./previewPreload";
 
-const TRAVEL_DISTANCE = 5900;
 const LOCALE_STORAGE_KEY = "irop-locale";
 const IROHA_SESSION_STORAGE_PREFIX = "irop-iroha-session";
-const MOBILE_QUERY = "(max-width: 760px)";
 const FISH_BACKGROUND_MAX_PIXELS = 1_600_000;
-const FISH_BACKGROUND_PROGRESS_EVENT = "irop:fish-progress";
+const FISH_BACKGROUND_PROGRESS_EVENT = SCENE_PROGRESS_EVENT;
 
 const HermesReplay = lazy(() => loadHermesReplay().then((module) => ({ default: module.HermesReplay })));
 const NatureLive2DReplay = lazy(() => (
@@ -200,51 +200,44 @@ function useMediaQuery(query: string): boolean {
   return matches;
 }
 
-function useViewportWidth(): number {
-  const [width, setWidth] = useState(() => (
-    typeof window === "undefined" ? 1440 : window.innerWidth
-  ));
-
+function useViewportSize(readingAnchorRef: RefObject<string>, resizeAnchorRef: RefObject<string | null>) {
+  const [size, setSize] = useState(() => ({ width: window.innerWidth, height: window.innerHeight, anchor: "" }));
   useEffect(() => {
     let frame = 0;
+    let measuredWidth = window.innerWidth;
+    let measuredHeight = window.innerHeight;
+    let measuredFlow = window.matchMedia(FLOW_LAYOUT_QUERY).matches;
     const update = () => {
       frame = 0;
-      setWidth(window.innerWidth);
+      measuredWidth = window.innerWidth;
+      measuredHeight = window.innerHeight;
+      measuredFlow = window.matchMedia(FLOW_LAYOUT_QUERY).matches;
+      setSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+        // Flow-only height changes come from browser chrome during a swipe;
+        // desktop height changes also alter the scaled exhibition coordinates.
+        anchor: resizeAnchorRef.current ?? "",
+      });
     };
     const schedule = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(update);
+      // Capture the previous reading position before a media query swaps the
+      // scene. Keep it frozen across successive events until restoration ends.
+      const nextFlow = window.matchMedia(FLOW_LAYOUT_QUERY).matches;
+      const changedWidth = Math.abs(measuredWidth - window.innerWidth) > 2;
+      const changedHeight = Math.abs(measuredHeight - window.innerHeight) > 2;
+      if (changedWidth || (changedHeight && (!measuredFlow || !nextFlow))) {
+        resizeAnchorRef.current ??= readingAnchorRef.current;
+      }
+      if (!frame) frame = window.requestAnimationFrame(update);
     };
-
     window.addEventListener("resize", schedule);
     return () => {
-      if (frame) window.cancelAnimationFrame(frame);
       window.removeEventListener("resize", schedule);
+      if (frame) window.cancelAnimationFrame(frame);
     };
-  }, []);
-
-  return width;
-}
-
-function useSmoothWheelScrolling(enabled: boolean): void {
-  useEffect(() => {
-    if (!enabled) return undefined;
-
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reduceMotion.matches) return undefined;
-
-    const lenis = new Lenis({
-      anchors: true,
-      autoRaf: true,
-      lerp: 0.12,
-      overscroll: false,
-      smoothWheel: true,
-      syncTouch: false,
-      wheelMultiplier: 0.92,
-    });
-
-    return () => lenis.destroy();
-  }, [enabled]);
+  }, [readingAnchorRef, resizeAnchorRef]);
+  return size;
 }
 
 function prepareWorkPreview(id: WorkId): void {
@@ -332,47 +325,8 @@ function localizeRuntimeLabel(runtimeLabel: string | undefined, copy: UiCopy["pe
   return runtimeLabel || copy.idleRuntime;
 }
 
-function useSceneProgress(sceneRef: RefObject<HTMLElement | null>): number {
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    const scene = sceneRef.current;
-    if (!scene) return undefined;
-
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      const rect = scene.getBoundingClientRect();
-      const range = Math.max(1, scene.offsetHeight - window.innerHeight);
-      setProgress(clamp(-rect.top / range, 0, 1));
-    };
-
-    const schedule = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(update);
-    };
-
-    update();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    return () => {
-      if (frame) window.cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-    };
-  }, [sceneRef]);
-
-  return progress;
-}
-
-function LightFishBackground({ progress }: { progress: number }) {
+function LightFishBackground({ progressRef }: { progressRef: RefObject<number> }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const progressRef = useRef(progress);
-
-  useEffect(() => {
-    progressRef.current = progress;
-    window.dispatchEvent(new Event(FISH_BACKGROUND_PROGRESS_EVENT));
-  }, [progress]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1166,24 +1120,21 @@ function WorkVisual({
   work,
   copy,
   layout,
+  playing,
 }: {
   work: Work;
   copy: UiCopy;
   layout: "desktop" | "mobile";
+  playing?: boolean;
 }) {
   if (work.image) {
     return <img src={previewImageUrl(work.image)} alt="" loading="lazy" decoding="async" />;
   }
 
   if (work.visual === "visual-hermes") {
-    if (layout === "mobile") {
-      return <HermesMobilePreview copy={copy.hermesMobile} />;
-    }
-
     return (
       <DeferredWorkPreview work={work}>
-        <HermesReplay />
-        <HermesMobilePreview copy={copy.hermesMobile} />
+        <HermesReplay playing={playing} />
       </DeferredWorkPreview>
     );
   }
@@ -1191,7 +1142,7 @@ function WorkVisual({
   if (work.visual === "visual-live2d") {
     return (
       <DeferredWorkPreview work={work}>
-        <NatureLive2DReplay />
+        <NatureLive2DReplay playing={playing} />
       </DeferredWorkPreview>
     );
   }
@@ -1199,7 +1150,7 @@ function WorkVisual({
   if (work.visual === "visual-gallery") {
     return (
       <DeferredWorkPreview work={work}>
-        <GalleryReplay />
+        <GalleryReplay playing={playing} />
       </DeferredWorkPreview>
     );
   }
@@ -1207,7 +1158,7 @@ function WorkVisual({
   if (work.visual === "visual-shader") {
     return (
       <DeferredWorkPreview work={work}>
-        <ShaderReplay />
+        <ShaderReplay playing={playing} />
       </DeferredWorkPreview>
     );
   }
@@ -1306,135 +1257,120 @@ function LanguageSwitcher({
   );
 }
 
-function FloatingNav({
-  compact,
-  showMini,
-  works,
-  locale,
-  onLocaleChange,
-  copy,
-}: {
-  compact: boolean;
-  showMini: boolean;
+function SiteNavigation({ works, locale, onLocaleChange, copy, flow }: {
   works: Work[];
   locale: Locale;
   onLocaleChange: (locale: Locale) => void;
   copy: UiCopy;
+  flow: boolean;
 }) {
+  const [open, setOpen] = useState(false);
+  const navRef = useRef<HTMLElement | null>(null);
+  const menuButton = useRef<HTMLButtonElement | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (event: PointerEvent) => {
+      if (!navRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { setOpen(false); menuButton.current?.focus(); }
+    };
+    document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
   return (
-    <>
-      <a className={`mini-logo ${showMini ? "visible" : ""}`} href="#top" aria-label={copy.nav.home}>
-        <HeroMark className="mini-name-mark" text="HacchiRoku" />
-      </a>
-      <nav className={`nav-card ${compact ? "compact" : ""}`} aria-label={copy.nav.primary}>
-        <div className="nav-row nav-row-menu nav-row-works">
-          <a
-            className="nav-row-main"
-            href={`#work-${works[0].id}`}
-            onMouseEnter={() => prepareWorkPreview(works[0].id)}
-            onFocus={() => prepareWorkPreview(works[0].id)}
-            onClick={() => prepareWorkPreview(works[0].id)}
-          >
-            <span>{copy.nav.works}</span>
-            <span className="arrow">→</span>
-          </a>
-          <span className="icon-strip work-anchor-strip" aria-label={copy.nav.works}>
-            {works.map((work) => {
-              const WorkIcon = workNavIcons[work.id];
-              return (
-                <a
-                  href={`#work-${work.id}`}
-                  aria-label={`${copy.nav.works}: ${work.title}`}
-                  title={work.title}
-                  onMouseEnter={() => prepareWorkPreview(work.id)}
-                  onFocus={() => prepareWorkPreview(work.id)}
-                  onClick={() => prepareWorkPreview(work.id)}
-                  key={work.id}
-                >
-                  <WorkIcon aria-hidden="true" />
-                </a>
-              );
-            })}
-          </span>
-        </div>
-        <div className="nav-row nav-row-menu">
-          <a className="nav-row-main" href="#about">
-            <span>{copy.nav.me}</span>
-            <span className="arrow">→</span>
-          </a>
-          <span className="icon-strip social-strip">
-            <a href="https://github.com/kuguya-AI-app-develop" target="_blank" rel="noreferrer">
-              gh
-            </a>
-            <a href="https://blog.irop.one/" target="_blank" rel="noreferrer">
-              blog
-            </a>
-          </span>
-        </div>
-        <a className="nav-row resume" href="#contact">
-          <span>{copy.nav.email}</span>
-          <span className="download">→</span>
-        </a>
+    <nav ref={navRef} className="site-nav" aria-label={copy.nav.primary}>
+      <div className="site-nav-bar">
+        <a href="#top" className="site-home" aria-label={copy.nav.home} onClick={() => setOpen(false)}>irop<span>.one</span></a>
         <LanguageSwitcher locale={locale} onLocaleChange={onLocaleChange} label={copy.nav.language} />
-      </nav>
-      <a className={`where-card ${compact ? "visible" : ""}`} href="#top" aria-label={copy.nav.backHome}>
-        <span aria-hidden="true">←</span>
-        <span>{copy.nav.where}</span>
-      </a>
-    </>
+        <button ref={menuButton} className="site-menu-toggle" type="button" aria-expanded={open}
+          aria-controls="site-menu" aria-label={open ? copy.nav.closeMenu : copy.nav.menu} onClick={() => setOpen(!open)}>
+          <span>{copy.nav.menu}</span><b aria-hidden="true">{open ? "−" : "+"}</b>
+        </button>
+      </div>
+      {open && <div id="site-menu" className="site-menu" data-lenis-prevent>
+        <div className="site-menu-sections">
+          <a href={flow ? "#mobile-works" : `#work-${works[0].id}`} onClick={() => setOpen(false)}>{copy.nav.works} ↗</a>
+          <a href={flow ? "#mobile-about" : "#about"} onClick={() => setOpen(false)}>{copy.nav.me} ↗</a>
+          <a href="#contact" onClick={() => setOpen(false)}>{copy.nav.email} ↗</a>
+        </div>
+        <div className="site-menu-works">
+          {works.map((work, index) => <a key={work.id} href={`#work-${work.id}`}
+            onMouseEnter={() => prepareWorkPreview(work.id)} onFocus={() => prepareWorkPreview(work.id)}
+            onClick={() => { prepareWorkPreview(work.id); setOpen(false); }}>
+            <span>{String(index + 1).padStart(2, "0")}</span>{work.title}<b aria-hidden="true">→</b>
+          </a>)}
+        </div>
+      </div>}
+    </nav>
   );
 }
 
-function DesktopProjectAnchors({ works }: { works: Work[] }) {
-  const viewportWidth = useViewportWidth();
+function MobileWorkCard({ work, copy, index, total }: { work: Work; copy: UiCopy; index: number; total: number }) {
+  const [playing, setPlaying] = useState<boolean | undefined>(undefined);
+  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const hasReplay = ["visual-hermes", "visual-live2d", "visual-gallery", "visual-shader"].includes(work.visual ?? "");
+  const shouldPlay = playing ?? !reducedMotion;
+  return (
+    <article id={`work-${work.id}`} className={workCardClass("mobile-work", work)} data-work-id={work.id}
+      data-exhibit-number={String(index + 1).padStart(2, "0")}>
+      <div className="work-overline" aria-hidden="true">
+        <span className="work-number">{String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}</span>
+        <span className="work-category">{work.meta.split(",")[0]}</span>
+      </div>
+      <WorkVisual work={work} copy={copy} layout="mobile" playing={playing} />
+      {hasReplay && <div className="preview-controls">
+        <span>{copy.preview.label}</span>
+        <button type="button" aria-label={`${shouldPlay ? copy.preview.pause : copy.preview.play}: ${work.title}`}
+          aria-pressed={shouldPlay} onClick={() => setPlaying(!shouldPlay)}>
+          <span aria-hidden="true">{shouldPlay ? "Ⅱ" : "▷"}</span>{shouldPlay ? copy.preview.pause : copy.preview.play}
+        </button>
+      </div>}
+      <a className="work-heading" href={work.href} target="_blank" rel="noreferrer">
+        <h2>{work.title}</h2><span className="work-open-arrow" aria-hidden="true">↗</span>
+      </a>
+      <p>{work.description}</p><small>{work.meta}</small>
+    </article>
+  );
+}
 
+function DesktopProjectAnchors({ works, layout }: { works: Work[]; layout: SceneLayout }) {
   return (
     <div className="project-anchor-rail" aria-hidden="true">
       {works.map((work) => {
-        const progress = clamp(
-          (work.left + work.width / 2 - viewportWidth / 2) / TRAVEL_DISTANCE,
-          0,
-          1
-        );
-        const offset = Number((progress * 100).toFixed(4));
-
-        return (
-          <span
-            id={`work-${work.id}`}
-            className="project-scroll-anchor"
-            style={{ top: `calc(${offset}% - ${offset}vh)` }}
-            key={work.id}
-          />
-        );
+        const progress = clamp((work.left + work.width / 2 - layout.viewportWidth / 2) / layout.travel, 0, 1);
+        return <span id={`work-${work.id}`} className="project-scroll-anchor"
+          style={{ top: progress * layout.scrollRange }} key={work.id} />;
       })}
     </div>
   );
 }
 
 function DesktopScene({
-  progress,
+  layout,
+  activeIndex,
   works,
   copy,
   petSessionKey,
 }: {
-  progress: number;
+  layout: SceneLayout;
+  activeIndex: number;
   works: Work[];
   copy: UiCopy;
   petSessionKey: string;
 }) {
-  const transform = useMemo(() => `translate3d(${-progress * TRAVEL_DISTANCE}px, 0, 0)`, [progress]);
-  const viewportWidth = useViewportWidth();
-  const viewportCenter = progress * TRAVEL_DISTANCE + viewportWidth / 2;
-  const activeIndex = progress < 0.08 ? -1 : works.reduce((nearest, work, index) => (
-    Math.abs(work.left + work.width / 2 - viewportCenter)
-      < Math.abs(works[nearest].left + works[nearest].width / 2 - viewportCenter)
-      ? index
-      : nearest
-  ), 0);
-
   return (
-    <div className="stage" aria-label={copy.hero.stageAria}>
-      <div className="desktop-track" style={{ transform }}>
+    <div className="stage" aria-label={copy.hero.stageAria} style={{
+      "--scene-scale": layout.scale,
+      "--scene-viewport-width": `${layout.viewportWidth}px`,
+      "--scene-hero-offset": `${layout.heroOffset}px`,
+    } as CSSProperties}>
+      <div className="desktop-track" style={{ transform: `scale(${layout.scale})`, width: layout.trackWidth }}>
+        <div className="desktop-hero">
         <div className="festival-backdrop" aria-hidden="true">
           <span className="festival-cloud cloud-one" />
           <span className="festival-cloud cloud-two" />
@@ -1470,6 +1406,7 @@ function DesktopScene({
           <b aria-hidden="true">→</b>
           <small>{copy.hero.exploreHint}</small>
         </a>
+        </div>
         {works.map((work, index) => (
           <DesktopWorkCard work={work} copy={copy} index={index} total={works.length} key={work.id} />
         ))}
@@ -1547,28 +1484,7 @@ function MobilePage({
       </section>
       <section id="mobile-works" className="mobile-works" aria-label={copy.nav.works}>
         {works.map((work, index) => (
-          <a
-            id={`work-${work.id}`}
-            className={workCardClass("mobile-work", work)}
-            data-work-id={work.id}
-            data-exhibit-number={String(index + 1).padStart(2, "0")}
-            href={work.href}
-            key={work.id}
-            target={work.href?.startsWith("http") ? "_blank" : undefined}
-            rel={work.href?.startsWith("http") ? "noreferrer" : undefined}
-          >
-            <div className="work-overline" aria-hidden="true">
-              <span className="work-number">{String(index + 1).padStart(2, "0")} / {String(works.length).padStart(2, "0")}</span>
-              <span className="work-category">{work.meta.split(",")[0]}</span>
-            </div>
-            <WorkVisual work={work} copy={copy} layout="mobile" />
-            <div className="work-heading">
-              <h2>{work.title}</h2>
-              <span className="work-open-arrow" aria-hidden="true">↗</span>
-            </div>
-            <p>{work.description}</p>
-            <small>{work.meta}</small>
-          </a>
+          <MobileWorkCard work={work} copy={copy} index={index} total={works.length} key={work.id} />
         ))}
       </section>
       <section id="mobile-about" className="mobile-about" aria-label={copy.about.aria}>
@@ -1613,71 +1529,76 @@ export default function App({ isBooting = false, onReady }: AppProps) {
   const [locale, setLocale] = useLocale();
   const appRef = useRef<HTMLDivElement | null>(null);
   const sceneRef = useRef<HTMLElement | null>(null);
-  const progress = useSceneProgress(sceneRef);
-  const isMobileLayout = useMediaQuery(MOBILE_QUERY);
-  useSmoothWheelScrolling(!isBooting && !isMobileLayout);
+  const progressRef = useRef(0);
+  const readingAnchorRef = useRef("top");
+  const resizeAnchorRef = useRef<string | null>(null);
+  const viewport = useViewportSize(readingAnchorRef, resizeAnchorRef);
+  const layout = useMemo(() => getSceneLayout(viewport.width, viewport.height), [viewport.width, viewport.height]);
+  const isMobileLayout = useMediaQuery(FLOW_LAYOUT_QUERY);
   const copy = uiCopy[locale];
   const petSessionKey = `${IROHA_SESSION_STORAGE_PREFIX}-${locale}`;
-  const works = useMemo(
-    () => workShells.map((work) => ({ ...work, ...workCopies[locale][work.id] })),
-    [locale]
-  );
-  const compactNav = progress > 0.13;
-  const showMiniLogo = progress > 0.13 && progress < 1;
+  const works = useMemo(() => workShells.map((work) => ({
+    ...work, ...workCopies[locale][work.id], left: work.left + (isMobileLayout ? 0 : layout.workOffset),
+  })), [locale, isMobileLayout, layout.workOffset]);
+  const workCenters = useMemo(() => workShells.map((work) => work.left + layout.workOffset + work.width / 2), [layout.workOffset]);
+  const activeIndex = useSceneMotion({
+    sceneRef, layout, flow: isMobileLayout, enabled: !isBooting, workCenters, progressRef,
+    readingAnchorRef, resizeAnchorRef,
+  });
 
   useEffect(() => {
-    if (!isBooting) return undefined;
-
+    if (!isBooting) return;
     const controller = new AbortController();
-    void waitForInitialAppReady(appRef.current, controller.signal).then(() => {
+    void waitForInitialAppReady(appRef.current, controller.signal, prepareInitialScreen()).then(() => {
       if (!controller.signal.aborted) onReady?.();
     });
-
     return () => controller.abort();
   }, [isBooting, onReady]);
 
   useEffect(() => {
-    if (isBooting) return undefined;
+    if (isBooting) return;
     return schedulePreviewPreloads();
+  }, [isBooting]);
+
+  useEffect(() => {
+    if (!viewport.anchor) return;
+    const id = viewport.anchor === "about" && isMobileLayout ? "mobile-about" : viewport.anchor;
+    const frame = window.requestAnimationFrame(() => {
+      // Another resize may already be queued with newer scene dimensions.
+      if (Math.abs(window.innerWidth - viewport.width) > 2
+        || (!isMobileLayout && Math.abs(window.innerHeight - viewport.height) > 2)) return;
+      document.getElementById(id)?.scrollIntoView({ block: "start", behavior: "instant" });
+      readingAnchorRef.current = viewport.anchor;
+      resizeAnchorRef.current = null;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [viewport, isMobileLayout]);
+
+  const initialHashApplied = useRef(false);
+  useEffect(() => {
+    if (isBooting || initialHashApplied.current) return;
+    initialHashApplied.current = true;
+    const id = window.location.hash.slice(1);
+    if (id) document.getElementById(id)?.scrollIntoView({ block: "start", behavior: "instant" });
   }, [isBooting]);
 
   return (
     <>
-      <FloatingNav
-        compact={compactNav}
-        showMini={showMiniLogo}
-        works={works}
-        locale={locale}
-        onLocaleChange={setLocale}
-        copy={copy}
-      />
-      <div className={`app-shell ${isBooting ? "is-booting" : "is-ready"}`} ref={appRef}>
-        <LightFishBackground progress={progress} />
-        <a className="skip-link" href={`#work-${works[0].id}`}>
-          {copy.skip}
-        </a>
+      <SiteNavigation works={works} locale={locale} onLocaleChange={setLocale} copy={copy} flow={isMobileLayout} />
+      <div className={`app-shell ${isBooting ? "is-booting" : "is-ready"}`} ref={appRef} data-layout={isMobileLayout ? "flow" : "desktop"}>
+        <LightFishBackground progressRef={progressRef} />
+        <a className="skip-link" href={isMobileLayout ? "#mobile-works" : `#work-${works[0].id}`}>{copy.skip}</a>
         <div id="top" />
         <main>
-          <section id="project" ref={sceneRef} className="scroll-scene">
-            {isMobileLayout ? (
-              <MobilePage
-                works={works}
-                copy={copy}
-                petSessionKey={petSessionKey}
-              />
-            ) : (
+          <section id="project" ref={sceneRef} className="scroll-scene" style={isMobileLayout ? undefined : { height: layout.sectionHeight }}>
+            {isMobileLayout ? <MobilePage works={works} copy={copy} petSessionKey={petSessionKey} /> : (
               <>
-                <DesktopProjectAnchors works={works} />
-                <DesktopScene
-                  progress={progress}
-                  works={works}
-                  copy={copy}
-                  petSessionKey={petSessionKey}
-                />
+                <DesktopProjectAnchors works={works} layout={layout} />
+                <DesktopScene layout={layout} activeIndex={activeIndex} works={works} copy={copy} petSessionKey={petSessionKey} />
               </>
             )}
           </section>
-          <AboutPanel copy={copy} contactId={isMobileLayout ? undefined : "contact"} />
+          {!isMobileLayout && <AboutPanel copy={copy} contactId="contact" />}
         </main>
       </div>
     </>

@@ -4,8 +4,9 @@ import App from "./App";
 import "lenis/dist/lenis.css";
 import "./index.css";
 import "./exhibition.css";
+import "./deviceControls.css";
 
-const BOOT_EXIT_MS = 240;
+const BOOT_EXIT_MS = 360;
 const BOOT_MARK = "HacchiRoku";
 const BOOT_COLORS = ["mark-coral", "mark-yellow", "mark-cyan", "mark-lavender"];
 

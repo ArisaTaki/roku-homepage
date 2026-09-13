@@ -106,16 +106,14 @@ body {
   transform: none;
   filter: none;
   transition:
-    opacity 240ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
-    filter 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 360ms cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity;
 }
 
 .app-shell.is-booting {
   opacity: 0;
-  transform: translateY(18px) scale(0.992);
-  filter: blur(8px);
+  transform: none;
+  filter: none;
   pointer-events: none;
 }
 
@@ -133,18 +131,16 @@ body {
     radial-gradient(circle at 62% 56%, rgba(245, 186, 191, 0.16), transparent 30%),
     linear-gradient(180deg, #050812 0%, #0b1019 52%, #111823 100%);
   opacity: 1;
-  transform: scale(1);
-  filter: blur(0);
+  transform: none;
+  filter: none;
   transition:
-    opacity 240ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
-    filter 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 360ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .boot-loader.is-exiting {
   opacity: 0;
-  transform: scale(1.018);
-  filter: blur(12px);
+  transform: none;
+  filter: none;
   pointer-events: none;
 }
 
@@ -254,7 +250,7 @@ main {
   top: 0;
   width: 100vw;
   height: 100vh;
-  min-height: 650px;
+  min-height: 0;
   overflow: hidden;
   background: rgba(5, 8, 18, 0.42);
   isolation: isolate;
@@ -265,10 +261,11 @@ main {
   z-index: 2;
   inset: 0 auto auto 0;
   width: 6900px;
-  height: 720px;
-  min-height: 100vh;
+  height: 900px;
+  min-height: 0;
   transform: translate3d(0, 0, 0);
   will-change: transform;
+  transform-origin: 0 0;
 }
 
 .desktop-title {
@@ -495,44 +492,6 @@ main {
 .hero-assistant .pet-form button,
 .hero-assistant .pet-form input {
   font-size: 12px;
-}
-
-@media (min-width: 1500px) {
-  .desktop-mark {
-    top: 258px;
-    font-size: 230px;
-  }
-
-  .hero-assistant {
-    left: 70px;
-    top: 514px;
-    grid-template-columns: 210px minmax(0, 1fr);
-    width: 1180px;
-    padding: 20px;
-  }
-
-  .this-way {
-    left: 1288px;
-    top: clamp(620px, 58vh, 668px);
-    gap: 28px;
-    font-size: 30px;
-  }
-
-  .this-way b {
-    font-size: 38px;
-  }
-
-  .hero-assistant .pet-stage {
-    min-height: 242px;
-  }
-
-  .hero-assistant .pixel-pet {
-    --pet-scale: 0.96;
-  }
-
-  .hero-assistant .pet-message {
-    font-size: 14px;
-  }
 }
 
 .pet-stage {
@@ -4227,7 +4186,7 @@ main {
 .about-panel {
   position: relative;
   min-height: 100vh;
-  margin-top: -160px;
+  margin-top: 0;
   padding: 60px 48px 32px;
   background: rgba(5, 8, 18, 0.42);
   overflow: hidden;
@@ -4318,38 +4277,35 @@ main {
   text-underline-offset: 4px;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 699px){
   .boot-mark {
     font-size: clamp(38px, 12vw, 58px);
   }
+}
 
-  :root {
-    background: var(--paper);
-  }
-
-  .scroll-scene {
+:where([data-layout="flow"]) .scroll-scene {
     height: auto;
     min-height: 0;
   }
 
-  .stage {
+:where([data-layout="flow"]) .stage {
     display: none;
   }
 
-  .mobile-page {
+:where([data-layout="flow"]) .mobile-page {
     display: block;
     min-height: 100vh;
     overflow: hidden;
     background: rgba(5, 8, 18, 0.42);
   }
 
-  .nav-card,
-  .mini-logo {
+:where([data-layout="flow"]) .nav-card,
+  :where([data-layout="flow"]) .mini-logo {
     display: none;
   }
 
-  .where-card,
-  .where-card.visible {
+:where([data-layout="flow"]) .where-card,
+  :where([data-layout="flow"]) .where-card.visible {
     top: 0;
     right: 20px;
     display: grid;
@@ -4366,13 +4322,13 @@ main {
     pointer-events: auto;
   }
 
-  .mobile-hero {
+:where([data-layout="flow"]) .mobile-hero {
     position: relative;
     min-height: 930px;
     padding: 61px 20px 0;
   }
 
-  .mobile-hero h1 {
+:where([data-layout="flow"]) .mobile-hero h1 {
     margin: 0;
     font-family: "GT Haptik", Arial, sans-serif;
     font-size: 79px;
@@ -4381,21 +4337,21 @@ main {
     letter-spacing: 0;
   }
 
-  .mobile-hero p {
+:where([data-layout="flow"]) .mobile-hero p {
     margin: 39px 0 0 4px;
     color: var(--muted);
     font-size: 16px;
     line-height: 1.2;
   }
 
-  .mobile-logo-wrap {
+:where([data-layout="flow"]) .mobile-logo-wrap {
     position: relative;
     margin: 66px 0 0 20px;
     width: 355px;
     height: 210px;
   }
 
-  .mobile-mark {
+:where([data-layout="flow"]) .mobile-mark {
     position: absolute;
     left: -2px;
     top: 58px;
@@ -4405,17 +4361,17 @@ main {
     font-size: 58px;
   }
 
-  .mobile-name-mark .mark-letter:nth-child(2),
-  .mobile-name-mark .mark-letter:nth-child(6) {
+:where([data-layout="flow"]) .mobile-name-mark .mark-letter:nth-child(2),
+  :where([data-layout="flow"]) .mobile-name-mark .mark-letter:nth-child(6) {
     transform: rotate(5deg);
   }
 
-  .mobile-name-mark .mark-letter:nth-child(4),
-  .mobile-name-mark .mark-letter:nth-child(9) {
+:where([data-layout="flow"]) .mobile-name-mark .mark-letter:nth-child(4),
+  :where([data-layout="flow"]) .mobile-name-mark .mark-letter:nth-child(9) {
     transform: rotate(-4deg) translateY(0.02em);
   }
 
-  .mobile-hero-assistant {
+:where([data-layout="flow"]) .mobile-hero-assistant {
     position: relative;
     left: auto;
     top: auto;
@@ -4425,27 +4381,27 @@ main {
     padding: 12px;
   }
 
-  .mobile-hero-assistant .pet-stage {
+:where([data-layout="flow"]) .mobile-hero-assistant .pet-stage {
     min-height: 142px;
   }
 
-  .mobile-hero-assistant .pixel-pet {
+:where([data-layout="flow"]) .mobile-hero-assistant .pixel-pet {
     --pet-scale: 0.56;
   }
 
-  .mobile-hero-assistant .pet-messages {
+:where([data-layout="flow"]) .mobile-hero-assistant .pet-messages {
     max-height: 172px;
   }
 
-  .mobile-hero-assistant .pet-message {
+:where([data-layout="flow"]) .mobile-hero-assistant .pet-message {
     font-size: 11px;
   }
 
-  .mobile-hero-assistant .pet-chips {
+:where([data-layout="flow"]) .mobile-hero-assistant .pet-chips {
     display: none;
   }
 
-  .mobile-this-way {
+:where([data-layout="flow"]) .mobile-this-way {
     display: flex;
     align-items: flex-start;
     gap: 52px;
@@ -4455,42 +4411,42 @@ main {
     line-height: 1.14;
   }
 
-  .mobile-this-way b {
+:where([data-layout="flow"]) .mobile-this-way b {
     margin-top: 3px;
     font-size: 28px;
     font-weight: 400;
     line-height: 1;
   }
 
-  .mobile-works {
+:where([data-layout="flow"]) .mobile-works {
     display: flex;
     flex-direction: column;
     gap: 104px;
     padding: 0 20px 92px;
   }
 
-  .mobile-work {
+:where([data-layout="flow"]) .mobile-work {
     display: block;
     color: #dce6f4;
   }
 
-  .mobile-work.square {
+:where([data-layout="flow"]) .mobile-work.square {
     width: 280px;
     margin-right: auto;
     margin-left: auto;
   }
 
-  .mobile-work > img,
-  .mobile-work > .work-visual,
-  .mobile-work > .work-preview-loading,
-  .mobile-work > .hermes-remotion-shell,
-  .mobile-work > .work-preview-loading.visual-hermes,
-  .mobile-work > .work-preview-loading.visual-live2d,
-  .mobile-work > .work-preview-loading.visual-gallery,
-  .mobile-work > .work-preview-loading.visual-shader,
-  .mobile-work > .nature-live2d-remotion-shell,
-  .mobile-work > .gallery-remotion-shell,
-  .mobile-work > .shader-remotion-shell {
+:where([data-layout="flow"]) .mobile-work > img,
+  :where([data-layout="flow"]) .mobile-work > .work-visual,
+  :where([data-layout="flow"]) .mobile-work > .work-preview-loading,
+  :where([data-layout="flow"]) .mobile-work > .hermes-remotion-shell,
+  :where([data-layout="flow"]) .mobile-work > .work-preview-loading.visual-hermes,
+  :where([data-layout="flow"]) .mobile-work > .work-preview-loading.visual-live2d,
+  :where([data-layout="flow"]) .mobile-work > .work-preview-loading.visual-gallery,
+  :where([data-layout="flow"]) .mobile-work > .work-preview-loading.visual-shader,
+  :where([data-layout="flow"]) .mobile-work > .nature-live2d-remotion-shell,
+  :where([data-layout="flow"]) .mobile-work > .gallery-remotion-shell,
+  :where([data-layout="flow"]) .mobile-work > .shader-remotion-shell {
     width: 100%;
     height: 218px;
     min-height: 0;
@@ -4502,33 +4458,29 @@ main {
     background-color: var(--surface-soft);
   }
 
-  .mobile-work.square > img,
-  .mobile-work.square > .work-visual,
-  .mobile-work.square > .work-preview-loading,
-  .mobile-work.square > .hermes-remotion-shell,
-  .mobile-work.square > .nature-live2d-remotion-shell,
-  .mobile-work.square > .gallery-remotion-shell,
-  .mobile-work.square > .shader-remotion-shell {
+:where([data-layout="flow"]) .mobile-work.square > img,
+  :where([data-layout="flow"]) .mobile-work.square > .work-visual,
+  :where([data-layout="flow"]) .mobile-work.square > .work-preview-loading,
+  :where([data-layout="flow"]) .mobile-work.square > .hermes-remotion-shell,
+  :where([data-layout="flow"]) .mobile-work.square > .nature-live2d-remotion-shell,
+  :where([data-layout="flow"]) .mobile-work.square > .gallery-remotion-shell,
+  :where([data-layout="flow"]) .mobile-work.square > .shader-remotion-shell {
     aspect-ratio: 1 / 1;
   }
 
-  .mobile-work > .hermes-remotion-shell,
-  .mobile-work > .work-preview-loading.visual-hermes,
-  .mobile-work > .work-preview-loading.visual-live2d,
-  .mobile-work > .work-preview-loading.visual-gallery,
-  .mobile-work > .work-preview-loading.visual-shader,
-  .mobile-work > .nature-live2d-remotion-shell,
-  .mobile-work > .gallery-remotion-shell,
-  .mobile-work > .shader-remotion-shell {
+:where([data-layout="flow"]) .mobile-work > .hermes-remotion-shell,
+  :where([data-layout="flow"]) .mobile-work > .work-preview-loading.visual-hermes,
+  :where([data-layout="flow"]) .mobile-work > .work-preview-loading.visual-live2d,
+  :where([data-layout="flow"]) .mobile-work > .work-preview-loading.visual-gallery,
+  :where([data-layout="flow"]) .mobile-work > .work-preview-loading.visual-shader,
+  :where([data-layout="flow"]) .mobile-work > .nature-live2d-remotion-shell,
+  :where([data-layout="flow"]) .mobile-work > .gallery-remotion-shell,
+  :where([data-layout="flow"]) .mobile-work > .shader-remotion-shell {
     height: auto;
     aspect-ratio: 1280 / 880;
   }
 
-  .mobile-work.is-hermes .hermes-remotion-shell {
-    display: none;
-  }
-
-  .mobile-work.is-hermes .hermes-mobile-preview {
+:where([data-layout="flow"]) .mobile-work.is-hermes .hermes-mobile-preview {
     display: grid;
     grid-template-rows: 34px minmax(0, 1fr);
     width: 100%;
@@ -4542,7 +4494,7 @@ main {
     box-shadow: 0 18px 38px rgba(0, 0, 0, 0.34);
   }
 
-  .hm-titlebar {
+:where([data-layout="flow"]) .hm-titlebar {
     display: grid;
     grid-template-columns: 9px 9px 9px 1fr;
     align-items: center;
@@ -4552,22 +4504,22 @@ main {
     background: #060914;
   }
 
-  .hm-titlebar span {
+:where([data-layout="flow"]) .hm-titlebar span {
     width: 8px;
     height: 8px;
     border-radius: 999px;
     background: #ff6670;
   }
 
-  .hm-titlebar span:nth-child(2) {
+:where([data-layout="flow"]) .hm-titlebar span:nth-child(2) {
     background: #ffd060;
   }
 
-  .hm-titlebar span:nth-child(3) {
+:where([data-layout="flow"]) .hm-titlebar span:nth-child(3) {
     background: #65cf75;
   }
 
-  .hm-titlebar b {
+:where([data-layout="flow"]) .hm-titlebar b {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -4577,7 +4529,7 @@ main {
     font-weight: 900;
   }
 
-  .hm-titlebar img {
+:where([data-layout="flow"]) .hm-titlebar img {
     width: 12px;
     height: 12px;
     border: 0;
@@ -4585,13 +4537,13 @@ main {
     box-shadow: none;
   }
 
-  .hm-body {
+:where([data-layout="flow"]) .hm-body {
     display: grid;
     grid-template-columns: 76px minmax(0, 1fr);
     min-height: 0;
   }
 
-  .hm-rail {
+:where([data-layout="flow"]) .hm-rail {
     display: grid;
     align-content: start;
     gap: 8px;
@@ -4600,7 +4552,7 @@ main {
     padding: 12px 8px;
   }
 
-  .hm-rail img {
+:where([data-layout="flow"]) .hm-rail img {
     width: 32px;
     height: 32px;
     margin-bottom: 6px;
@@ -4609,7 +4561,7 @@ main {
     box-shadow: none;
   }
 
-  .hm-rail span {
+:where([data-layout="flow"]) .hm-rail span {
     border-radius: 7px;
     padding: 6px 7px;
     color: #8996aa;
@@ -4618,13 +4570,13 @@ main {
     line-height: 1;
   }
 
-  .hm-rail span.is-active {
+:where([data-layout="flow"]) .hm-rail span.is-active {
     background: #0d1a25;
     color: #68ccdc;
     box-shadow: inset 3px 0 0 #e486bc;
   }
 
-  .hm-panel {
+:where([data-layout="flow"]) .hm-panel {
     display: grid;
     grid-template-rows: auto 1fr auto;
     min-width: 0;
@@ -4634,7 +4586,7 @@ main {
       #080d17;
   }
 
-  .hm-panel header {
+:where([data-layout="flow"]) .hm-panel header {
     display: flex;
     align-items: center;
     gap: 9px;
@@ -4642,7 +4594,7 @@ main {
     padding-bottom: 10px;
   }
 
-  .hm-panel header img {
+:where([data-layout="flow"]) .hm-panel header img {
     width: 32px;
     height: 32px;
     border: 2px solid rgba(228, 134, 188, 0.42);
@@ -4650,33 +4602,33 @@ main {
     box-shadow: none;
   }
 
-  .hm-panel header b,
-  .hm-panel header span {
+:where([data-layout="flow"]) .hm-panel header b,
+  :where([data-layout="flow"]) .hm-panel header span {
     display: block;
   }
 
-  .hm-panel header b {
+:where([data-layout="flow"]) .hm-panel header b {
     color: #eef3fb;
     font-size: 12px;
     font-weight: 950;
     line-height: 1.1;
   }
 
-  .hm-panel header span {
+:where([data-layout="flow"]) .hm-panel header span {
     margin-top: 3px;
     color: #e486bc;
     font-size: 9px;
     font-weight: 900;
   }
 
-  .hm-chat {
+:where([data-layout="flow"]) .hm-chat {
     display: grid;
     align-content: start;
     gap: 8px;
     padding: 12px 0;
   }
 
-  .hm-chat p {
+:where([data-layout="flow"]) .hm-chat p {
     max-width: 92%;
     margin: 0;
     border: 1px solid rgba(132, 149, 174, 0.16);
@@ -4689,23 +4641,23 @@ main {
     line-height: 1.35;
   }
 
-  .hm-chat p.is-user {
+:where([data-layout="flow"]) .hm-chat p.is-user {
     justify-self: end;
     border-color: rgba(228, 134, 188, 0.36);
     background: rgba(44, 24, 43, 0.9);
   }
 
-  .hm-chat p.is-reply {
+:where([data-layout="flow"]) .hm-chat p.is-reply {
     border-color: rgba(104, 204, 220, 0.22);
   }
 
-  .hm-tools {
+:where([data-layout="flow"]) .hm-tools {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
   }
 
-  .hm-tools span {
+:where([data-layout="flow"]) .hm-tools span {
     border: 1px solid rgba(104, 204, 220, 0.28);
     border-radius: 999px;
     padding: 5px 7px;
@@ -4714,52 +4666,52 @@ main {
     font-weight: 900;
   }
 
-  .mobile-work .work-visual {
+:where([data-layout="flow"]) .mobile-work .work-visual {
     padding: 20px;
     gap: 10px;
   }
 
-  .mobile-work .work-visual::before {
+:where([data-layout="flow"]) .mobile-work .work-visual::before {
     inset: 14px;
   }
 
-  .mobile-work .work-visual::after {
+:where([data-layout="flow"]) .mobile-work .work-visual::after {
     right: 20px;
     top: 20px;
     width: 64px;
     height: 64px;
   }
 
-  .mobile-work .work-visual strong {
+:where([data-layout="flow"]) .mobile-work .work-visual strong {
     max-width: 245px;
     font-size: 28px;
   }
 
-  .mobile-work .work-visual em {
+:where([data-layout="flow"]) .mobile-work .work-visual em {
     max-width: 238px;
     font-size: 12px;
     line-height: 1.12;
   }
 
-  .mobile-work .work-visual .visual-kicker {
+:where([data-layout="flow"]) .mobile-work .work-visual .visual-kicker {
     padding: 6px 10px;
     font-size: 11px;
   }
 
-  .mobile-work .visual-grid {
+:where([data-layout="flow"]) .mobile-work .visual-grid {
     right: 22px;
     bottom: 20px;
     grid-template-columns: repeat(2, 28px);
     gap: 7px;
   }
 
-  .mobile-work .visual-grid i {
+:where([data-layout="flow"]) .mobile-work .visual-grid i {
     width: 28px;
     height: 28px;
     border-radius: 6px;
   }
 
-  .mobile-work > h2 {
+:where([data-layout="flow"]) .mobile-work > h2 {
     margin: 13px 0 3px;
     font-size: 20px;
     font-weight: 700;
@@ -4768,7 +4720,7 @@ main {
     color: var(--ink);
   }
 
-  .mobile-work > p {
+:where([data-layout="flow"]) .mobile-work > p {
     margin: 0;
     font-size: 16px;
     font-weight: 600;
@@ -4776,7 +4728,7 @@ main {
     color: #d7dde6;
   }
 
-  .mobile-work > small {
+:where([data-layout="flow"]) .mobile-work > small {
     display: block;
     margin-top: 22px;
     color: #8fc5ff;
@@ -4784,7 +4736,7 @@ main {
     font-weight: 600;
   }
 
-  .mobile-about {
+:where([data-layout="flow"]) .mobile-about {
     position: relative;
     min-height: 0;
     margin-top: 10px;
@@ -4793,7 +4745,7 @@ main {
     overflow: hidden;
   }
 
-  .mobile-wave {
+:where([data-layout="flow"]) .mobile-wave {
     height: 108px;
     background:
       url("data:image/svg+xml,%3Csvg width='390' height='108' viewBox='0 0 390 108' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 59C24 59 24 82 48 82C72 82 72 59 96 59C120 59 120 82 144 82C168 82 168 59 192 59C216 59 216 82 240 82C264 82 264 59 288 59C312 59 312 82 336 82C360 82 360 59 390 59V108H0V59Z' fill='%2310151f'/%3E%3C/svg%3E")
@@ -4801,7 +4753,7 @@ main {
       var(--paper);
   }
 
-  .mobile-about h2 {
+:where([data-layout="flow"]) .mobile-about h2 {
     margin: 0;
     padding: 0 20px;
     color: var(--ink);
@@ -4811,15 +4763,15 @@ main {
     letter-spacing: 0;
   }
 
-  .mobile-about .blue {
+:where([data-layout="flow"]) .mobile-about .blue {
     color: var(--cyan);
   }
 
-  .mobile-about .green {
+:where([data-layout="flow"]) .mobile-about .green {
     color: var(--lavender);
   }
 
-  .mobile-about .about-columns {
+:where([data-layout="flow"]) .mobile-about .about-columns {
     grid-template-columns: 1fr;
     gap: 0;
     width: calc(100% - 40px);
@@ -4828,22 +4780,22 @@ main {
     padding-top: 0;
   }
 
-  .mobile-about .about-columns article {
+:where([data-layout="flow"]) .mobile-about .about-columns article {
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     padding: 24px 0;
   }
 
-  .mobile-about .about-columns h3 {
+:where([data-layout="flow"]) .mobile-about .about-columns h3 {
     margin-bottom: 12px;
     font-size: 24px;
   }
 
-  .mobile-about .about-columns p {
+:where([data-layout="flow"]) .mobile-about .about-columns p {
     font-size: 18px;
     line-height: 1.35;
   }
 
-  .mobile-mail {
+:where([data-layout="flow"]) .mobile-mail {
     position: relative;
     left: auto;
     top: auto;
@@ -4854,15 +4806,14 @@ main {
     line-height: 1;
   }
 
-  .about-panel {
+:where([data-layout="flow"]) .about-panel {
     display: none;
   }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .app-shell,
   .boot-loader {
-    transition: none;
+    transition: opacity 180ms ease;
   }
 
   .app-shell.is-booting,

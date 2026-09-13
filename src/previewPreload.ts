@@ -112,6 +112,22 @@ export function preloadWorkPreview(id: WorkId): Promise<void> {
   return pending;
 }
 
+/** Prepare the opening artwork/type and the first exhibit, without mounting a player. */
+export const prepareInitialScreen = sharedImport(async (): Promise<void> => {
+  const fonts = document.fonts;
+  const results = await Promise.allSettled([
+    preloadPreviewImage("/assets/gallery-new/kaguya-visual-02.webp", "high"),
+    ...(fonts ? [
+      fonts.load('500 32px "GT Haptik"', "Hacchi Roku!"),
+      fonts.load('400 16px "Diana Inter"', "irop.one"),
+    ] : []),
+    // Respect explicit data saving while still preparing the visible first screen.
+    ...(limitedConnection() ? [] : [preloadWorkPreview("hermes-yachiyo")]),
+  ]);
+  const failure = results.find((result) => result.status === "rejected");
+  if (failure?.status === "rejected") throw failure.reason;
+});
+
 const workOrder: WorkId[] = [
   "hermes-yachiyo", "nature-live2d", "mimo-usage-watcher", "blog", "gallery", "shader",
 ];

@@ -1,0 +1,65 @@
+html { scroll-behavior: smooth; }
+html.lenis { scroll-behavior: auto; }
+html, body { overscroll-behavior-y: auto; }
+
+.site-nav {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  right: max(20px, env(safe-area-inset-right));
+  z-index: 100;
+  width: min(418px, calc(100% - 40px));
+  color: var(--festival-paper);
+  font-family: "Diana Inter", sans-serif;
+}
+.site-nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 54px;
+  padding: 6px 8px 6px 15px;
+  border: 1px solid #326475;
+  border-left: 4px solid var(--festival-cyan);
+  background: #051726;
+  box-shadow: 4px 4px 0 #020814;
+}
+.site-home { display: flex; align-items: center; align-self: stretch; flex: 1; color: var(--festival-paper); font-family: "GT Haptik", sans-serif; font-size: 20px; font-weight: 500; white-space: nowrap; }
+.site-home span { color: var(--festival-cyan); }
+.site-nav .language-switcher { display: flex; flex: 0 0 auto; gap: 2px; margin: 0; padding: 0; border: 0; }
+.site-nav .language-switcher button { min-width: 34px; min-height: 44px; padding: 5px; border: 0; background: transparent; color: #adbbc4; font: 12px "Diana Inter", sans-serif; }
+.site-nav .language-switcher button.is-active { color: var(--festival-ink); background: var(--festival-cyan); }
+.site-menu-toggle { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; padding: 0 10px; border: 0; color: var(--festival-ink); background: var(--festival-paper); font: 12px "Diana Inter", sans-serif; white-space: nowrap; cursor: pointer; }
+.site-menu-toggle b { font-size: 20px; font-weight: 400; }
+.site-menu { margin-top: 8px; max-height: calc(100dvh - 100px); overflow-y: auto; padding: 16px; border: 1px solid #326475; background: #051726; box-shadow: 4px 4px 0 #020814; }
+.site-menu-sections { display: flex; flex-wrap: wrap; gap: 8px 18px; padding-bottom: 14px; border-bottom: 1px solid #285262; }
+.site-menu-sections a { color: var(--festival-cyan); font-size: 13px; padding: 8px 0; }
+.site-menu-works { display: grid; gap: 2px; margin-top: 8px; }
+.site-menu-works a { display: flex; align-items: center; gap: 12px; padding: 12px 4px; font-size: 14px; }
+.site-menu-works a > span { color: var(--festival-red); font-size: 11px; }
+.site-menu-works a > b { margin-left: auto; color: var(--festival-cyan); font-weight: 400; }
+.site-menu-works a:hover { background: #102d3c; }
+.site-nav :is(a, button):focus-visible, .preview-controls button:focus-visible { outline: 2px solid var(--festival-cyan); outline-offset: 3px; }
+.site-nav :is(a, button) { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+
+[data-layout="flow"] :is(.mobile-work, #mobile-works, #mobile-about, #contact) { scroll-margin-top: 96px; }
+.preview-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+.preview-controls > span { color: #a7c1c9; font: 11px "Diana Inter", sans-serif; }
+.preview-controls button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 44px; padding: 9px 13px; border: 1px solid #448081; background: #0a2634; color: var(--festival-cyan); font: 12px "Diana Inter", sans-serif; cursor: pointer; touch-action: manipulation; }
+.preview-controls button > span { font-size: 16px; }
+.mobile-work > a.work-heading { display: flex; }
+
+@media (max-width: 480px) {
+  .site-nav { right: max(12px, env(safe-area-inset-right)); width: calc(100% - 24px); top: max(12px, env(safe-area-inset-top)); }
+  .site-nav-bar { gap: 7px; min-height: 52px; padding-left: 10px; }
+  .site-home { font-size: 18px; }
+  .site-menu-toggle { gap: 6px; padding: 0 8px; }
+}
+
+@media (max-width: 360px) {
+  .site-nav-bar { gap: 4px; }
+  .site-nav .language-switcher button { min-width: 30px; }
+  .site-menu-toggle { gap: 4px; padding: 0 6px; font-size: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}

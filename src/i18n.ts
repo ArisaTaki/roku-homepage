@@ -133,8 +133,11 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
 
 export const uiCopy = {
   en: {
+    preview: { play: "Play preview", pause: "Pause preview", label: "Project preview" },
     skip: "Skip to works",
     nav: {
+      menu: "Menu",
+      closeMenu: "Close menu",
       works: "Works",
       me: "Me",
       email: "Email me",
@@ -220,8 +223,11 @@ export const uiCopy = {
     },
   },
   zh: {
+    preview: { play: "播放预览", pause: "暂停预览", label: "项目预览" },
     skip: "直接看作品",
     nav: {
+      menu: "菜单",
+      closeMenu: "关闭菜单",
       works: "作品",
       me: "关于",
       email: "联系我",
@@ -303,8 +309,11 @@ export const uiCopy = {
     },
   },
   ja: {
+    preview: { play: "プレビュー再生", pause: "プレビューを一時停止", label: "作品プレビュー" },
     skip: "作品を見る",
     nav: {
+      menu: "メニュー",
+      closeMenu: "メニューを閉じる",
       works: "制作物",
       me: "私について",
       email: "メール",

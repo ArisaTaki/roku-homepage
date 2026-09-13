@@ -1,5 +1,5 @@
 import { Player, type PlayerRef } from "@remotion/player";
-import { usePreviewPlayback, usePreviewVisibility } from "./usePreviewVisibility";
+import { usePreviewInteraction, usePreviewPlayback, type PreviewPlaybackProps } from "./usePreviewVisibility";
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame } from "remotion";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -1255,37 +1255,18 @@ function ShaderComposition() {
   );
 }
 
-export function ShaderReplay() {
+export function ShaderReplay({ playing }: PreviewPlaybackProps = {}) {
   const playerRef = useRef<PlayerRef | null>(null);
-  const { previewRef, isVisible } = usePreviewVisibility();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playSession, setPlaySession] = useState(0);
-  const isPlayingRef = useRef(isPlaying);
-
-  useEffect(() => {
-    isPlayingRef.current = isPlaying;
-  }, [isPlaying]);
+  const { previewRef, isVisible, isPlaying } = usePreviewInteraction({ playing });
 
   usePreviewPlayback({
     playerRef,
     isPlaying,
     isVisible,
-    playSession,
+    playSession: 0,
     fps: FPS,
     durationInFrames: DURATION_IN_FRAMES,
   });
-
-  const startReplay = () => {
-    if (isPlayingRef.current) return;
-    isPlayingRef.current = true;
-    setPlaySession((current) => current + 1);
-    setIsPlaying(true);
-  };
-
-  const stopReplay = () => {
-    isPlayingRef.current = false;
-    setIsPlaying(false);
-  };
 
   return (
     <div
@@ -1293,12 +1274,6 @@ export function ShaderReplay() {
       ref={previewRef}
       data-preview-active={isPlaying && isVisible}
       aria-hidden="true"
-      onMouseEnter={startReplay}
-      onMouseMove={startReplay}
-      onMouseLeave={stopReplay}
-      onFocus={startReplay}
-      onBlur={stopReplay}
-      onTouchStart={startReplay}
     >
       <Player
         ref={playerRef}

@@ -1,7 +1,7 @@
 import { Player, type PlayerRef } from "@remotion/player";
-import { usePreviewPlayback, usePreviewVisibility } from "./usePreviewVisibility";
+import { usePreviewInteraction, usePreviewPlayback, type PreviewPlaybackProps } from "./usePreviewVisibility";
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame } from "remotion";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { previewImageUrl } from "./lib/previewImages";
 
 const FPS = 30;
@@ -272,37 +272,18 @@ function GalleryComposition() {
   );
 }
 
-export function GalleryReplay() {
+export function GalleryReplay({ playing }: PreviewPlaybackProps = {}) {
   const playerRef = useRef<PlayerRef | null>(null);
-  const { previewRef, isVisible } = usePreviewVisibility();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playSession, setPlaySession] = useState(0);
-  const isPlayingRef = useRef(isPlaying);
-
-  useEffect(() => {
-    isPlayingRef.current = isPlaying;
-  }, [isPlaying]);
+  const { previewRef, isVisible, isPlaying } = usePreviewInteraction({ playing });
 
   usePreviewPlayback({
     playerRef,
     isPlaying,
     isVisible,
-    playSession,
+    playSession: 0,
     fps: FPS,
     durationInFrames: DURATION_IN_FRAMES,
   });
-
-  const startReplay = () => {
-    if (isPlayingRef.current) return;
-    isPlayingRef.current = true;
-    setPlaySession((current) => current + 1);
-    setIsPlaying(true);
-  };
-
-  const stopReplay = () => {
-    isPlayingRef.current = false;
-    setIsPlaying(false);
-  };
 
   return (
     <div
@@ -310,11 +291,6 @@ export function GalleryReplay() {
       ref={previewRef}
       data-preview-active={isPlaying && isVisible}
       aria-hidden="true"
-      onMouseEnter={startReplay}
-      onMouseMove={startReplay}
-      onMouseLeave={stopReplay}
-      onFocus={startReplay}
-      onBlur={stopReplay}
     >
       <Player
         ref={playerRef}

@@ -17,13 +17,17 @@ npm run build
 
 ## Exhibition layout
 
-The homepage keeps a horizontal exhibition on desktop and vertically stacked works on phones. Its poster styling combines an oval character visual, tilted two-color headings, cloud motifs, halftone dots, Japanese geometric patterns, ticket navigation and consistent exhibition labels. The hero reuses the existing gallery image `kaguya-visual-02.webp` (about 265KB), prepares it with priority and shares its decoded image cache with Gallery; there are no new media files or dependencies. Phones show the hero, work entrance and assistant in that order.
+The homepage keeps a horizontal exhibition on desktop, scaling its shared design coordinates, project anchors and scroll distance together for larger screens. Windows up to 1100px wide, touch tablets up to 1400px wide and portrait windows up to 1400px wide use a vertical layout; wider vertical layouts place the hero content in two columns. A persistent menu provides project navigation and Chinese, English and Japanese language switching on every layout.
 
-With `npm run preview`, check Chinese, English and Japanese titles for wrapping, use the exhibition entrance and ticket navigation to reach each work, and verify card layout and links at phone widths. Disable browser caching and confirm the shared hero/Gallery image and prepared gallery images download only once; block resources and check that the page remains usable.
+Its poster styling combines an oval character visual, tilted two-color headings, cloud motifs, halftone dots, Japanese geometric patterns, ticket navigation and consistent exhibition labels. The hero reuses the existing gallery image `kaguya-visual-02.webp` (about 265KB), prepares it with priority and shares its decoded image cache with Gallery; there are no new media files or dependencies. Phones show the hero, work entrance and assistant in that order.
+
+Animated previews in the vertical layout play when sufficiently visible and provide a play/pause button. Reduced-motion preferences disable automatic preview playback; visitors can still start a preview explicitly. Desktop wheels and trackpads use a gentle Lenis glide, while vertical layouts retain native touch-scroll momentum.
+
+With `npm run preview`, check Chinese, English and Japanese titles for wrapping, use the exhibition entrance and menu to reach each work, and verify card layout, playback controls and links on phones, portrait/landscape tablets and large desktop screens. Check native touch scrolling on real devices as well as responsive browser viewports. Disable browser caching and confirm the shared hero/Gallery image and prepared gallery images download only once; block resources and check that the page remains usable.
 
 ## Loading performance
 
-After React mounts, the opening overlay waits for two animation frames, with a 1.2-second fallback, independently of fonts, images and Live2D.
+After React mounts, the opening overlay stays for at least 700ms while preparing the hero artwork, first-screen fonts and Hermes preview resources. Readiness requires two animation frames and preparation to settle, with a preparation limit of 1800ms followed by a 360ms fade-out. Slow or failed resources release the page with its fallbacks; Live2D initialization does not block the opening. Save-Data and 2G connections skip Hermes prewarming while still preparing the visible first screen.
 
 Background resource preparation starts 800ms after the homepage becomes ready, with at most two previews in progress. Approaching a card or using project navigation starts its preparation immediately. Save-Data and 2G connections skip automatic preparation; hidden pages defer new background preview jobs. Preparation loads code and assets without mounting animations or calling the AI demo API. Live2D preparation and rendering share in-flight and cached model bytes.
 

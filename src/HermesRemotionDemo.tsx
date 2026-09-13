@@ -1,5 +1,5 @@
 import { Player, type PlayerRef } from "@remotion/player";
-import { usePreviewPlayback, usePreviewVisibility } from "./usePreviewVisibility";
+import { usePreviewInteraction, usePreviewPlayback, type PreviewPlaybackProps } from "./usePreviewVisibility";
 import {
   AbsoluteFill,
   Easing,
@@ -8,7 +8,7 @@ import {
   spring,
   useCurrentFrame,
 } from "remotion";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { previewImageUrl } from "./lib/previewImages";
 
 const FPS = 30;
@@ -626,47 +626,18 @@ function HermesDemoComposition() {
   );
 }
 
-export function HermesReplay() {
+export function HermesReplay({ playing }: PreviewPlaybackProps = {}) {
   const playerRef = useRef<PlayerRef | null>(null);
-  const { previewRef, isVisible } = usePreviewVisibility();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playSession, setPlaySession] = useState(0);
-  const isPlayingRef = useRef(isPlaying);
-
-  useEffect(() => {
-    isPlayingRef.current = isPlaying;
-  }, [isPlaying]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return undefined;
-    if (!window.matchMedia("(hover: none)").matches) return undefined;
-
-    isPlayingRef.current = true;
-    setPlaySession((current) => current + 1);
-    setIsPlaying(true);
-    return undefined;
-  }, []);
+  const { previewRef, isVisible, isPlaying } = usePreviewInteraction({ playing });
 
   usePreviewPlayback({
     playerRef,
     isPlaying,
     isVisible,
-    playSession,
+    playSession: 0,
     fps: FPS,
     durationInFrames: DURATION_IN_FRAMES,
   });
-
-  const startReplay = () => {
-    if (isPlayingRef.current) return;
-    isPlayingRef.current = true;
-    setPlaySession((current) => current + 1);
-    setIsPlaying(true);
-  };
-
-  const stopReplay = () => {
-    isPlayingRef.current = false;
-    setIsPlaying(false);
-  };
 
   return (
     <div
@@ -674,10 +645,6 @@ export function HermesReplay() {
       ref={previewRef}
       data-preview-active={isPlaying && isVisible}
       aria-hidden="true"
-      onMouseEnter={startReplay}
-      onMouseLeave={stopReplay}
-      onFocus={startReplay}
-      onBlur={stopReplay}
     >
       <Player
         ref={playerRef}

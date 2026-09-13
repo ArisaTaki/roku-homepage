@@ -1,5 +1,5 @@
 import { Player, type PlayerRef } from "@remotion/player";
-import { usePreviewPlayback, usePreviewVisibility } from "./usePreviewVisibility";
+import { usePreviewInteraction, usePreviewPlayback, type PreviewPlaybackProps } from "./usePreviewVisibility";
 import {
   AbsoluteFill,
   Easing,
@@ -1073,18 +1073,12 @@ function NatureLive2DComposition({ data = DEFAULT_DEMO_DATA, enableLive2D = fals
   );
 }
 
-export function NatureLive2DReplay() {
+export function NatureLive2DReplay({ playing }: PreviewPlaybackProps = {}) {
   const playerRef = useRef<PlayerRef | null>(null);
-  const { previewRef, isVisible } = usePreviewVisibility();
-  const [isPlaying, setIsPlaying] = useState(false);
+  const { previewRef, isVisible, isPlaying } = usePreviewInteraction({ playing });
   const [playSession, setPlaySession] = useState(0);
   const [demoData, setDemoData] = useState<NatureDemoData>(DEFAULT_DEMO_DATA);
   const requestRef = useRef<Promise<void> | null>(null);
-  const isPlayingRef = useRef(isPlaying);
-
-  useEffect(() => {
-    isPlayingRef.current = isPlaying;
-  }, [isPlaying]);
 
   const loadDemoData = useCallback(() => {
     if (requestRef.current) return requestRef.current;
@@ -1116,19 +1110,12 @@ export function NatureLive2DReplay() {
     durationInFrames: DURATION_IN_FRAMES,
   });
 
-  const startReplay = useCallback(() => {
-    if (isPlayingRef.current) return;
-    isPlayingRef.current = true;
-    void loadDemoData();
-    setPlaySession((current) => current + 1);
-    setIsPlaying(true);
-  }, [loadDemoData]);
-
   useEffect(() => {
-    if (!isVisible) return;
-    const autoStart = window.setTimeout(startReplay, 180);
+    if (!isPlaying || !isVisible) return;
+    // Wait until the visitor settles on the card before requesting demo data.
+    const autoStart = window.setTimeout(() => { void loadDemoData(); }, 180);
     return () => window.clearTimeout(autoStart);
-  }, [isVisible, startReplay]);
+  }, [isPlaying, isVisible, loadDemoData]);
 
   return (
     <div
@@ -1136,12 +1123,6 @@ export function NatureLive2DReplay() {
       ref={previewRef}
       data-preview-active={isPlaying && isVisible}
       aria-hidden="true"
-      onMouseEnter={startReplay}
-      onMouseMove={startReplay}
-      onPointerEnter={startReplay}
-      onPointerMove={startReplay}
-      onTouchStart={startReplay}
-      onFocus={startReplay}
     >
       <Player
         ref={playerRef}

@@ -1,5 +1,6 @@
 import type { WorkId } from "./i18n";
 import { preloadPreviewImage } from "./lib/previewImages";
+import { currentFestivalArtwork } from "./festivalArtworkSource";
 
 function sharedImport<T>(load: () => Promise<T>): () => Promise<T> {
   let pending: Promise<T> | undefined;
@@ -117,7 +118,7 @@ export const prepareInitialScreen = sharedImport(async (): Promise<void> => {
   const fonts = document.fonts;
   const dataLimited = limitedConnection();
   const results: PromiseSettledResult<unknown>[] = await Promise.allSettled([
-    preloadPreviewImage("/assets/gallery-new/kaguya-visual-02.webp", "high"),
+    preloadPreviewImage(currentFestivalArtwork().src, "high"),
     preloadPreviewImage("/assets/pet/iroha/spritesheet.webp", "high"),
     ...(fonts ? [
       fonts.load('400 32px "GT Haptik"', "Hacchi Roku!"),

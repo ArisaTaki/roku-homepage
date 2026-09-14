@@ -23,10 +23,11 @@ import {
 import { waitForInitialAppReady, type InitialAppReadiness } from "./bootReadiness";
 import { usePreparedPreviewImage } from "./usePreparedPreviewImage";
 import { FestivalArtwork } from "./FestivalArtwork";
+import { currentFestivalArtwork } from "./festivalArtworkSource";
 import { FLOW_LAYOUT_QUERY, PHONE_NAV_QUERY, getSceneLayout, type SceneLayout } from "./sceneLayout";
 import { SCENE_PROGRESS_EVENT, useSceneMotion } from "./useSceneMotion";
 import { askIrohaStream, type AssistantAnswerWithRuntime } from "./lib/iropAssistantClient";
-import { previewImageUrl } from "./lib/previewImages";
+import { preloadPreviewImage, previewImageUrl } from "./lib/previewImages";
 import {
   loadGalleryReplay,
   loadHermesReplay,
@@ -1520,7 +1521,7 @@ function DesktopScene({
           <span className="festival-spark spark-two">✧</span>
           <span className="festival-petals" />
         </div>
-        <FestivalArtwork className="desktop-artwork" copy={copy.hero} />
+        <FestivalArtwork className="desktop-artwork" copy={copy.hero} resolutionScale={layout.scale} />
         <div className="hero-eyebrow"><span className="hero-signal" />{copy.hero.eyebrow}</div>
         <h1 className="desktop-title">irop.one</h1>
         <p className="desktop-intro">
@@ -1695,7 +1696,9 @@ export default function App({ isBooting = false, onReady }: AppProps) {
   useEffect(() => {
     if (!isBooting) return;
     const controller = new AbortController();
-    const preparation = prepareInitialScreen();
+    const preparation = prepareInitialScreen().then(() => (
+      preloadPreviewImage(currentFestivalArtwork().src, "high")
+    ));
     let timedOut = false;
     let checking = false;
     const check = async () => {
@@ -1720,7 +1723,9 @@ export default function App({ isBooting = false, onReady }: AppProps) {
       controller.abort();
       document.removeEventListener("visibilitychange", resume);
     };
-  }, [isBooting, onReady]);
+  // A layout switch can remount the artwork at a higher resolution. Restart the
+  // gate and confirm that current candidate after the shared opening queue.
+  }, [isBooting, onReady, viewport.width, viewport.height]);
 
   useEffect(() => {
     if (isBooting) return;

@@ -1,36 +1,63 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { UiCopy } from "./i18n";
 import { preloadPreviewImage, previewImageUrl } from "./lib/previewImages";
-
-const FESTIVAL_VISUAL = "/assets/gallery-new/kaguya-visual-02.webp";
+import { currentFestivalArtwork } from "./festivalArtworkSource";
 
 export function FestivalArtwork({
   className = "",
   copy,
+  resolutionScale = 1,
 }: {
   className?: string;
   copy: UiCopy["hero"];
+  resolutionScale?: number;
 }) {
-  const [imageUrl, setImageUrl] = useState<string>();
+  const figureRef = useRef<HTMLElement | null>(null);
+  const displayedPixels = useRef(0);
+  const [image, setImage] = useState<{ url: string; src: string }>();
   const [unavailable, setUnavailable] = useState(false);
 
   useEffect(() => {
     let active = true;
-    void preloadPreviewImage(FESTIVAL_VISUAL, "high").then(() => {
-      if (active) setImageUrl(previewImageUrl(FESTIVAL_VISUAL));
-    }).catch(() => {
-      if (active) setUnavailable(true);
-    });
-    return () => { active = false; };
-  }, []);
+    const requested = new Set<string>();
+    const prepare = () => {
+      const { src, pixels } = currentFestivalArtwork(figureRef.current);
+      if (pixels <= displayedPixels.current || requested.has(src)) return;
+      requested.add(src);
+      void preloadPreviewImage(src, "high").then(() => {
+        // Retain the decoded image while a larger window requests more detail.
+        if (!active || pixels < displayedPixels.current) return;
+        displayedPixels.current = pixels;
+        setImage({ url: previewImageUrl(src), src });
+        setUnavailable(false);
+      }).catch(() => {
+        requested.delete(src);
+        if (active && !displayedPixels.current) setUnavailable(true);
+      });
+    };
+    prepare();
+    const observer = new ResizeObserver(prepare);
+    if (figureRef.current) observer.observe(figureRef.current);
+    // Desktop artwork scales with its stage while its own CSS box stays 720px.
+    const stage = figureRef.current?.closest(".stage");
+    if (stage) observer.observe(stage);
+    // Moving a window to another display can change DPR without its CSS width.
+    window.addEventListener("resize", prepare);
+    return () => {
+      active = false;
+      observer.disconnect();
+      window.removeEventListener("resize", prepare);
+    };
+  // Transform-only desktop scaling does not change ResizeObserver's CSS box.
+  }, [resolutionScale]);
 
-  const stateClass = imageUrl ? "is-ready" : unavailable ? "is-unavailable" : "";
+  const stateClass = image ? "is-ready" : unavailable ? "is-unavailable" : "";
 
   return (
-    <figure className={`festival-artwork ${className} ${stateClass}`} aria-label={copy.caption}>
+    <figure ref={figureRef} className={`festival-artwork ${className} ${stateClass}`} aria-label={copy.caption}>
       <div className="festival-portal">
         <div className="festival-portal-fallback" aria-hidden="true"><i /><i /><i /></div>
-        {imageUrl && <img className="festival-keyvisual" src={imageUrl} alt="" decoding="async" />}
+        {image && <img className="festival-keyvisual" src={image.url} data-source={image.src} alt="" decoding="async" />}
         <div className="festival-portal-shade" aria-hidden="true" />
       </div>
       <div className="festival-orbit" aria-hidden="true" />

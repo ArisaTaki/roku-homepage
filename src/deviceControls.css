@@ -55,7 +55,7 @@ html, body { overscroll-behavior-y: auto; }
 .floating-navigation.is-flow .where-card { top: 24px; right: 32px; width: 154px; height: 56px; padding: 0 17px; font-size: 19px; }
 .floating-navigation.is-flow .where-card:not(.visible) { opacity: 0; visibility: hidden; pointer-events: none; }
 .mobile-hero.has-floating-navigation { align-content: start; }
-.mobile-hero.has-floating-navigation .mobile-artwork { grid-area: 4 / 2 / 6 / 3; height: clamp(320px, 32svh, 500px); min-height: 320px; aspect-ratio: auto; }
+.mobile-hero.has-floating-navigation .mobile-artwork { grid-area: 4 / 2 / 6 / 3; height: auto; min-height: 0; aspect-ratio: 0.96; }
 .floating-navigation :is(a, button):focus-visible { outline: 2px solid var(--festival-cyan); outline-offset: 3px; }
 
 @media (max-width: 480px) {

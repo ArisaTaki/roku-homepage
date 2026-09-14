@@ -107,7 +107,7 @@
   transform: rotate(-10deg);
   box-shadow: 0 0 0 2px rgba(242, 243, 219, 0.8), 0 0 0 9px var(--festival-ink), 12px 12px 0 rgba(0, 0, 0, 0.18);
 }
-.festival-keyvisual { position: absolute; width: 120%; height: 120%; max-width: none; left: -10%; top: -10%; object-fit: cover; object-position: 52% 45%; transform: rotate(10deg); }
+.festival-keyvisual { position: absolute; width: 104%; height: 104%; max-width: none; left: -2%; top: -2%; object-fit: cover; object-position: 52% 45%; transform: rotate(10deg); }
 .festival-portal-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(4, 17, 38, 0.18), transparent 38%), linear-gradient(0deg, rgba(2, 8, 20, 0.55), transparent 35%); }
 .festival-portal-fallback { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 20%, #20a9b2, transparent 57%), radial-gradient(ellipse at 50% 95%, #ba485b, transparent 67%), #132c4b; }
 .festival-portal-fallback::before { content: "✦"; position: absolute; inset: 15%; display: grid; place-items: center; border: 1px solid rgba(250, 240, 202, 0.35); border-radius: 50%; font-size: 120px; color: #f6edca; }
@@ -346,7 +346,7 @@
   :where([data-layout="flow"]) .mobile-festival-wordmark { font-size: clamp(80px, 9.2vw, 132px); }
   :where([data-layout="flow"]) .mobile-festival-wordmark > span:nth-child(2) { margin-left: 16%; }
   :where([data-layout="flow"]) .mobile-hero .hero-caption { grid-area: 5 / 1; justify-self: start; align-self: start; margin: 0; font-size: clamp(15px, 1.7vw, 21px); }
-  :where([data-layout="flow"]) .mobile-artwork { grid-area: 1 / 2 / 6 / 3; align-self: center; width: 100%; min-height: 390px; margin: 0; aspect-ratio: 0.96; }
+  :where([data-layout="flow"]) .mobile-artwork { grid-area: 1 / 2 / 6 / 3; align-self: center; width: 100%; min-height: 0; margin: 0; aspect-ratio: 0.96; }
   :where([data-layout="flow"]) .mobile-this-way { grid-area: 6 / 1; align-self: center; margin: 24px 3px 0; font-size: clamp(23px, 2.6vw, 32px); padding: 19px; }
   :where([data-layout="flow"]) .mobile-hero-assistant { grid-area: 6 / 2; align-self: start; margin: 26px 0 0; min-height: 183px; grid-template-columns: 84px minmax(0, 1fr); }
   :where([data-layout="flow"]) .mobile-hero-assistant .pet-console-top { font-size: 10px; }
@@ -372,10 +372,6 @@
 
 @media (min-width: 700px) and (orientation: portrait) {
   :where([data-layout="flow"]) .mobile-hero { align-content: start; }
-  :where([data-layout="flow"]) .mobile-artwork {
-    height: clamp(520px, 55svh, 780px);
-    aspect-ratio: auto;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

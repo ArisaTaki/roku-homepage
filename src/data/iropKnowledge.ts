@@ -66,7 +66,7 @@ export const starterQuestions = [
 
 export const assistantSkill = {
   name: "irop-portal-skill",
-  version: "0.5.0",
+  version: "0.6.0",
   runtime: "local retrieval with an optional OpenAI-compatible server assistant endpoint",
   specHref: "/knowledge/irop-skill.md",
   manifestHref: "/knowledge/irop-skill.json",
@@ -252,17 +252,18 @@ export const knowledgeEntries: KnowledgeEntry[] = [
     keywords: [
       "tsukuyomi", "月读", "月読", "obsidian",
       "ink blue", "turquoise", "style settings", "static scene", "skeletal fish", "mascots",
-      "1.0.2", "1.13.7", "install", "installation", "安装", "手动安装", "インストール",
+      "1.0.4", "1.13.7", "phone layout", "mobile layout", "compact phone", "preview",
+      "手机布局", "手机预览", "モバイル", "スマホ", "install", "installation", "安装", "手动安装", "インストール",
     ],
     answer:
-      "Tsukuyomi is an unofficial Obsidian theme by ArisaTaki, inspired by Tsukuyomi from Cosmic Princess Kaguya!. Version 1.0.2 pairs ink-blue nights and turquoise lights with calm dark and light reading surfaces.",
+      "Tsukuyomi is an unofficial Obsidian theme by ArisaTaki, inspired by Tsukuyomi from Cosmic Princess Kaguya!. Version 1.0.4 pairs ink-blue nights and turquoise lights with calm dark and light reading surfaces, plus a compact phone empty scene that leaves room for native controls.",
     details: [
-      "Requires Obsidian 1.13.7 or newer. The official web listing exists, but as of 2026-09-16 the client theme directory sync is pending, so it is not yet searchable or installable through the theme manager.",
-      "Install now by extracting the Tsukuyomi folder from the 1.0.2 release ZIP into a vault's .obsidian/themes/ folder, then select it in Settings → Appearance.",
+      "Requires Obsidian 1.13.7 or newer. The official web listing existed as of 2026-09-16; 1.0.4 review was pending and client-directory synchronization had not been reverified, so do not claim theme-manager search or installation is available.",
+      "Install manually by extracting the Tsukuyomi folder from the 1.0.4 release ZIP into a vault's .obsidian/themes/ folder, then select it in Settings → Appearance.",
       "It is self-contained: CSS with embedded SVG artwork, no runtime JavaScript, network requests, dependencies, or required plugins.",
-      "Empty panes show a city and torii with skeletal fish and four vector companions, while note text remains calm and unobscured.",
-      "Style Settings can optionally change Minimal mode, reading width, interface density, scene opacity, and Static scene. Static/minimal/reduced-motion states keep decoration still or hidden.",
-      "Validated in Obsidian 1.13.7 on macOS; Windows, Linux, and mobile remain untested. Try the local browser preview at /previews/tsukuyomi/index.html.",
+      "Empty panes show a city and torii with skeletal fish and four vector companions. On phones, the compact stage and action menu leave top and bottom clearance for native controls, retain an 80px sidebar sign, and remove the decorative frame from an empty file toolbar.",
+      "Animation needs both the viewport and active empty pane to be at least 320 × 480. Reduced motion, Static scene, Minimal mode, inactive panes, printing, or a smaller area keep the art static or hidden.",
+      "Browser checks passed at 393 × 852, 375 × 667, 320 × 568, and 430 × 932 using simulated Obsidian DOM/CSS. They are not native iOS, Android, or iPad tests; keyboard and touch behavior remain untested. Try /previews/tsukuyomi/index.html?device=phone&lang=zh.",
     ],
   },
   {

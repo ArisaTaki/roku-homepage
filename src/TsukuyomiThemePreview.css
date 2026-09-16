@@ -3,16 +3,57 @@
   width: 100%;
   aspect-ratio: 1120 / 870;
   overflow: hidden;
-  background: #1c2330;
+  background: radial-gradient(ellipse at 80% 25%, #21423f, transparent 70%), #101d32;
+}
+.tsukuyomi-preview-devices {
+  position: relative;
+  width: 1120px;
+  height: 760px;
+  transform-origin: top left;
 }
 .tsukuyomi-theme-preview iframe {
   display: block;
-  width: 1120px;
-  height: 740px;
   border: 0;
   transform-origin: top left;
   pointer-events: none;
 }
+.tsukuyomi-desktop-frame {
+  position: absolute;
+  left: 24px;
+  top: 110px;
+  width: 1120px;
+  height: 740px;
+  transform: scale(.78);
+  outline: 2px solid #637282;
+  box-shadow: 0 16px 32px #0006;
+}
+.tsukuyomi-phone-case {
+  position: absolute;
+  left: 818px;
+  top: 42px;
+  width: 268px;
+  height: 562px;
+  padding: 8px;
+  border: 1px solid #82cabb;
+  border-radius: 29px;
+  background: #090f19;
+  box-shadow: -12px 18px 32px #0007;
+  overflow: hidden;
+}
+.tsukuyomi-phone-case iframe {
+  width: 393px;
+  height: 852px;
+  border-radius: 30px;
+  transform: scale(.64);
+}
+.tsukuyomi-device-label {
+  position: absolute;
+  color: #82cabb;
+  font: 600 16px/1.4 sans-serif;
+  letter-spacing: .06em;
+}
+.desktop-label { left: 28px; top: 64px; }
+.phone-label { left: 818px; top: 635px; color: #e9e3d5; }
 .tsukuyomi-preview-caption {
   position: absolute;
   inset: auto 0 0;

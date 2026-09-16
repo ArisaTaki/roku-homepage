@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Explore Tsukuyomi 1.0.2, an unofficial Obsidian theme with dark and light palettes, quiet reading and an animated Japanese nightscape.">
+  <meta name="description" content="Explore Tsukuyomi 1.0.4, an unofficial Obsidian theme with dark and light palettes, quiet reading and an animated Japanese nightscape.">
   <title>Tsukuyomi · Obsidian Theme · irop.one</title>
-  <link rel="stylesheet" href="./preview.css">
-  <link rel="stylesheet" href="./theme.css">
-  <script src="./preview.js" defer></script>
+  <link rel="stylesheet" href="./preview.css?v=1.0.4">
+  <link rel="stylesheet" href="./theme.css?v=1.0.4">
+  <script src="./preview.js?v=1.0.4" defer></script>
 </head>
 <body class="theme-dark tk-disable-motion">
   <header class="preview-header">
@@ -19,7 +19,7 @@
   </header>
   <main>
     <section class="intro">
-      <div><p class="eyebrow">月読 · v1.0.2</p><h1>Tsukuyomi<span>月光落在笔记之间。</span></h1></div>
+      <div><p class="eyebrow">月読 · v1.0.4</p><h1>Tsukuyomi<span>月光落在笔记之间。</span></h1></div>
       <p class="intro-description" data-copy="intro">将月读夜景放进 Obsidian：让鱼群游过留白，让阅读回到安静。</p>
     </section>
     <nav class="preview-toolbar" aria-label="Preview controls">
@@ -31,18 +31,32 @@
         <button type="button" data-view="scene" aria-pressed="true" data-copy="scene">空白场景</button>
         <button type="button" data-view="reading" aria-pressed="false" data-copy="reading">阅读笔记</button>
       </div>
+      <div class="control-group" role="group" data-device-group aria-label="Device">
+        <button type="button" data-device="desktop" aria-pressed="true" data-copy="desktop">Desktop</button>
+        <button type="button" data-device="phone" aria-pressed="false" data-copy="phone">Phone</button>
+      </div>
       <button type="button" id="motion-toggle" aria-pressed="false" data-copy="static">静态场景</button>
       <button type="button" id="minimal-toggle" aria-pressed="false" data-copy="minimal">简洁模式</button>
     </nav>
     <div class="stage-viewport">
       <div class="preview-window">
         <div class="titlebar"><span aria-hidden="true">● ● ●</span><span>Tsukuyomi Lab</span><span>Obsidian</span></div>
+        <div class="mobile-topbar" aria-label="Phone navigation">
+          <button type="button" id="drawer-toggle" aria-controls="file-drawer" aria-expanded="false" data-copy="drawer">Navigation</button>
+          <span id="mobile-title" data-copy="sceneFile">00 · 月读入口</span>
+          <span class="mobile-spacer" aria-hidden="true"></span>
+        </div>
         <div class="workspace">
           <aside class="workspace-ribbon mod-left" aria-hidden="true"><span>◈</span><span>⌕</span><span>⌘</span><span>▦</span><span class="ribbon-bottom">⚙</span></aside>
-          <aside class="workspace-split mod-left-split">
+          <aside class="workspace-split mod-left-split" id="file-drawer" aria-label="Files">
             <div class="workspace-tab-header-container sidebar-tabs"><span>☷</span><span>⌕</span><span>☆</span></div>
             <div class="workspace-leaf-content" data-type="file-explorer">
-              <div class="nav-header"><span>TSUKUYOMI LAB</span><span aria-hidden="true">＋ ···</span></div>
+              <div class="nav-header"><span>TSUKUYOMI LAB</span><span aria-hidden="true">＋ ···</span>
+                <button type="button" id="drawer-close" class="drawer-close" data-copy="closeDrawer">Close navigation</button>
+                <div class="nav-action-row" aria-label="File actions">
+                  <button type="button" aria-label="New note">＋</button><button type="button" aria-label="New folder">□</button><button type="button" aria-label="Collapse folders">⌃</button><button type="button" aria-label="More file actions">···</button>
+                </div>
+              </div>
               <div class="nav-files-container">
                 <div class="nav-folder-title">⌄ &nbsp; <span data-copy="folder">月读手帖</span></div>
                 <button type="button" class="nav-file-title is-active" data-view="scene"><span aria-hidden="true">◇</span><span data-copy="sceneFile">00 · 月读入口</span></button>
@@ -83,7 +97,7 @@
                   <h2 data-copy="details">细节备忘</h2>
                   <ul><li data-copy="detailOne">40rem 默认阅读宽度，1.75 倍行高</li><li data-copy="detailTwo">无需插件；可用 Style Settings 调整五项设置</li><li data-copy="detailThree">支持系统减少动态效果，也可以切换静态场景</li></ul>
                   <pre><code>theme: Tsukuyomi
-version: 1.0.2
+version: 1.0.4
 palette: moonlit</code></pre>
                   <p class="note-end">月読 / TSUKUYOMI — <span data-copy="noteEnd">写下此刻，留待重逢。</span></p>
                 </article></div>
@@ -91,19 +105,25 @@ palette: moonlit</code></pre>
             </div>
           </div>
         </div>
-        <div class="status-bar"><span data-copy="status">本地主题预览</span><span>CSS + SVG · Tsukuyomi 1.0.2</span></div>
+        <div class="drawer-scrim" id="drawer-scrim" aria-hidden="true"></div>
+        <nav class="mobile-bottom-bar" aria-label="Phone workspace controls">
+          <button type="button" data-view="scene" data-copy="scene">空白场景</button>
+          <button type="button" data-view="reading" data-copy="reading">阅读笔记</button>
+          <button type="button" id="mobile-drawer-toggle" aria-controls="file-drawer" aria-expanded="false" data-copy="drawer">Navigation</button>
+        </nav>
+        <div class="status-bar"><span data-copy="status">本地主题预览</span><span>CSS + SVG · Tsukuyomi 1.0.4</span></div>
       </div>
     </div>
     <section class="preview-notes">
-      <p data-copy="disclaimer">此页面用主题原始 CSS 展示示例界面，并非完整 Obsidian。小屏幕会按比例缩放桌面场景。</p>
+      <p data-copy="disclaimer">此页面用主题原始 CSS 展示浏览器中的示例界面，并非完整 Obsidian 或 iOS 原生测试。</p>
       <p id="motion-note" data-copy="motionNote" hidden>系统已开启减少动态效果，场景保持静止。</p>
       <div class="project-links">
-        <a href="https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme/releases/tag/1.0.2" target="_blank" rel="noreferrer" data-copy="download">下载主题 1.0.2 ↗</a>
+        <a href="https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme/releases/tag/1.0.4" target="_blank" rel="noreferrer" data-copy="download">下载主题 1.0.4 ↗</a>
         <a href="https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme" target="_blank" rel="noreferrer" data-copy="repository">GitHub 源码 ↗</a>
         <a href="https://community.obsidian.md/themes/tsukuyomi" target="_blank" rel="noreferrer" data-copy="listing">官方网页条目 ↗</a>
-        <a href="./theme.css" download>theme.css ↓</a><a href="./manifest.json" download>manifest.json ↓</a>
+        <a href="./theme.css?v=1.0.4" download>theme.css ↓</a><a href="./manifest.json?v=1.0.4" download>manifest.json ↓</a>
       </div>
-      <p data-copy="install">适用于 Obsidian 1.13.7+。将两个文件放入笔记库的 .obsidian/themes/Tsukuyomi/，然后在外观中选择主题。2026-09-16：官方网页已有条目，客户端目录仍待同步，建议手动安装。</p>
+      <p data-copy="install">适用于 Obsidian 1.13.7+。下载 1.0.4 压缩包并将 Tsukuyomi 文件夹放入笔记库的 .obsidian/themes/，然后在外观中选择主题。</p>
     </section>
   </main>
   <footer class="preview-footer"><span data-copy="credit">ArisaTaki 的非官方粉丝主题 · 免费分享</span><span><a href="./LICENSE">MIT</a> / <a href="./NOTICE.md" data-copy="notice">素材与权利说明</a></span></footer>

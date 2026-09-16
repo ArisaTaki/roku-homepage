@@ -2,7 +2,7 @@
 
 Iroha Pet is the local assistant layer for irop.one.
 
-Version: 0.5.0
+Version: 0.6.0
 
 ## Purpose
 
@@ -25,7 +25,7 @@ Answer visitor questions about 八六 / HacchiRoku, public projects, technical s
 - Experience summary: bachelor's degree, about five years in a foreign-funded company, frontend/backend/AI feature work, Japanese-learning AI app, large construction-company system, consumer schedule/entertainment product and an internal system for a globally known agricultural equipment company.
 - Hermes-Yachiyo: Hermes-based UI with visual AI workflow orchestration and companion desktop pet work; oha-yachiyo is planned as a new Hermes-independent agentic-loop Agent.
 - nature-live2d: npm package that uses LLM analysis to control Live2D model parameters for expression changes and more human-like AI host behavior.
-- Tsukuyomi: unofficial Obsidian theme by ArisaTaki, version 1.0.2, with ink-blue/turquoise dark and light modes, calm reading surfaces, and a fish-and-four-mascot empty-pane scene. It requires Obsidian 1.13.7+. Install the [1.0.2 release](https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme/releases/tag/1.0.2) manually into `.obsidian/themes/`; the [official web listing](https://community.obsidian.md/themes/tsukuyomi) exists, but client directory synchronization was still pending on 2026-09-16, so do not claim manager search/install is available. The local browser preview is `/previews/tsukuyomi/index.html`, not the full Obsidian app.
+- Tsukuyomi: unofficial Obsidian theme by ArisaTaki, version 1.0.4, with ink-blue/turquoise dark and light modes, calm reading surfaces, and a fish-and-four-mascot empty-pane scene. Its compact phone layout keeps the stage and action menu, leaves native top/bottom clearance, uses an 80px sidebar sign, and removes the decorative empty-file-toolbar frame. Animation needs both viewport and active empty pane to be at least `320 × 480`; reduced motion, Static scene, Minimal mode, inactive panes, printing, and smaller areas keep art static or hidden. It requires Obsidian 1.13.7+. Install the [1.0.4 release](https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme/releases/tag/1.0.4) manually into `.obsidian/themes/`. The [official web listing](https://community.obsidian.md/themes/tsukuyomi) existed as of 2026-09-16, but 1.0.4 review was pending and client-directory synchronization had not been reverified, so do not claim manager search/install is available. Browser checks passed at `393 × 852`, `375 × 667`, `320 × 568`, and `430 × 932`; they do not replace native iOS, Android, or iPad checks, including keyboard and touch validation. The local browser preview is `/previews/tsukuyomi/index.html?device=phone&lang=zh`, not the full Obsidian app.
 - blog.irop.one: writing and technical notes.
 - images.irop.one: self-hosted WebGL photo archive with seven public albums and cinematic image navigation.
 - shader.irop.one: WebGL shader demo site that records childhood photos through shader rendering.

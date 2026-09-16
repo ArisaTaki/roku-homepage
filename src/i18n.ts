@@ -46,8 +46,8 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
     },
     tsukuyomi: {
       title: "Tsukuyomi",
-      description: "An Obsidian theme with dark and light palettes, animated fish and companions, and calm reading surfaces.",
-      meta: "Obsidian, CSS Theme, v1.0.2",
+      description: "An Obsidian theme with calm reading surfaces and a compact phone empty scene designed with top and bottom clearance for native controls.",
+      meta: "Obsidian, CSS Theme, v1.0.4",
     },
     blog: {
       title: "blog.irop.one",
@@ -78,8 +78,8 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
     },
     tsukuyomi: {
       title: "Tsukuyomi",
-      description: "墨蓝与月白配色的 Obsidian 主题，空白页有游鱼与吉祥物，阅读区保留安静的留白。",
-      meta: "Obsidian, CSS Theme, v1.0.2",
+      description: "墨蓝与月白配色的 Obsidian 主题，手机空白页保留紧凑场景，并为顶部和底部原生控件预留间距。",
+      meta: "Obsidian, CSS Theme, v1.0.4",
     },
     blog: {
       title: "blog.irop.one",
@@ -110,8 +110,8 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
     },
     tsukuyomi: {
       title: "Tsukuyomi",
-      description: "魚やマスコット、ノートがダークとライトの中で静かに馴染む、Obsidian 用の CSS テーマ。",
-      meta: "Obsidian, CSS Theme, v1.0.2",
+      description: "静かな読書面と、ネイティブの上下操作領域に余白を設けたコンパクトなスマホ空白ビューを備えた Obsidian 用 CSS テーマ。",
+      meta: "Obsidian, CSS Theme, v1.0.4",
     },
     blog: {
       title: "blog.irop.one",

@@ -68,11 +68,11 @@ Model keys stay server-side through `AI_API_KEY`, `AI_MODEL`, and `AI_CHAT_COMPL
 
 ## Tsukuyomi preview
 
-Run `npm run dev`, then open `/previews/tsukuyomi/index.html`. This is a browser preview of the copied theme CSS with dark/light, scene, reading, and static controls; it is not the full Obsidian application.
+Run `npm run dev`, then open `/previews/tsukuyomi/index.html`. This is a browser preview of the copied theme CSS with dark/light, scene, reading, and static controls; it is not the full Obsidian application. Use `?device=phone&lang=zh` for the compact phone preview, or change `lang` to `en` or `ja`.
 
-The exhibit uses the unmodified `theme.css` and matching manifest from Tsukuyomi tag `1.0.2`, with its license and artwork notice alongside them in `public/previews/tsukuyomi/`. A separate browser scaffold supplies example panes and controls; the installed theme itself remains CSS-only. Keep these versioned files and the displayed version together when updating. The iframe isolates theme selectors from the homepage and pauses decoration when the card is offscreen.
+The exhibit uses the unmodified `theme.css` and matching manifest from the [Tsukuyomi 1.0.4 tag](https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme/releases/tag/1.0.4), with its license and artwork notice alongside them in `public/previews/tsukuyomi/`. A separate browser scaffold supplies example panes and controls; the installed theme itself remains CSS-only. Keep these versioned files and the displayed version together when updating. The iframe isolates theme selectors from the homepage and pauses decoration when the card is offscreen.
 
-To verify, open the third exhibit on desktop and phone layouts, switch the site's language, and follow its link. Check dark/light, scene/reading, static/minimal controls and the two installation downloads. Browser checks do not replace native Obsidian compatibility testing.
+To verify, open the third exhibit on desktop and phone layouts, switch the site's language, and follow its link. Check dark/light, scene/reading, static/minimal controls and the two installation downloads. Browser checks at `393 × 852`, `375 × 667`, `320 × 568`, and `430 × 932` cover the compact phone presentation; they do not replace native iOS, Android, or iPad testing, including keyboard and touch validation.
 
 ## Deployment
 

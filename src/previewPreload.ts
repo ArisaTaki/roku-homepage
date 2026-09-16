@@ -14,6 +14,7 @@ export const loadHermesReplay = sharedImport(() => import("./HermesRemotionDemo"
 export const loadNatureLive2DReplay = sharedImport(() => import("./NatureLive2DDemo"));
 export const loadGalleryReplay = sharedImport(() => import("./GalleryRemotionDemo"));
 export const loadShaderReplay = sharedImport(() => import("./ShaderRemotionDemo"));
+export const loadTsukuyomiThemePreview = sharedImport(() => import("./TsukuyomiThemePreview"));
 
 const previewImages: Partial<Record<WorkId, readonly string[]>> = {
   "hermes-yachiyo": [
@@ -90,6 +91,9 @@ async function preloadModule(id: WorkId): Promise<void> {
     case "shader":
       await loadShaderReplay();
       break;
+    case "tsukuyomi":
+      await loadTsukuyomiThemePreview();
+      break;
   }
 }
 
@@ -133,7 +137,7 @@ export const prepareInitialScreen = sharedImport(async (): Promise<void> => {
       () => preloadWorkPreview("gallery"),
       () => preloadWorkPreview("shader"),
       () => preloadWorkPreview("blog"),
-      () => preloadWorkPreview("mimo-usage-watcher"),
+      () => preloadWorkPreview("tsukuyomi"),
       // The module and poster belong to the opening; its large model does not.
       () => Promise.all([loadNatureLive2DReplay(), preloadImages("nature-live2d")]),
     ];
@@ -158,7 +162,7 @@ export const prepareInitialScreen = sharedImport(async (): Promise<void> => {
 });
 
 const workOrder: WorkId[] = [
-  "hermes-yachiyo", "nature-live2d", "mimo-usage-watcher", "blog", "gallery", "shader",
+  "hermes-yachiyo", "nature-live2d", "tsukuyomi", "blog", "gallery", "shader",
 ];
 const backgroundAttempted = new Set<WorkId>();
 let backgroundActive = 0;

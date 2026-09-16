@@ -31,7 +31,7 @@ For a repeatable artwork check, build the site, run `npx tsx tools/check-artwork
 
 ## Loading performance
 
-The opening waits for resource preparation: decoded hero artwork and pet sprites, first-screen fonts and, on normal connections, Hermes followed by Gallery, Shader, Blog, Mimo and Nature's lightweight module and cover. Prepared lightweight previews mount behind the opening overlay and stay paused while offscreen; Nature Live2D only prewarms model bytes in the background and initializes its renderer on first entering the viewport, keeping offscreen GPU initialization out of the homepage opening. Images, including pet sprites and preview covers, share a subscribable decoded-image cache so their mounted components reuse prepared resources.
+The opening waits for resource preparation: decoded hero artwork and pet sprites, first-screen fonts and, on normal connections, Hermes followed by Gallery, Shader, Blog, Tsukuyomi and Nature's lightweight module and cover. Prepared lightweight previews mount behind the opening overlay and stay paused while offscreen; Nature Live2D only prewarms model bytes in the background and initializes its renderer on first entering the viewport, keeping offscreen GPU initialization out of the homepage opening. Images, including pet sprites and preview covers, share a subscribable decoded-image cache so their mounted components reuse prepared resources.
 
 After preparation completes, readiness requires 160ms of consecutive stable animation frames and a minimum opening duration of 700ms, followed by a 360ms fade-out. After 12 seconds, a slow-loading notice appears; this does not mark resources ready or force the page open. The page enters automatically once preparation and the frame check complete. Failed preparation offers reload or early entry, and visitors can choose to enter from the slow-loading notice as well.
 
@@ -65,6 +65,14 @@ VITE_IROP_ASSISTANT_ENDPOINT=/api/iroha-assistant
 ```
 
 Model keys stay server-side through `AI_API_KEY`, `AI_MODEL`, and `AI_CHAT_COMPLETIONS_ENDPOINT`. With only `AI_API_KEY` set, the included endpoint defaults to DeepSeek's chat-completions API and `deepseek-v4-flash` with `AI_THINKING=disabled` for short website replies. Short greetings and over-long questions stay local; other questions use the model for intent classification and public-memory answers. Remote model calls are rate-limited with `AI_RATE_LIMIT_MAX=10` and `AI_RATE_LIMIT_WINDOW_HOURS=6` by default. Static SSH deployment can leave the browser endpoint blank.
+
+## Tsukuyomi preview
+
+Run `npm run dev`, then open `/previews/tsukuyomi/index.html`. This is a browser preview of the copied theme CSS with dark/light, scene, reading, and static controls; it is not the full Obsidian application.
+
+The exhibit uses the unmodified `theme.css` and matching manifest from Tsukuyomi tag `1.0.2`, with its license and artwork notice alongside them in `public/previews/tsukuyomi/`. A separate browser scaffold supplies example panes and controls; the installed theme itself remains CSS-only. Keep these versioned files and the displayed version together when updating. The iframe isolates theme selectors from the homepage and pauses decoration when the card is offscreen.
+
+To verify, open the third exhibit on desktop and phone layouts, switch the site's language, and follow its link. Check dark/light, scene/reading, static/minimal controls and the two installation downloads. Browser checks do not replace native Obsidian compatibility testing.
 
 ## Deployment
 

@@ -137,14 +137,14 @@ function guideText(language: QuestionLanguage): string {
 
 function projectsGuideText(language: QuestionLanguage): string {
   if (language === "ja") {
-    return "主な公開プロジェクトは Hermes-Yachiyo、nature-live2d、shader.irop.one、mimo-usage-watcher です。Hermes-Yachiyo は AI ワークフロー編成とデスクトップペット、nature-live2d は LLM による Live2D 表情制御、shader.irop.one は WebGL Shader で写真を見せる実験です。";
+    return "主な公開プロジェクトは Hermes-Yachiyo、nature-live2d、shader.irop.one、Tsukuyomi です。Hermes-Yachiyo は AI ワークフロー編成とデスクトップペット、nature-live2d は LLM による Live2D 表情制御、shader.irop.one は WebGL Shader で写真を見せる実験です。Tsukuyomi は墨青と青緑の明暗テーマを持つ非公式 Obsidian テーマです。";
   }
 
   if (language === "zh") {
-    return "主要公开项目有 Hermes-Yachiyo、nature-live2d、shader.irop.one 和 mimo-usage-watcher。Hermes-Yachiyo 偏 AI 流程编排与桌宠，nature-live2d 用 LLM 分析回复并控制 Live2D 表情，shader.irop.one 是用 WebGL Shader 展示照片记忆的视觉实验。";
+    return "主要公开项目有 Hermes-Yachiyo、nature-live2d、shader.irop.one 和 Tsukuyomi。Hermes-Yachiyo 偏 AI 流程编排与桌宠，nature-live2d 用 LLM 分析回复并控制 Live2D 表情，shader.irop.one 是用 WebGL Shader 展示照片记忆的视觉实验；Tsukuyomi 是墨蓝与海青色深浅模式的非官方 Obsidian 主题。";
   }
 
-  return "The main public projects are Hermes-Yachiyo, nature-live2d, shader.irop.one and mimo-usage-watcher. Hermes-Yachiyo explores AI workflow orchestration and desktop pet behavior; nature-live2d controls Live2D expressions with LLM analysis; shader.irop.one records childhood photos through WebGL shader rendering.";
+  return "The main public projects are Hermes-Yachiyo, nature-live2d, shader.irop.one and Tsukuyomi. Hermes-Yachiyo explores AI workflow orchestration and desktop pet behavior; nature-live2d controls Live2D expressions with LLM analysis; shader.irop.one records childhood photos through WebGL shader rendering; Tsukuyomi is an unofficial Obsidian theme with ink-blue and turquoise dark/light modes.";
 }
 
 function linksGuideText(language: QuestionLanguage): string {
@@ -172,8 +172,8 @@ function localizedEntryAnswer(entry: KnowledgeEntry, language: QuestionLanguage)
         "Hermes-Yachiyo 是基于 Hermes 做的 UI 层，探索可视化 AI 流程编排和陪伴型桌面宠物。",
       "nature-live2d":
         "nature-live2d 提供了一个 npm 包，用 LLM 分析回复并控制 Live2D 模型参数，让 AI 回复更有表情和拟人感。",
-      "mimo-usage-watcher":
-        "mimo-usage-watcher 是一个 Electron 看板，用来监控小米 MiMo 的 token 套餐用量和多账号 API Key 余额。",
+      tsukuyomi:
+        "Tsukuyomi（月读）是 ArisaTaki 维护的非官方 Obsidian 主题，灵感来自《超时空辉夜姬！》月读。1.0.2 以墨蓝夜景和海青灯光提供安静的深浅阅读界面。",
       blog: "blog.irop.one 是八六写 AI 工具、前端实验和一些值得留下来的笔记的地方。",
       gallery: "images.irop.one 是个人画廊和视觉归档，收着生成图、参考图和一些零散的视觉片段。",
       shader: "shader.irop.one 是一个 WebGL Shader demo 站点，用 Shader 渲染记录侄女小时候的照片。",
@@ -194,8 +194,8 @@ function localizedEntryAnswer(entry: KnowledgeEntry, language: QuestionLanguage)
         "Hermes-Yachiyo は Hermes 上に作った UI レイヤーで、視覚的な AI ワークフロー編成とデスクトップペット的な体験を試しています。",
       "nature-live2d":
         "nature-live2d は、LLM が返答を分析して Live2D モデルのパラメータを制御する npm パッケージです。",
-      "mimo-usage-watcher":
-        "mimo-usage-watcher は、MiMo の token 利用量や複数アカウントの API Key 残高を見るための Electron ダッシュボードです。",
+      tsukuyomi:
+        "Tsukuyomi（月読）は ArisaTaki が個人で制作・管理する非公式 Obsidian テーマです。『超時空輝夜姫！』の月読に着想を得て、1.0.2 では墨青の夜と青緑の光、落ち着いた明暗の読書面を用意しています。",
       blog: "blog.irop.one は、AI ツールやフロントエンド実験、あとで読み返したいメモを書く場所です。",
       gallery: "images.irop.one は、生成画像や参考画像、小さな視覚の断片を並べる個人ギャラリーです。",
       shader: "shader.irop.one は、WebGL Shader で姪の幼いころの写真を見せるビジュアル実験サイトです。",
@@ -228,6 +228,10 @@ function entryHaystack(entry: KnowledgeEntry): string {
 }
 
 function scoreEntry(entry: KnowledgeEntry, tokens: string[], normalizedQuestion: string): number {
+  if (entry.id === "tsukuyomi" && !/(tsukuyomi|月读|月読|obsidian)/i.test(normalizedQuestion)) {
+    return 0;
+  }
+
   const haystack = normalize(entryHaystack(entry));
   let score = 0;
 
@@ -285,7 +289,8 @@ function answerIntent(question: string, normalizedQuestion: string): AssistantAn
     };
   }
 
-  if (/(what can|what do you know|help|capabilit|你会|能问|可以问|知道什么|帮助|怎么用)/i.test(question)) {
+  const asksForTsukuyomi = /(tsukuyomi|月读|月読|obsidian)/i.test(question);
+  if (!asksForTsukuyomi && /(what can|what do you know|help|capabilit|你会|能问|可以问|知道什么|帮助|怎么用)/i.test(question)) {
     const projectEntries = entriesForCollection("Projects");
     const placeEntries = entriesForCollection("Places");
 
@@ -303,6 +308,11 @@ function answerIntent(question: string, normalizedQuestion: string): AssistantAn
       ],
       matchedEntries: buildMatchedEntries([...projectEntries, ...placeEntries], 20),
     };
+  }
+
+  if (asksForTsukuyomi) {
+    const themeEntry = knowledgeEntries.find((entry) => entry.id === "tsukuyomi");
+    if (themeEntry) return composeAnswer([{ entry: themeEntry, score: 99 }], question);
   }
 
   if (/(tech stack|technology stack|skills?|frontend|backend|react|vue|typescript|webgl|cloud|技术栈|技能|会什么|用什么技术|前端|后端|云服务|技術スタック|スキル)/i.test(normalizedQuestion)) {

@@ -44,6 +44,28 @@ const local = await askIroha("Hermes-Yachiyo?");
 assert(local.runtimeLabel === "LOCAL KB", "local client should use LOCAL KB without endpoint");
 assert(local.source === "Hermes-Yachiyo", "local client should match Hermes-Yachiyo");
 
+const tsukuyomi = await askIroha("Can I install the Tsukuyomi Obsidian theme from the theme manager?");
+assert(tsukuyomi.source === "Tsukuyomi (Obsidian theme)", "Tsukuyomi question should not be shadowed by the generic guide");
+assert(/1\.13\.7/.test(tsukuyomi.details?.join(" ") || ""), "Tsukuyomi answer should retain its Obsidian version requirement");
+assert(/not yet searchable or installable through the theme manager/.test(tsukuyomi.details?.join(" ") || ""), "Tsukuyomi answer should not claim directory sync is complete");
+
+const contextualTsukuyomi = await askIroha("What can you say about Tsukuyomi?");
+assert(contextualTsukuyomi.source === "Tsukuyomi (Obsidian theme)", "Tsukuyomi should not be shadowed by the generic profile answer");
+
+const blogTheme = await askIroha("What is the blog theme?");
+assert(blogTheme.source === "blog.irop.one", "generic English blog-theme question should not be forced to Tsukuyomi");
+
+const zhBlogTheme = await askIroha("博客主题是什么？");
+assert(zhBlogTheme.source === "blog.irop.one", "generic Chinese blog-theme question should not be forced to Tsukuyomi");
+
+const zhTsukuyomi = await askIroha("月读主题怎么手动安装？");
+assert(zhTsukuyomi.source === "Tsukuyomi (Obsidian theme)", "Chinese Tsukuyomi question should match the theme entry");
+assert(/非官方 Obsidian 主题/.test(zhTsukuyomi.text), "Chinese Tsukuyomi answer should stay localized");
+
+const jaTsukuyomi = await askIroha("月読テーマはどうやってインストールしますか？");
+assert(jaTsukuyomi.source === "Tsukuyomi (Obsidian theme)", "Japanese Tsukuyomi question should match the theme entry");
+assert(/非公式 Obsidian テーマ/.test(jaTsukuyomi.text), "Japanese Tsukuyomi answer should stay localized");
+
 const guide = await askIroha("What can you answer?");
 assert(guide.source === "irop portal skill", "guide answer should identify the portal skill");
 assert(guide.confidence === "guide", "guide answer should use guide confidence");

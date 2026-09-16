@@ -1,0 +1,28 @@
+.tsukuyomi-theme-preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1120 / 870;
+  overflow: hidden;
+  background: #1c2330;
+}
+.tsukuyomi-theme-preview iframe {
+  display: block;
+  width: 1120px;
+  height: 740px;
+  border: 0;
+  transform-origin: top left;
+  pointer-events: none;
+}
+.tsukuyomi-preview-caption {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px;
+  background: #101d32;
+  border-top: 1px solid #394450;
+  color: #82cabb;
+  font: 600 10px/1.4 sans-serif;
+  letter-spacing: .08em;
+}

@@ -1,0 +1,1303 @@
+/* Tsukuyomi 1.0.2
+MIT applies to original code only; third-party character designs are excluded. See NOTICE.md in source repository.
+
+MIT License
+
+Copyright (c) 2026 ArisaTaki
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
+/* Source: 00-settings.css */
+/* @settings
+name: Tsukuyomi（月读）
+id: tsukuyomi-theme
+settings:
+  - id: tk-minimal
+    title: 简洁模式
+    description: 关闭月读灯牌、工作区饰线与空白页舞台，保留配色与排版。
+    type: class-toggle
+    default: false
+  - id: tk-reading-width
+    title: 正文宽度
+    description: 笔记正文的最大宽度。
+    type: variable-number-slider
+    default: 40
+    min: 34
+    max: 60
+    step: 1
+    format: rem
+  - id: tk-density
+    title: 界面密度
+    type: class-select
+    default: tk-density-standard
+    allowEmpty: false
+    options:
+      - label: 标准
+        value: tk-density-standard
+      - label: 紧凑
+        value: tk-density-compact
+  - id: tk-decoration-opacity
+    title: 空白页景物强度
+    description: 只调节空白页景物的透明度，不影响笔记和文件列表。
+    type: variable-number-slider
+    default: 0.70
+    min: 0
+    max: 1
+    step: 0.05
+  - id: tk-disable-motion
+    title: 静态场景
+    description: 停止空白页游鱼、吉祥物、光镜、水波的动效和短暂界面过渡；系统减少动态效果设置始终优先。
+    type: class-toggle
+    default: false
+*/
+
+:root {
+  --tk-reading-width: 40rem;
+  --tk-decoration-opacity: 0.70;
+  --tk-radius-small: 6px;
+  --tk-radius-medium: 10px;
+  --tk-radius-large: 14px;
+  --tk-space-ui: 8px;
+  --tk-transition-duration: 0ms;
+}
+
+body {
+  --file-line-width: var(--tk-reading-width, 40rem);
+  --line-height-normal: 1.75;
+}
+
+body.tk-density-compact {
+  --tk-space-ui: 5px;
+  --nav-item-size: 0.875em;
+  --nav-item-padding: 2px 7px;
+  --tab-height: 34px;
+  --header-height: 36px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body:not(.tk-disable-motion) {
+    --tk-transition-duration: 140ms;
+  }
+}
+
+/* Source: 10-palette.css */
+:root {
+  --tk-sign-paper: #f4f0dc;
+  --tk-sign-ink: #102437;
+  --tk-sign-sea: #49decc;
+  --tk-sign-coral: #ef797f;
+  --tk-sea-rgb: 130, 202, 187;
+  --tk-rose-rgb: 230, 160, 152;
+  --tk-gold-rgb: 223, 195, 138;
+  --tk-violet-rgb: 188, 176, 223;
+}
+
+.theme-dark {
+  color-scheme: dark;
+
+  --color-base-00: #101520;
+  --color-base-05: #101d32;
+  --color-base-10: #18202c;
+  --color-base-20: #1c2330;
+  --color-base-25: #202837;
+  --color-base-30: #253044;
+  --color-base-35: #2d3746;
+  --color-base-40: #394450;
+  --color-base-50: #637282;
+  --color-base-60: #98a3af;
+  --color-base-70: #b6b4ba;
+  --color-base-100: #e9e3d5;
+
+  --tk-background: #1c2330;
+  --tk-sidebar: #101d32;
+  --tk-raised: #253044;
+  --tk-text: #e9e3d5;
+  --tk-muted: #b6b4ba;
+  --tk-faint: #98a3af;
+  --tk-border: #394450;
+  --tk-border-strong: #637282;
+  --tk-sea: #82cabb;
+  --tk-rose: #e6a098;
+  --tk-gold: #dfc38a;
+  --tk-violet: #bcb0df;
+  --tk-blue: #8bbce0;
+  --tk-orange: #dbac7f;
+  --tk-on-accent: #1c2330;
+
+  --accent-h: 168;
+  --accent-s: 40%;
+  --accent-l: 65%;
+}
+
+.theme-light {
+  color-scheme: light;
+
+  --color-base-00: #fff;
+  --color-base-05: #fbfaf7;
+  --color-base-10: #f7f5f0;
+  --color-base-20: #ecefea;
+  --color-base-25: #e4e8e2;
+  --color-base-30: #d8ded8;
+  --color-base-35: #cbd3cd;
+  --color-base-40: #b9c4bd;
+  --color-base-50: #89978e;
+  --color-base-60: #68786f;
+  --color-base-70: #586879;
+  --color-base-100: #273442;
+
+  --tk-background: #f7f5f0;
+  --tk-sidebar: #ecefea;
+  --tk-raised: #fff;
+  --tk-text: #273442;
+  --tk-muted: #586879;
+  --tk-faint: #68786f;
+  --tk-border: #cbd3cd;
+  --tk-border-strong: #89978e;
+  --tk-sea: #0f706a;
+  --tk-rose: #ac3c50;
+  --tk-gold: #84621b;
+  --tk-violet: #7053a2;
+  --tk-blue: #245c9e;
+  --tk-orange: #985016;
+  --tk-on-accent: #fff;
+
+  --tk-sea-rgb: 15, 112, 106;
+  --tk-rose-rgb: 172, 60, 80;
+  --tk-gold-rgb: 132, 98, 27;
+  --tk-violet-rgb: 112, 83, 162;
+
+  --accent-h: 176;
+  --accent-s: 76%;
+  --accent-l: 25%;
+  --tag-background-hover: rgb(var(--tk-violet-rgb), 0.1);
+}
+
+/* Source: 20-semantic.css */
+body {
+  --background-primary: var(--tk-background);
+  --background-primary-alt: var(--tk-raised);
+  --background-secondary: var(--tk-sidebar);
+  --background-secondary-alt: var(--tk-raised);
+  --background-modifier-hover: rgb(var(--tk-sea-rgb), 0.1);
+  --background-modifier-active-hover: rgb(var(--tk-sea-rgb), 0.16);
+  --background-modifier-border: var(--tk-border);
+  --background-modifier-border-hover: var(--tk-border-strong);
+  --background-modifier-border-focus: var(--color-accent);
+  --background-modifier-form-field: var(--tk-raised);
+  --background-modifier-form-field-highlighted: rgb(var(--tk-sea-rgb), 0.1);
+  --background-modifier-error: var(--tk-rose);
+  --background-modifier-error-hover: var(--tk-rose);
+  --background-modifier-success: var(--tk-sea);
+
+  --text-normal: var(--tk-text);
+  --text-muted: var(--tk-muted);
+  --text-faint: var(--tk-faint);
+  --text-on-accent: var(--tk-on-accent);
+  --text-on-accent-inverted: #111821;
+  --text-accent: var(--color-accent);
+  --text-accent-hover: var(--color-accent-2);
+  --text-error: var(--tk-rose);
+  --text-success: var(--tk-sea);
+  --text-warning: var(--tk-gold);
+  --text-selection: rgb(var(--tk-violet-rgb), 0.28);
+  --text-highlight-bg: rgb(var(--tk-gold-rgb), 0.26);
+  --text-highlight-bg-active: rgb(var(--tk-gold-rgb), 0.4);
+
+  --interactive-normal: var(--tk-raised);
+  --interactive-hover: rgb(var(--tk-sea-rgb), 0.12);
+  --interactive-accent: var(--color-accent);
+  --interactive-accent-hover: var(--color-accent-2);
+  --interactive-accent-hsl: var(--accent-h), var(--accent-s), var(--accent-l);
+  --color-accent: hsl(var(--accent-h) var(--accent-s) var(--accent-l));
+  --color-accent-1: color-mix(in srgb, var(--color-accent) 92%, var(--tk-text));
+  --color-accent-2: color-mix(in srgb, var(--color-accent) 84%, var(--tk-text));
+
+  --titlebar-background: var(--tk-sidebar);
+  --titlebar-background-focused: var(--tk-sidebar);
+  --tab-container-background: var(--tk-sidebar);
+  --tab-outline-color: var(--tk-border);
+  --tab-text-color: var(--tk-muted);
+  --tab-text-color-active: var(--tk-text);
+  --tab-text-color-focused: var(--tk-text);
+  --tab-text-color-focused-active: var(--tk-text);
+
+  --nav-item-color: var(--tk-muted);
+  --nav-item-color-hover: var(--tk-text);
+  --nav-item-color-active: var(--tk-text);
+  --nav-item-background-hover: rgb(var(--tk-sea-rgb), 0.09);
+  --nav-item-background-active: rgb(var(--tk-sea-rgb), 0.14);
+
+  --link-color: var(--color-accent);
+  --link-color-hover: var(--color-accent-2);
+  --link-unresolved-color: var(--tk-rose);
+  --link-external-color: var(--tk-violet);
+  --link-external-color-hover: var(--tk-rose);
+  --tag-color: var(--tk-violet);
+  --tag-background: rgb(var(--tk-violet-rgb), 0.12);
+  --tag-background-hover: rgb(var(--tk-violet-rgb), 0.2);
+  --blockquote-border-color: var(--tk-violet);
+  --h1-color: var(--tk-text);
+  --h2-color: var(--tk-text);
+  --h3-color: var(--tk-text);
+  --h4-color: var(--tk-text);
+  --h5-color: var(--tk-text);
+  --h6-color: var(--tk-text);
+
+  --input-shadow: 0 0 0 1px var(--tk-border);
+  --input-shadow-hover: 0 0 0 1px var(--tk-border-strong);
+  --shadow-s: 0 2px 8px rgb(0 0 0 / 14%);
+  --shadow-l: 0 16px 40px rgb(0 0 0 / 22%);
+  --modal-background: var(--tk-raised);
+  --prompt-background: var(--tk-raised);
+
+  --radius-s: var(--tk-radius-small);
+  --radius-m: var(--tk-radius-medium);
+  --radius-l: var(--tk-radius-large);
+  --button-radius: var(--tk-radius-small);
+  --input-radius: var(--tk-radius-small);
+  --tab-radius-active: var(--tk-radius-small) var(--tk-radius-small) 0 0;
+
+  --divider-color: var(--tk-border);
+  --divider-color-hover: var(--color-accent);
+  --scrollbar-bg: transparent;
+  --scrollbar-thumb-bg: rgb(var(--tk-sea-rgb), 0.18);
+  --scrollbar-active-thumb-bg: rgb(var(--tk-sea-rgb), 0.32);
+
+  --code-background: var(--tk-sidebar);
+  --code-normal: var(--tk-text);
+  --code-comment: var(--tk-faint);
+  --code-function: var(--tk-gold);
+  --code-important: var(--tk-rose);
+  --code-keyword: var(--tk-violet);
+  --code-operator: var(--tk-sea);
+  --code-property: var(--tk-sea);
+  --code-punctuation: var(--tk-muted);
+  --code-string: var(--tk-gold);
+  --code-tag: var(--tk-rose);
+  --code-value: var(--tk-violet);
+
+  --graph-line: var(--tk-border);
+  --graph-node: var(--tk-sea);
+  --graph-node-focused: var(--tk-gold);
+  --graph-node-tag: var(--tk-violet);
+  --graph-node-attachment: var(--tk-rose);
+  --graph-node-unresolved: var(--tk-muted);
+  --canvas-background: var(--tk-background);
+  --canvas-card-label-color: var(--tk-muted);
+  --canvas-color-1: var(--tk-rose);
+  --canvas-color-2: var(--tk-orange);
+  --canvas-color-3: var(--tk-gold);
+  --canvas-color-4: var(--tk-sea);
+  --canvas-color-5: var(--tk-blue);
+  --canvas-color-6: var(--tk-violet);
+}
+
+/* Obsidian 1.13's native picker writes accent HSL on body. For a custom dark
+   accent it removes its inline text override, so supply white here; for a
+   custom light accent its inline --text-on-accent uses the dark inverted
+   value. Without a custom accent, keep the theme's mode-specific fallback. */
+body[style*="--accent-h:"] {
+  --text-on-accent: #fff;
+}
+
+body :is(
+  button,
+  input,
+  textarea,
+  select,
+  a[href],
+  .clickable-icon,
+  .workspace-tab-header,
+  .nav-file-title,
+  .nav-folder-title,
+  .tree-item-self,
+  .suggestion-item,
+  .menu-item
+):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.callout[data-callout="note"],
+.callout[data-callout="info"],
+.callout[data-callout="todo"],
+.callout[data-callout="tip"],
+.callout[data-callout="hint"],
+.callout[data-callout="important"] {
+  --callout-color: var(--tk-sea);
+}
+
+.callout[data-callout="abstract"],
+.callout[data-callout="summary"],
+.callout[data-callout="tldr"],
+.callout[data-callout="example"] {
+  --callout-color: var(--tk-violet);
+}
+
+.callout[data-callout="success"],
+.callout[data-callout="check"],
+.callout[data-callout="done"] {
+  --callout-color: var(--tk-sea);
+}
+
+.callout[data-callout="question"],
+.callout[data-callout="help"],
+.callout[data-callout="faq"],
+.callout[data-callout="warning"],
+.callout[data-callout="caution"],
+.callout[data-callout="attention"] {
+  --callout-color: var(--tk-gold);
+}
+
+.callout[data-callout="failure"],
+.callout[data-callout="fail"],
+.callout[data-callout="missing"],
+.callout[data-callout="danger"],
+.callout[data-callout="error"],
+.callout[data-callout="bug"] {
+  --callout-color: var(--tk-rose);
+}
+
+.callout[data-callout="quote"],
+.callout[data-callout="cite"] {
+  --callout-color: var(--tk-violet);
+}
+
+.callout[data-callout="tsukuyomi"] {
+  --callout-color: var(--tk-sea);
+  --callout-icon: lucide-moon;
+}
+
+.callout[data-callout="stage"] {
+  --callout-color: var(--tk-rose);
+  --callout-icon: lucide-music;
+}
+
+/* Source: 30-workspace.css */
+.workspace {
+  background-color: var(--tk-background);
+}
+
+.workspace-ribbon,
+.mod-sidedock .workspace-tabs,
+.workspace-tab-header-container,
+.sidebar-toggle-button {
+  background-color: var(--tk-sidebar);
+}
+
+.workspace-split.mod-root > .workspace-leaf,
+.workspace-split.mod-root > .workspace-split,
+.workspace-tabs,
+.workspace-tab-header-container,
+.workspace-leaf-resize-handle {
+  border-color: var(--tk-border);
+}
+
+.workspace-tab-header {
+  color: var(--tk-muted);
+}
+
+.workspace-tab-header:hover {
+  color: var(--tk-text);
+  background-color: rgb(var(--tk-sea-rgb), 0.08);
+}
+
+.workspace-tab-header.is-active {
+  color: var(--tk-text);
+  background-color: var(--tk-background);
+  box-shadow: inset 0 -2px 0 var(--tk-sea);
+}
+
+.workspace-tab-header-inner-icon,
+.workspace-tab-header-inner-close-button,
+.clickable-icon {
+  color: inherit;
+}
+
+.workspace-leaf-content,
+.view-content {
+  background-color: var(--tk-background);
+}
+
+.mod-left-split .workspace-leaf-content,
+.mod-right-split .workspace-leaf-content,
+.mod-left-split .view-content,
+.mod-right-split .view-content {
+  background-color: var(--tk-sidebar);
+}
+
+.view-header {
+  position: relative;
+  color: var(--tk-muted);
+  background-color: var(--tk-sidebar);
+  border-color: var(--tk-border);
+}
+
+.view-header-title {
+  color: var(--tk-text);
+}
+
+.nav-header {
+  padding: var(--tk-space-ui);
+}
+
+.nav-files-container,
+.tag-container,
+.search-result-container {
+  padding-inline: var(--tk-space-ui);
+}
+
+.nav-file-title,
+.nav-folder-title {
+  position: relative;
+  border-radius: var(--tk-radius-small);
+}
+
+.nav-file-title.is-active {
+  color: var(--tk-text);
+  background-color: rgb(var(--tk-sea-rgb), 0.14);
+}
+
+.nav-file-title.is-active::before {
+  content: "";
+  position: absolute;
+  inset-block: 4px;
+  inset-inline-start: 0;
+  width: 2px;
+  border-radius: 2px;
+  background-color: var(--tk-rose);
+}
+
+.nav-folder-title:hover,
+.nav-file-title:hover {
+  color: var(--tk-text);
+  background-color: rgb(var(--tk-sea-rgb), 0.09);
+}
+
+.tree-item-self .tree-item-icon {
+  color: var(--tk-faint);
+}
+
+.tree-item-self.is-clickable:hover .tree-item-icon,
+.tree-item-self.is-active .tree-item-icon {
+  color: var(--tk-sea);
+}
+
+.status-bar {
+  color: var(--tk-muted);
+  background-color: var(--tk-sidebar);
+  border-color: var(--tk-border);
+}
+
+.titlebar,
+.mod-macos.is-hidden-frameless:not(.is-fullscreen) .titlebar {
+  background-color: var(--tk-sidebar);
+}
+
+.workspace-ribbon .sidebar-toggle-button,
+.workspace-ribbon .clickable-icon {
+  border-radius: var(--tk-radius-small);
+}
+
+/* A compact sign frame keeps ornament outside the file-name surface. */
+body:not(.tk-minimal) .nav-header {
+  margin: 8px 10px 10px 8px;
+  border: 1px solid var(--tk-sea);
+  border-radius: 3px 12px 3px 3px;
+  background-color: var(--tk-sidebar);
+  box-shadow: 3px 3px 0 var(--tk-rose);
+}
+
+.view-header {
+  border-bottom: 1px solid var(--tk-border);
+}
+
+/* Vermilion frames and luminous signage belong to the application chrome. */
+body:not(.tk-minimal) .workspace-tab-header.is-active {
+  box-shadow: inset 0 2px 0 var(--tk-rose), inset 0 -1px 0 rgb(var(--tk-sea-rgb), 0.65);
+}
+
+body:not(.tk-minimal) .nav-file-title.is-active {
+  color: var(--tk-sign-ink);
+  background-color: var(--tk-sign-paper);
+  border-radius: 2px 8px 2px 2px;
+  box-shadow: 2px 2px 0 var(--tk-sign-coral);
+}
+
+body:not(.tk-minimal) .nav-file-title.is-active::before {
+  inset-block: 0;
+  width: 3px;
+  background-color: var(--tk-sign-sea);
+}
+
+body:not(.tk-minimal) .nav-file-title.is-active .tree-item-icon {
+  color: var(--tk-sign-ink);
+}
+
+body:not(.tk-minimal) .view-header::after {
+  content: "";
+  position: absolute;
+  inset: auto 16px -1px auto;
+  width: 72px;
+  height: 6px;
+  background: repeating-linear-gradient(135deg, var(--tk-sign-sea) 0 3px, transparent 3px 7px);
+  pointer-events: none;
+}
+
+/* Small stage marks stay in the toolbar padding, clear of labels and icons. */
+@media screen {
+  body:not(.tk-minimal) .nav-header {
+    background-image:
+      repeating-linear-gradient(135deg, var(--tk-sign-sea) 0 3px, transparent 3px 7px),
+      linear-gradient(rgb(var(--tk-sea-rgb), 0.45), rgb(var(--tk-sea-rgb), 0.45)),
+      linear-gradient(rgb(var(--tk-sea-rgb), 0.45), rgb(var(--tk-sea-rgb), 0.45));
+    background-position: right 10px bottom, left 8px top, left top 8px;
+    background-size: 42px 6px, 20px 1px, 1px 20px;
+    background-repeat: no-repeat;
+  }
+
+  body:not(.tk-minimal) .workspace-tab-header-container {
+    box-shadow: inset 0 -1px 0 rgb(var(--tk-sea-rgb), 0.4);
+  }
+
+  /* Eight-pixel edge lattice; combined opacity stays below six percent. */
+  body:not(.tk-minimal) .workspace-ribbon {
+    background-image:
+      var(--tk-ribbon-stripe, linear-gradient(transparent, transparent)),
+      repeating-linear-gradient(45deg, transparent 0 7px, rgb(var(--tk-sea-rgb), 0.025) 7px 8px, transparent 8px 15px),
+      repeating-linear-gradient(-45deg, transparent 0 7px, rgb(var(--tk-sea-rgb), 0.025) 7px 8px, transparent 8px 15px),
+      radial-gradient(circle at center, transparent 0 3px, rgb(var(--tk-sea-rgb), 0.01) 3px 4px, transparent 4px);
+    background-position: right 1px bottom 72px, right center, right center, right center;
+    background-size: 5px clamp(96px, 28vh, 240px), 8px 24px, 8px 24px, 8px 24px;
+    background-repeat: no-repeat, repeat-y, repeat-y, repeat-y;
+  }
+
+  /* The left navigation tabs retain the earlier geometric stage texture. */
+  body:not(.tk-minimal) .mod-left-split .workspace-tab-header-container {
+    background-image:
+      repeating-linear-gradient(60deg, transparent 0 23px, rgb(var(--tk-sea-rgb), 0.08) 23px 24px),
+      repeating-linear-gradient(-60deg, transparent 0 23px, rgb(var(--tk-sea-rgb), 0.08) 23px 24px),
+      radial-gradient(circle at center, transparent 0 21px, rgb(var(--tk-sea-rgb), 0.1) 21px 22px, transparent 22px);
+    background-size: 48px 48px;
+  }
+
+}
+
+/* Echo the header stripe along the lower ribbon edge without adding a hit target. */
+@media screen and (min-width: 601px) and (min-height: 561px) {
+  body:not(.tk-minimal):not(.is-mobile) .workspace-ribbon.mod-left {
+    --tk-ribbon-stripe: repeating-linear-gradient(135deg, var(--tk-sign-sea) 0 3px, transparent 3px 7px);
+  }
+}
+
+/* Source: 40-editor.css */
+.markdown-source-view,
+.markdown-reading-view {
+  color: var(--tk-text);
+  background-color: var(--tk-background);
+}
+
+.markdown-source-view.mod-cm6 .cm-scroller,
+.markdown-reading-view .markdown-preview-view {
+  line-height: 1.75;
+}
+
+.markdown-rendered :is(h1, h2, h3, h4, h5, h6),
+.markdown-source-view.mod-cm6 :is(.HyperMD-header-1, .HyperMD-header-2, .HyperMD-header-3, .HyperMD-header-4, .HyperMD-header-5, .HyperMD-header-6) {
+  letter-spacing: normal;
+}
+
+.markdown-rendered hr {
+  border-color: var(--tk-border);
+}
+
+.markdown-rendered blockquote {
+  color: var(--tk-muted);
+  background-color: rgb(var(--tk-violet-rgb), 0.06);
+  border-inline-start-width: 2px;
+  border-radius: 0 var(--tk-radius-small) var(--tk-radius-small) 0;
+  padding-block: 0.35em;
+}
+
+.markdown-rendered mark,
+.cm-s-obsidian span.cm-highlight {
+  color: var(--tk-text);
+  border-radius: 3px;
+}
+
+.markdown-rendered .internal-link,
+.cm-s-obsidian span.cm-hmd-internal-link {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+
+.markdown-rendered .internal-link.is-unresolved,
+.is-unresolved {
+  color: var(--link-unresolved-color);
+  opacity: 1;
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-underline-offset: 0.15em;
+}
+
+.markdown-rendered :is(ul, ol) > li::marker {
+  color: var(--tk-sea);
+}
+
+input[type="checkbox"] {
+  border-color: var(--tk-border-strong);
+  border-radius: 4px;
+}
+
+input[type="checkbox"]:checked {
+  background-color: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+}
+
+.markdown-rendered :not(pre) > code,
+.cm-inline-code {
+  color: var(--tk-gold);
+  background-color: var(--tk-sidebar);
+  border: 1px solid var(--tk-border);
+  border-radius: 4px;
+}
+
+.markdown-rendered pre {
+  background-color: var(--tk-sidebar);
+  border: 1px solid var(--tk-border);
+  border-radius: var(--tk-radius-medium);
+}
+
+.markdown-rendered pre > code {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.cm-s-obsidian .cm-cursor,
+.cm-s-obsidian .cm-dropCursor {
+  border-left-color: var(--tk-sea);
+}
+
+.cm-s-obsidian .cm-selectionBackground,
+.cm-s-obsidian.cm-focused .cm-selectionBackground {
+  background-color: rgb(var(--tk-violet-rgb), 0.28);
+}
+
+.metadata-container {
+  color: var(--tk-muted);
+  background-color: rgb(var(--tk-sea-rgb), 0.04);
+  border: 1px solid var(--tk-border);
+  border-radius: var(--tk-radius-medium);
+  padding: 0.5rem 0.75rem;
+}
+
+.metadata-property {
+  border-radius: var(--tk-radius-small);
+}
+
+.metadata-property:focus-within {
+  box-shadow: 0 0 0 1px var(--tk-sea);
+}
+
+.inline-title {
+  color: var(--tk-text);
+  letter-spacing: normal;
+}
+
+.markdown-rendered table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--tk-border);
+  border-radius: var(--tk-radius-medium);
+  overflow: hidden;
+}
+
+.markdown-rendered :is(th, td) {
+  border-color: var(--tk-border);
+}
+
+.markdown-rendered th {
+  color: var(--tk-text);
+  background-color: rgb(var(--tk-sea-rgb), 0.1);
+}
+
+.markdown-rendered tr:nth-child(even) td {
+  background-color: rgb(var(--tk-sea-rgb), 0.025);
+}
+
+/* Source: 50-components.css */
+button,
+.dropdown,
+input,
+textarea,
+.search-input-container input {
+  border-color: var(--tk-border);
+  border-radius: var(--tk-radius-small);
+}
+
+button:hover,
+.dropdown:hover,
+input:hover,
+textarea:hover {
+  border-color: var(--tk-border-strong);
+}
+
+button.mod-cta {
+  background-color: var(--interactive-accent);
+  box-shadow: none;
+}
+
+button.mod-cta:hover {
+  background-color: var(--interactive-accent-hover);
+}
+
+.modal,
+.prompt,
+.menu {
+  background-color: var(--tk-raised);
+  border: 1px solid var(--tk-border);
+  border-radius: var(--tk-radius-large);
+  box-shadow: var(--shadow-l);
+}
+
+.modal-title,
+.prompt-instruction-command,
+.menu-item-title {
+  color: var(--tk-text);
+}
+
+.suggestion-item,
+.menu-item {
+  border-radius: var(--tk-radius-small);
+}
+
+.suggestion-item.is-selected,
+.menu-item.selected,
+.menu-item:hover {
+  color: var(--tk-text);
+  background-color: rgb(var(--tk-sea-rgb), 0.12);
+}
+
+.search-result-file-match {
+  border-radius: var(--tk-radius-small);
+}
+
+.search-result-file-match:hover {
+  background-color: rgb(var(--tk-sea-rgb), 0.08);
+}
+
+.search-result-file-matched-text {
+  color: var(--tk-text);
+  background-color: rgb(var(--tk-gold-rgb), 0.3);
+  border-radius: 3px;
+}
+
+.callout {
+  background-color: color-mix(in srgb, var(--callout-color) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--callout-color) 32%, transparent);
+  border-inline-start-width: 3px;
+  border-radius: var(--tk-radius-medium);
+}
+
+.callout-title {
+  color: var(--callout-color);
+}
+
+.callout-content {
+  color: var(--tk-text);
+}
+
+.popover,
+.hover-popover {
+  border-color: var(--tk-border);
+  border-radius: var(--tk-radius-large);
+  box-shadow: var(--shadow-l);
+}
+
+.canvas-wrapper {
+  background-color: var(--tk-background);
+}
+
+.canvas-node-container {
+  background-color: var(--tk-raised);
+  border-color: var(--tk-border);
+  border-radius: var(--tk-radius-medium);
+  box-shadow: var(--shadow-s);
+}
+
+.canvas-node.is-selected .canvas-node-container {
+  border-color: var(--tk-sea);
+  box-shadow: 0 0 0 1px var(--tk-sea), var(--shadow-s);
+}
+
+.canvas-control-group,
+.canvas-card-menu {
+  background-color: var(--tk-raised);
+  border-color: var(--tk-border);
+  border-radius: var(--tk-radius-medium);
+}
+
+.graph-view.color-fill {
+  color: var(--tk-sea);
+}
+
+.graph-view.color-fill-focused {
+  color: var(--tk-gold);
+}
+
+.graph-view.color-line {
+  color: var(--tk-border);
+}
+
+.bases-view {
+  color: var(--tk-text);
+  background-color: var(--tk-background);
+}
+
+.bases-view :is(.bases-thead, .bases-table-header) {
+  color: var(--tk-muted);
+  background-color: var(--tk-sidebar);
+  border-color: var(--tk-border);
+}
+
+.bases-view :is(.bases-tr, .bases-table-row, .bases-card) {
+  border-color: var(--tk-border);
+}
+
+.bases-view .bases-card {
+  background-color: var(--tk-raised);
+  border-radius: var(--tk-radius-medium);
+}
+
+.tooltip {
+  color: var(--tk-text);
+  background-color: var(--tk-raised);
+  border: 1px solid var(--tk-border);
+  border-radius: var(--tk-radius-small);
+}
+
+/* Source: 60-decoration.css */
+/* Original vector scenery and sign ornaments, embedded at build time. */
+:root {
+  --tk-cloud-art: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20240%20150%22%3E%3Ctitle%3EOriginal%20stage%20cloud%20lines%3C%2Ftitle%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%2361d4c3%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.32%22%3E%3Cpath%20d%3D%22M12%2040H126C139%2040%20139%2054%20126%2054H78C65%2054%2065%2068%2078%2068H186C199%2068%20199%2082%20186%2082H105C92%2082%2092%2096%20105%2096H224%22%2F%3E%3Cpath%20d%3D%22M26%2034H139C153%2034%20153%2060%20139%2060H85M98%2062H199C213%2062%20213%2088%20199%2088H115M128%2090H234%22%2F%3E%3Ccircle%20cx%3D%2240%22%20cy%3D%22113%22%20r%3D%2213%22%2F%3E%3Ccircle%20cx%3D%2240%22%20cy%3D%22113%22%20r%3D%2221%22%2F%3E%3Cpath%20d%3D%22M40%2086V140M13%20113H67M21%2094L59%20132M21%20132L59%2094%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M179%2018L182%2026L190%2029L182%2032L179%2040L176%2032L168%2029L176%2026Z%22%20fill%3D%22%23f47d89%22%20opacity%3D%220.5%22%2F%3E%3C%2Fsvg%3E");
+  --tk-city-art: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201200%20320%22%3E%3Ctitle%3EStatic%20moonlit%20virtual%20city%3C%2Ftitle%3E%3Cdesc%3EOriginal%20geometric%20eaved%20towers%2C%20warm%20windows%20and%20water%20gate.%20Buildings%20remain%20in%20this%20static%20layer%3B%20skeletal%20fish%20are%20a%20separate%20asset.%3C%2Fdesc%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cg%20stroke%3D%22%2379ded6%22%20stroke-width%3D%222%22%20opacity%3D%22.55%22%3E%3Cellipse%20cx%3D%22600%22%20cy%3D%22303%22%20rx%3D%22178%22%20ry%3D%2212%22%2F%3E%3Cpath%20d%3D%22M389%20311H811M449%20293Q600%20278%20751%20293M492%20317H708%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%2323334b%22%20stroke%3D%22%23b6a2ea%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M0%20265H77V302H0M22%20213H80V271H22M253%20243H360V302H253M286%20201H338V252H286M819%20250H907V305H819M1044%20217H1153V301H1044M1134%20258H1200V310H1134%22%2F%3E%3Cpath%20d%3D%22M2%20221Q20%20223%2049%20196Q72%20215%2093%20211L85%20229H10ZM237%20251Q263%20252%20308%20225Q339%20250%20375%20242L364%20259H246ZM800%20258Q826%20259%20862%20231Q888%20253%20922%20249L913%20267H809ZM1028%20225Q1071%20222%201095%20191Q1122%20220%201170%20211L1160%20237H1036Z%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%2323334b%22%20stroke%3D%22%23dfc38a%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M118%20218H213V302H118M132%20169H198V221H132M142%20124H187V173H142M944%20194H1062V302H944M958%20139H1048V198H958M974%2095H1033V145H974%22%2F%3E%3C%2Fg%3E%3Cg%20stroke%3D%22%23e88d94%22%20stroke-width%3D%224%22%3E%3Cpath%20d%3D%22M126%20230V298M204%20230V298M139%20183V223M192%20183V223M149%20137V173M181%20137V173M954%20211V299M1053%20211V299M968%20152V200M1039%20152V200M981%20110V145M1027%20110V145%22%2F%3E%3Cpath%20d%3D%22M113%20283H218M933%20278H1075M133%20208H198M959%20185H1047%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%2323334b%22%20stroke%3D%22%2379ded6%22%20stroke-width%3D%222.5%22%3E%3Cpath%20d%3D%22M85%20214Q106%20225%20136%20205L165%20181L194%20205Q225%20225%20245%20213L236%20235Q202%20241%20165%20214Q128%20241%2094%20236ZM107%20169Q122%20181%20144%20162L165%20141L186%20162Q209%20180%20224%20168L217%20186Q193%20192%20165%20169Q137%20192%20114%20187ZM124%20126Q138%20134%20151%20118L165%20101L179%20118Q194%20134%20207%20124L200%20142Q179%20145%20165%20130Q150%20147%20131%20143Z%22%2F%3E%3Cpath%20d%3D%22M906%20190Q933%20207%20969%20180L1003%20149L1037%20180Q1073%20207%201100%20187L1090%20212Q1044%20222%201003%20190Q961%20222%20916%20214ZM932%20140Q953%20155%20976%20133L1003%20109L1030%20133Q1056%20155%201075%20137L1066%20159Q1036%20165%201003%20140Q970%20166%20942%20161ZM953%2096Q970%20108%20988%2088L1003%2069L1019%2088Q1040%20107%201054%2094L1046%20116Q1021%20120%201003%20101Q984%20121%20962%20117Z%22%2F%3E%3C%2Fg%3E%3Cg%20stroke%3D%22%23dfc38a%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M165%2077V101M157%2088H173M1003%2045V68M995%2057H1011M118%20274H212M130%20274V283M148%20274V283M166%20274V283M184%20274V283M202%20274V283M944%20266H1064M957%20266V278M978%20266V278M999%20266V278M1020%20266V278M1041%20266V278%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%23dfc38a%22%20opacity%3D%22.8%22%3E%3Cpath%20d%3D%22M146%20239H158V258H146ZM174%20239H186V258H174ZM150%20185H160V198H150ZM171%20185H181V198H171ZM153%20145H177V154H153ZM975%20218H990V245H975ZM1014%20218H1029V245H1014ZM981%20165H996V178H981ZM1012%20165H1027V178H1012ZM990%20122H1016V132H990ZM35%20237H48V255H35ZM58%20237H70V255H58ZM269%20269H282V285H269ZM302%20269H315V285H302ZM335%20269H347V285H335ZM839%20274H851V291H839ZM872%20274H884V291H872ZM1068%20252H1080V276H1068ZM1100%20252H1112V276H1100ZM1131%20252H1142V276H1131Z%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%2379ded6%22%3E%3Crect%20x%3D%22222%22%20y%3D%22251%22%20width%3D%2212%22%20height%3D%2237%22%20rx%3D%222%22%2F%3E%3Crect%20x%3D%22289%22%20y%3D%22212%22%20width%3D%2230%22%20height%3D%228%22%20rx%3D%222%22%2F%3E%3Crect%20x%3D%22918%22%20y%3D%22232%22%20width%3D%2214%22%20height%3D%2245%22%20rx%3D%222%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%23e88d94%22%3E%3Crect%20x%3D%2270%22%20y%3D%22251%22%20width%3D%2211%22%20height%3D%2229%22%20rx%3D%222%22%2F%3E%3Crect%20x%3D%221081%22%20y%3D%22238%22%20width%3D%2233%22%20height%3D%227%22%20rx%3D%222%22%2F%3E%3Crect%20x%3D%22873%22%20y%3D%22237%22%20width%3D%2220%22%20height%3D%228%22%20rx%3D%222%22%2F%3E%3C%2Fg%3E%3Cg%20stroke%3D%22%23e88d94%22%20stroke-width%3D%224%22%3E%3Cpath%20d%3D%22M565%20256L561%20299M635%20256L639%20299M551%20269H649%22%2F%3E%3Cpath%20d%3D%22M543%20246Q600%20264%20657%20245L652%20255Q600%20269%20548%20256Z%22%20fill%3D%22%2323334b%22%20stroke-width%3D%223%22%2F%3E%3C%2Fg%3E%3Ccircle%20cx%3D%22600%22%20cy%3D%22278%22%20r%3D%2210%22%20stroke%3D%22%23dfc38a%22%20stroke-width%3D%222%22%2F%3E%3Cpath%20d%3D%22M16%20307H349M851%20308H1184%22%20stroke%3D%22%2379ded6%22%20stroke-width%3D%222%22%20opacity%3D%22.5%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --tk-gate-art: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20220%20180%22%3E%3Ctitle%3EStatic%20gate%20over%20lunar%20water%3C%2Ftitle%3E%3Cdesc%3EOriginal%20geometric%20torii%2C%20lanterns%2C%20water%20and%20hanging%20wire.%20The%20mirror%20and%20orbital%20arcs%20are%20a%20separate%20asset.%3C%2Fdesc%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cellipse%20cx%3D%22110%22%20cy%3D%22158%22%20rx%3D%2266%22%20ry%3D%229%22%20stroke%3D%22%2379ded6%22%20stroke-width%3D%222%22%20opacity%3D%22.7%22%2F%3E%3Cpath%20d%3D%22M68%20166H152M85%20172H135%22%20stroke%3D%22%2379ded6%22%20stroke-width%3D%222%22%20opacity%3D%22.45%22%2F%3E%3Cg%20stroke%3D%22%23e88d94%22%20stroke-width%3D%224%22%3E%3Cpath%20d%3D%22M80%2068L74%20152M140%2068L146%20152M62%2092H158M72%20151H84M136%20151H148%22%2F%3E%3Cpath%20d%3D%22M53%2054Q110%2074%20167%2054L161%2068Q110%2083%2059%2068Z%22%20fill%3D%22%2323334b%22%20stroke-width%3D%223%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M110%2077V101%22%20stroke%3D%22%23dfc38a%22%20stroke-width%3D%222%22%2F%3E%3Cg%20stroke%3D%22%23dfc38a%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M37%2089V97M31%2099H43M31%20119H43M37%20121V128M183%2070V78M177%2080H189M177%20100H189M183%20102V109%22%2F%3E%3Crect%20x%3D%2229%22%20y%3D%22101%22%20width%3D%2216%22%20height%3D%2216%22%20rx%3D%224%22%20fill%3D%22%23dfc38a%22%20fill-opacity%3D%22.25%22%2F%3E%3Crect%20x%3D%22175%22%20y%3D%2282%22%20width%3D%2216%22%20height%3D%2216%22%20rx%3D%224%22%20fill%3D%22%23dfc38a%22%20fill-opacity%3D%22.25%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --tk-fish-art: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201200%20320%22%3E%3Ctitle%3ESkeletal%20fish%20over%20the%20virtual%20city%3C%2Ftitle%3E%3Cdesc%3ETwo%20original%20geometric%20fish%20in%20their%20city%20coordinates%2C%20separated%20for%20independent%20CSS%20motion.%20No%20animation%20is%20embedded%20in%20this%20asset.%3C%2Fdesc%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cg%20stroke%3D%22%2379ded6%22%20stroke-width%3D%222%22%20transform%3D%22translate(287%2054)%20rotate(-8)%22%3E%3Cpath%20d%3D%22M0%2020Q49-13%20113%2017Q57%2049%200%2020ZM113%2017L148%200L139%2022L149%2042ZM8%2020Q62%2013%20139%2022M32%206Q26%2020%2036%2032M51%203Q43%2020%2055%2036M72%206Q63%2020%2076%2032M92%2010Q84%2020%2096%2026M52%203L67-9L79%207M52%2035L68%2046L79%2031M120%2017L142%206M120%2022L144%2036%22%2F%3E%3Ccircle%20cx%3D%2214%22%20cy%3D%2218%22%20r%3D%222%22%20fill%3D%22%23dfc38a%22%20stroke%3D%22none%22%2F%3E%3C%2Fg%3E%3Cg%20stroke%3D%22%23b6a2ea%22%20stroke-width%3D%222%22%20transform%3D%22translate(906%2087)%20rotate(9)%20scale(-.82%20.82)%22%3E%3Cpath%20d%3D%22M0%2020Q49-13%20113%2017Q57%2049%200%2020ZM113%2017L148%200L139%2022L149%2042ZM8%2020Q62%2013%20139%2022M32%206Q26%2020%2036%2032M51%203Q43%2020%2055%2036M72%206Q63%2020%2076%2032M92%2010Q84%2020%2096%2026M52%203L67-9L79%207M52%2035L68%2046L79%2031M120%2017L142%206M120%2022L144%2036%22%2F%3E%3Ccircle%20cx%3D%2214%22%20cy%3D%2218%22%20r%3D%222%22%20fill%3D%22%23dfc38a%22%20stroke%3D%22none%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --tk-fish-swimming-art: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201200%20320%22%3E%3Ctitle%3EOne-way%20skeletal%20fish%20passes%3C%2Ftitle%3E%3Cdesc%3EOriginal%20continuous%20skeletons%20bend%20from%20head%20to%20tail.%20Each%20one-way%20pass%20fades%20completely%20before%20an%20opposite-facing%20pass%20appears.%20Buildings%20belong%20to%20separate%20static%20assets.%3C%2Fdesc%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cg%20stroke%3D%22%2379ded6%22%20stroke-width%3D%222%22%20transform%3D%22translate(294%2076)%22%20opacity%3D%220%22%3E%3Canimate%20attributeName%3D%22opacity%22%20dur%3D%2218s%22%20repeatCount%3D%22indefinite%22%20calcMode%3D%22linear%22%20keyTimes%3D%220%3B.06%3B.3%3B.38%3B.5%3B.56%3B.8%3B.88%3B1%22%20values%3D%220%3B1%3B1%3B0%3B0%3B1%3B1%3B0%3B0%22%2F%3E%3Cg%3E%3CanimateTransform%20attributeName%3D%22transform%22%20type%3D%22translate%22%20dur%3D%2218s%22%20repeatCount%3D%22indefinite%22%20calcMode%3D%22linear%22%20keyTimes%3D%220%3B.4%3B.48%3B.9%3B1%22%20values%3D%2245%200%3B-55%200%3B-55%200%3B45%200%3B45%200%22%2F%3E%3Cg%3E%3CanimateTransform%20attributeName%3D%22transform%22%20type%3D%22scale%22%20dur%3D%2218s%22%20repeatCount%3D%22indefinite%22%20calcMode%3D%22linear%22%20keyTimes%3D%220%3B.4%3B.44%3B.48%3B.9%3B.95%3B1%22%20values%3D%221%201%3B1%201%3B0%201%3B-1%201%3B-1%201%3B0%201%3B1%201%22%2F%3E%3Cg%20transform%3D%22scale(1)%20translate(-74.5%20-20)%22%3E%3Cpath%20d%3D%22M0%2020Q49%20-14%20113%2020.9Q57%2047.6%200%2020ZM113%2020.9L150.5%2010.4L137.7%2030.5L143.9%2051.9ZM8%2020Q62%2011.4%20137.7%2030.5M32%205.8Q26%2020%2036%2031.7M51%201.9Q43%2019.4%2055%2034.7M72%204.2Q63%2018.3%2076%2030.3M92%209.8Q84%2018.9%2096%2026.5M52%201.8L64.6%20-10.8L79%205.5M52%2033.8L67.9%2044.2L79%2029.5M119.9%2022.1L143.5%2015.3M119%2027L140.1%2045.1%22%3E%3Canimate%20attributeName%3D%22d%22%20dur%3D%221.2s%22%20repeatCount%3D%22indefinite%22%20calcMode%3D%22linear%22%20keyTimes%3D%220%3B.1667%3B.3333%3B.5%3B.6667%3B.8333%3B1%22%20values%3D%22M0%2020Q49%20-14%20113%2020.9Q57%2047.6%200%2020ZM113%2020.9L150.5%2010.4L137.7%2030.5L143.9%2051.9ZM8%2020Q62%2011.4%20137.7%2030.5M32%205.8Q26%2020%2036%2031.7M51%201.9Q43%2019.4%2055%2034.7M72%204.2Q63%2018.3%2076%2030.3M92%209.8Q84%2018.9%2096%2026.5M52%201.8L64.6%20-10.8L79%205.5M52%2033.8L67.9%2044.2L79%2029.5M119.9%2022.1L143.5%2015.3M119%2027L140.1%2045.1%3BM0%2020Q49%20-13.3%20113%2015.9Q57%2048.2%200%2020ZM113%2015.9L150.7%206.2L137.5%2026L143.3%2047.5ZM8%2020Q62%2011.8%20137.5%2026M32%206.1Q26%2020.1%2036%2032.1M51%202.6Q43%2020%2055%2035.4M72%203.9Q63%2018.7%2076%2029.5M92%206.8Q84%2017%2096%2022.9M52%202.6L66.4%20-10.7L79%204.3M52%2034.6L65.9%2044.7L79%2028.3M119.9%2017.3L143.6%2010.9M118.9%2022.2L139.6%2040.7%3BM0%2020Q49%20-12.3%20113%2012.1Q57%2049.6%200%2020ZM113%2012.1L148.3%20-4.3L138.9%2017.5L148.5%2037.7ZM8%2020Q62%2013.4%20138.9%2017.5M32%206.3Q26%2020.1%2036%2032.5M51%203.7Q43%2020.6%2055%2036.7M72%205.6Q63%2020.4%2076%2031.2M92%206.9Q84%2018.1%2096%2022.4M52%203.7L68.8%20-8.8L79%205.8M52%2035.7L66%2046.4L79%2029.8M120%2012.2L142.2%201.6M119.9%2017.2L143.6%2031.6%3BM0%2020Q49%20-12%20113%2013.1Q57%2050.4%200%2020ZM113%2013.1L144.4%20-9.9L139.5%2013.4L152.9%2031.3ZM8%2020Q62%2014.6%20139.5%2013.4M32%206.2Q26%2020%2036%2032.3M51%204.1Q43%2020.6%2055%2037.3M72%207.8Q63%2021.7%2076%2033.7M92%2010.2Q84%2021.1%2096%2025.5M52%204.2L69.4%20-6.8L79%208.5M52%2036.2L68.1%2047.8L79%2032.5M119.9%2011.9L139.6%20-2.9M120.8%2016.8L146.9%2026.3%3BM0%2020Q49%20-12.7%20113%2018.1Q57%2049.8%200%2020ZM113%2018.1L143.9%20-5.5L139.5%2017.8L153.2%2035.5ZM8%2020Q62%2014.2%20139.5%2017.8M32%205.9Q26%2019.9%2036%2031.9M51%203.4Q43%2020%2055%2036.6M72%208.1Q63%2021.3%2076%2034.5M92%2013.2Q84%2023%2096%2029.1M52%203.4L67.6%20-7.2L79%209.7M52%2035.4L70%2047.4L79%2033.7M119.9%2016.7L139.3%201.6M120.9%2021.6L147.1%2030.6%3BM0%2020Q49%20-13.7%20113%2021.9Q57%2048.4%200%2020ZM113%2021.9L147.7%204.3L139.1%2026.5L149.5%2046.3ZM8%2020Q62%2012.6%20139.1%2026.5M32%205.7Q26%2019.9%2036%2031.5M51%202.3Q43%2019.4%2055%2035.3M72%206.4Q63%2019.6%2076%2032.8M92%2013.1Q84%2021.9%2096%2029.6M52%202.3L65.1%20-9.3L79%208.2M52%2034.3L70%2045.6L79%2032.2M120%2021.8L141.8%2010.4M120.1%2026.8L144.3%2040.4%3BM0%2020Q49%20-14%20113%2020.9Q57%2047.6%200%2020ZM113%2020.9L150.5%2010.4L137.7%2030.5L143.9%2051.9ZM8%2020Q62%2011.4%20137.7%2030.5M32%205.8Q26%2020%2036%2031.7M51%201.9Q43%2019.4%2055%2034.7M72%204.2Q63%2018.3%2076%2030.3M92%209.8Q84%2018.9%2096%2026.5M52%201.8L64.6%20-10.8L79%205.5M52%2033.8L67.9%2044.2L79%2029.5M119.9%2022.1L143.5%2015.3M119%2027L140.1%2045.1%22%2F%3E%3C%2Fpath%3E%3Ccircle%20cx%3D%2214%22%20cy%3D%2218%22%20r%3D%222%22%20fill%3D%22%23dfc38a%22%20stroke%3D%22none%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20stroke%3D%22%23b6a2ea%22%20stroke-width%3D%222%22%20transform%3D%22translate(945%2082)%22%20opacity%3D%220%22%3E%3Canimate%20attributeName%3D%22opacity%22%20dur%3D%2222s%22%20repeatCount%3D%22indefinite%22%20calcMode%3D%22linear%22%20keyTimes%3D%220%3B.06%3B.3%3B.38%3B.5%3B.56%3B.8%3B.88%3B1%22%20values%3D%220%3B1%3B1%3B0%3B0%3B1%3B1%3B0%3B0%22%2F%3E%3Cg%3E%3CanimateTransform%20attributeName%3D%22transform%22%20type%3D%22translate%22%20dur%3D%2222s%22%20repeatCount%3D%22indefinite%22%20calcMode%3D%22linear%22%20keyTimes%3D%220%3B.4%3B.48%3B.9%3B1%22%20values%3D%22-50%200%3B50%200%3B50%200%3B-50%200%3B-50%200%22%2F%3E%3Cg%3E%3CanimateTransform%20attributeName%3D%22transform%22%20type%3D%22scale%22%20dur%3D%2222s%22%20repeatCount%3D%22indefinite%22%20calcMode%3D%22linear%22%20keyTimes%3D%220%3B.4%3B.44%3B.48%3B.9%3B.95%3B1%22%20values%3D%22-1%201%3B-1%201%3B0%201%3B1%201%3B1%201%3B0%201%3B-1%201%22%2F%3E%3Cg%20transform%3D%22scale(0.82)%20translate(-74.5%20-20)%22%3E%3Cpath%20d%3D%22M0%2020Q49%20-13.4%20113%2016.7Q57%2048%200%2020ZM113%2016.7L150.8%207.4L137.4%2027L143%2048.7ZM8%2020Q62%2011.6%20137.4%2027M32%206.1Q26%2020.1%2036%2032.1M51%202.5Q43%2019.9%2055%2035.2M72%203.8Q63%2018.5%2076%2029.5M92%207.1Q84%2017.1%2096%2023.3M52%202.4L66.1%20-10.8L79%204.3M52%2034.4L66.1%2044.5L79%2028.3M119.8%2018.1L143.7%2012M118.8%2023L139.3%2041.7%22%3E%3Canimate%20attributeName%3D%22d%22%20dur%3D%221.4s%22%20repeatCount%3D%22indefinite%22%20calcMode%3D%22linear%22%20keyTimes%3D%220%3B.1667%3B.3333%3B.5%3B.6667%3B.8333%3B1%22%20values%3D%22M0%2020Q49%20-13.4%20113%2016.7Q57%2048%200%2020ZM113%2016.7L150.8%207.4L137.4%2027L143%2048.7ZM8%2020Q62%2011.6%20137.4%2027M32%206.1Q26%2020.1%2036%2032.1M51%202.5Q43%2019.9%2055%2035.2M72%203.8Q63%2018.5%2076%2029.5M92%207.1Q84%2017.1%2096%2023.3M52%202.4L66.1%20-10.8L79%204.3M52%2034.4L66.1%2044.5L79%2028.3M119.8%2018.1L143.7%2012M118.8%2023L139.3%2041.7%3BM0%2020Q49%20-12.4%20113%2012.3Q57%2049.4%200%2020ZM113%2012.3L148.8%20-2.9L138.7%2018.6L147.7%2039.1ZM8%2020Q62%2013.2%20138.7%2018.6M32%206.3Q26%2020.1%2036%2032.4M51%203.6Q43%2020.6%2055%2036.5M72%205.3Q63%2020.1%2076%2030.8M92%206.7Q84%2017.8%2096%2022.2M52%203.6L68.6%20-9.1L79%205.4M52%2035.6L65.8%2046.1L79%2029.4M120%2012.7L142.5%202.8M119.7%2017.7L143%2032.9%3BM0%2020Q49%20-12%20113%2012.7Q57%2050.4%200%2020ZM113%2012.7L144.8%20-9.7L139.5%2013.5L152.5%2031.6ZM8%2020Q62%2014.6%20139.5%2013.5M32%206.2Q26%2020.1%2036%2032.4M51%204.1Q43%2020.7%2055%2037.3M72%207.5Q63%2021.6%2076%2033.4M92%209.6Q84%2020.7%2096%2024.9M52%204.2L69.5%20-6.9L79%208.2M52%2036.2L67.7%2047.7L79%2032.2M119.9%2011.5L139.9%20-2.8M120.7%2016.5L146.6%2026.5%3BM0%2020Q49%20-12.6%20113%2017.3Q57%2050%200%2020ZM113%2017.3L143.7%20-6.6L139.5%2016.8L153.4%2034.2ZM8%2020Q62%2014.4%20139.5%2016.8M32%205.9Q26%2019.9%2036%2031.9M51%203.5Q43%2020.1%2055%2036.8M72%208.2Q63%2021.5%2076%2034.5M92%2012.9Q84%2022.9%2096%2028.7M52%203.6L67.9%20-7L79%209.7M52%2035.6L69.8%2047.6L79%2033.7M119.8%2015.9L139.1%200.5M120.9%2020.7L147.3%2029.4%3BM0%2020Q49%20-13.6%20113%2021.7Q57%2048.6%200%2020ZM113%2021.7L147.1%202.9L139.2%2025.3L150.2%2044.8ZM8%2020Q62%2012.8%20139.2%2025.3M32%205.7Q26%2019.9%2036%2031.6M51%202.4Q43%2019.4%2055%2035.5M72%206.7Q63%2019.9%2076%2033.2M92%2013.3Q84%2022.2%2096%2029.8M52%202.4L65.4%20-9L79%208.6M52%2034.4L70.1%2045.9L79%2032.6M120%2021.3L141.4%209.2M120.2%2026.3L144.9%2039.1%3BM0%2020Q49%20-14%20113%2021.3Q57%2047.6%200%2020ZM113%2021.3L150.3%2010.1L137.9%2030.4L144.5%2051.8ZM8%2020Q62%2011.4%20137.9%2030.4M32%205.8Q26%2019.9%2036%2031.6M51%201.9Q43%2019.3%2055%2034.7M72%204.5Q63%2018.4%2076%2030.6M92%2010.4Q84%2019.3%2096%2027.1M52%201.8L64.5%20-10.6L79%205.8M52%2033.8L68.3%2044.3L79%2029.8M119.9%2022.5L143.4%2015.1M119.1%2027.4L140.6%2045%3BM0%2020Q49%20-13.4%20113%2016.7Q57%2048%200%2020ZM113%2016.7L150.8%207.4L137.4%2027L143%2048.7ZM8%2020Q62%2011.6%20137.4%2027M32%206.1Q26%2020.1%2036%2032.1M51%202.5Q43%2019.9%2055%2035.2M72%203.8Q63%2018.5%2076%2029.5M92%207.1Q84%2017.1%2096%2023.3M52%202.4L66.1%20-10.8L79%204.3M52%2034.4L66.1%2044.5L79%2028.3M119.8%2018.1L143.7%2012M118.8%2023L139.3%2041.7%22%2F%3E%3C%2Fpath%3E%3Ccircle%20cx%3D%2214%22%20cy%3D%2218%22%20r%3D%222%22%20fill%3D%22%23dfc38a%22%20stroke%3D%22none%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --tk-mascot-art: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201200%20800%22%3E%3Ctitle%3EInuDOGE%2C%20Iroha%20fox%2C%20FUSHI%2C%20and%20a%20pink%20companion%3C%2Ftitle%3E%3Cdesc%3EFan-drawn%20vector%20renditions%20of%20InuDOGE%2C%20an%20Iroha%20fox%20costume%2C%20FUSHI%2C%20and%20a%20pink%20companion.%3C%2Fdesc%3E%3Cg%20stroke%3D%22%23343343%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cg%20transform%3D%22translate(-225%200)%22%20stroke-width%3D%221.2%22%3E%3Cg%3E%3Cpath%20d%3D%22M445%20265Q420%20246%20397%20254L389%20260Q384%20250%20390%20240Q377%20254%20380%20278Q383%20299%20404%20302Q428%20301%20449%20281Z%22%20fill%3D%22%2358c8c4%22%2F%3E%3Cpath%20d%3D%22M442%20266Q420%20251%20399%20258L393%20263Q388%20256%20391%20249Q385%20258%20386%20277Q389%20294%20405%20296Q426%20296%20445%20278Z%22%20fill%3D%22%23e2b66f%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M447%20252Q428%20251%20419%20271Q410%20293%20426%20302Q440%20310%20455%20301L465%20282L462%20257Z%22%20fill%3D%22%23e2b66f%22%2F%3E%3Cpath%20d%3D%22M455%20241Q433%20244%20421%20268Q415%20285%20431%20299L454%20288L467%20251Z%22%20fill%3D%22%23668d53%22%2F%3E%3Cpath%20d%3D%22M457%20247Q440%20261%20432%20290M447%20258L433%20252M440%20272L424%20268%22%20fill%3D%22none%22%20stroke%3D%22%23405c3a%22%2F%3E%3Cpath%20d%3D%22M457%20239Q449%20250%20449%20270L447%20300Q455%20308%20466%20303Q475%20310%20486%20304Q498%20308%20502%20299L497%20262Q493%20244%20480%20239Z%22%20fill%3D%22%23e2b66f%22%2F%3E%3Cpath%20d%3D%22M445%20304Q456%20311%20469%20304Q461%20298%20449%20297M477%20304Q490%20311%20503%20302Q492%20297%20479%20298%22%20fill%3D%22%2358c8c4%22%20stroke%3D%22none%22%2F%3E%3Cpath%20d%3D%22M447%20297Q457%20303%20469%20298L469%20304Q458%20311%20447%20302ZM478%20298Q490%20304%20502%20297L502%20303Q490%20311%20478%20304Z%22%20fill%3D%22%238e6d6c%22%2F%3E%3Cpath%20d%3D%22M472%20267L471%20302%22%20fill%3D%22none%22%2F%3E%3Cpath%20d%3D%22M439%20209Q405%20204%20399%20169Q423%20168%20454%20188ZM480%20184L494%20155Q497%20151%20501%20156Q510%20176%20505%20202%22%20fill%3D%22%2358c8c4%22%2F%3E%3Cpath%20d%3D%22M440%20204Q412%20199%20405%20173Q426%20174%20453%20188ZM483%20185L496%20158Q498%20155%20500%20159Q507%20177%20503%20199%22%20fill%3D%22%23e2b66f%22%2F%3E%3Cpath%20d%3D%22M438%20197Q418%20191%20411%20176L420%20177L424%20181L430%20178L436%20184L449%20187M486%20183L497%20164L499%20171L503%20173L501%20194%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cpath%20d%3D%22M429%20207Q431%20188%20450%20181Q474%20173%20494%20188Q510%20200%20510%20219Q509%20239%20491%20249Q471%20259%20449%20251Q431%20246%20426%20230Q423%20218%20429%20207Z%22%20fill%3D%22%23e2b66f%22%2F%3E%3Cellipse%20cx%3D%22439%22%20cy%3D%22228%22%20rx%3D%2210%22%20ry%3D%228%22%20fill%3D%22%23ed927d%22%20opacity%3D%22.28%22%20stroke%3D%22none%22%2F%3E%3Cellipse%20cx%3D%22498%22%20cy%3D%22225%22%20rx%3D%229%22%20ry%3D%228%22%20fill%3D%22%23ed927d%22%20opacity%3D%22.28%22%20stroke%3D%22none%22%2F%3E%3Cellipse%20cx%3D%22450%22%20cy%3D%22203%22%20rx%3D%229%22%20ry%3D%226%22%20fill%3D%22%23f7eed8%22%20transform%3D%22rotate(-28%20450%20203)%22%20stroke%3D%22none%22%2F%3E%3Cellipse%20cx%3D%22479%22%20cy%3D%22200%22%20rx%3D%229%22%20ry%3D%226%22%20fill%3D%22%23f7eed8%22%20transform%3D%22rotate(22%20479%20200)%22%20stroke%3D%22none%22%2F%3E%3Cpath%20d%3D%22M440%20211Q445%20208%20449%20210M489%20209Q494%20207%20498%20210%22%20fill%3D%22none%22%20stroke%3D%22%23343343%22%20stroke-width%3D%222.2%22%2F%3E%3Cellipse%20cx%3D%22470%22%20cy%3D%22229%22%20rx%3D%2220%22%20ry%3D%2217%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cellipse%20cx%3D%22471%22%20cy%3D%22222%22%20rx%3D%222.5%22%20ry%3D%221.4%22%20fill%3D%22%23e2b66f%22%2F%3E%3Cpath%20d%3D%22M466%20232Q470%20236%20475%20232%22%20fill%3D%22none%22%2F%3E%3Cpath%20d%3D%22M468%20234Q471%20241%20475%20234Z%22%20fill%3D%22%23d96f72%22%2F%3E%3Cpath%20d%3D%22M438%20240Q445%20252%20455%20253L460%20243Q450%20243%20438%20240Z%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cpath%20d%3D%22M455%20253L466%20256L468%20244L460%20243Z%22%20fill%3D%22%23d96f72%22%2F%3E%3Cpath%20d%3D%22M481%20244L484%20256Q494%20253%20501%20241Q491%20244%20481%20244Z%22%20fill%3D%22%23d96f72%22%2F%3E%3Cpath%20d%3D%22M474%20244L481%20244L484%20256L475%20259Z%22%20fill%3D%22%23f7eed8%22%2F%3E%3Ccircle%20cx%3D%22470%22%20cy%3D%22254%22%20r%3D%2213%22%20fill%3D%22%2358c8c4%22%2F%3E%3Cpath%20d%3D%22M459%20258Q470%20269%20481%20258Q478%20267%20470%20268Q462%20267%20459%20258Z%22%20fill%3D%22%23f7eed8%22%20stroke%3D%22none%22%2F%3E%3Ccircle%20cx%3D%22466%22%20cy%3D%22249%22%20r%3D%223%22%20fill%3D%22%23f7eed8%22%20stroke%3D%22none%22%2F%3E%3Cpolygon%20points%3D%22456%20263%20462%20268%20456%20275%20450%20269%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cpolygon%20points%3D%22453%20275%20460%20281%20453%20288%20447%20282%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cpolygon%20points%3D%22451%20288%20458%20294%20451%20302%20445%20295%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cpolygon%20points%3D%22479%20263%20486%20268%20481%20275%20475%20269%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cpolygon%20points%3D%22482%20275%20489%20281%20483%20288%20477%20282%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cpolygon%20points%3D%22484%20288%20491%20294%20486%20302%20480%20295%22%20fill%3D%22%23f7eed8%22%2F%3E%3C%2Fg%3E%3Cg%3E%3Cg%20transform%3D%22translate(362%20144)%20scale(.222)%22%20stroke%3D%22%236b5148%22%20stroke-width%3D%222%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M48%209Q53-2%2062%203Q99%2032%20148%2076Q196%2066%20249%2076Q291%2035%20332%203Q343-4%20350%2014Q371%2074%20349%20158L372%20166L353%20168L366%20183L350%20177L361%20200L348%20188Q355%20234%20371%20253L384%20264L368%20269L378%20273L363%20276Q344%20301%20311%20321Q266%20350%20207%20353Q151%20353%20105%20334Q68%20318%2038%20287L22%20278L12%20271L31%20270L23%20265L37%20258Q51%20235%2058%20195L35%20212L50%20189L30%20191L48%20173L26%20175L45%20162Q24%2094%2037%2035Q41%2016%2048%209Z%22%20fill%3D%22%23dfaa88%22%2F%3E%3Cg%20stroke%3D%22none%22%3E%3Cpath%20d%3D%22M51%2013Q57%206%2066%2017L132%2072Q102%2045%2075%2030L57%2025L66%2045L47%2044L58%2057L43%2063L51%2080L41%2094Q36%2055%2051%2013ZM337%2012Q343%2016%20348%2038Q362%2091%20346%20145L332%20112L334%2084L326%2075L344%2063L325%2055L335%2037L310%2051Z%22%20fill%3D%22%23b88d7f%22%2F%3E%3Cpath%20d%3D%22M59%2020L89%2043L77%2039L108%2069L87%2062L120%2082L135%2088L117%2091L130%2095L107%20107L121%20104Q98%20128%2085%20151L68%20177Q58%20157%2056%20129Q54%20103%2070%2082L48%2095L62%2072L46%2072L69%2057L44%2054L66%2047Z%22%20fill%3D%22%23ece8d5%22%2F%3E%3Cpath%20d%3D%22M333%2020L309%2043L321%2039L294%2067L312%2059L282%2082L266%2089L285%2091L273%2096L295%20108L282%20104Q308%20130%20320%20154L336%20178Q347%20150%20344%20122Q342%2098%20329%2082L349%2094L336%2072L352%2072L330%2057L354%2055L333%2047Z%22%20fill%3D%22%23ece8d5%22%2F%3E%3Cpath%20d%3D%22M57%20135Q56%20104%2081%2084Q72%20112%2071%20139L67%20167ZM340%20137Q340%20107%20316%2087Q326%20118%20330%20145L334%20168Z%22%20fill%3D%22%23d5d3c0%22%2F%3E%3Cpath%20d%3D%22M39%20287Q45%20268%2062%20263Q79%20256%20107%20263Q135%20270%20158%20258Q181%20245%20197%20247Q218%20247%20241%20260Q264%20269%20291%20263Q320%20257%20338%20267Q350%20274%20356%20285Q327%20317%20283%20335Q246%20350%20208%20353Q158%20353%20110%20335Q70%20320%2039%20287Z%22%20fill%3D%22%23f6f1da%22%2F%3E%3Cpath%20d%3D%22M72%20222Q103%20219%20139%20235Q116%20229%2090%20228L65%20226Q63%20223%2072%20222ZM254%20235Q280%20219%20319%20223L332%20225L310%20228Q279%20228%20254%20235Z%22%20fill%3D%22%233d2c25%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M168%20230Q153%20239%20146%20250%22%20fill%3D%22none%22%20stroke%3D%22%238d6852%22%20stroke-width%3D%222.3%22%2F%3E%3Cpath%20d%3D%22M194%20247Q198%20246%20208%20247Q219%20248%20218%20255L210%20263Q208%20270%20201%20270Q195%20270%20193%20263L187%20254Q185%20249%20194%20247Z%22%20fill%3D%22%23664b3b%22%2F%3E%3Cpath%20d%3D%22M191%20250Q198%20247%20204%20250L198%20256Z%22%20fill%3D%22%23b99c80%22%20stroke%3D%22none%22%2F%3E%3Cpath%20d%3D%22M201%20282L192%20290M205%20284L220%20291%22%20fill%3D%22none%22%20stroke%3D%22%23806d57%22%20stroke-width%3D%222.1%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(225%20-20)%22%3E%3Cg%3E%3Cpath%20d%3D%22M712%20283Q713%20259%20737%20251Q758%20244%20777%20247Q796%20240%20811%20250Q821%20259%20817%20276Q812%20294%20790%20301Q765%20309%20738%20304Q715%20301%20712%20283Z%22%20fill%3D%22%2358c8c4%22%20stroke%3D%22none%22%2F%3E%3Cpath%20d%3D%22M714%20278Q711%20273%20716%20269Q713%20263%20719%20261Q720%20254%20727%20256Q731%20249%20738%20251Q743%20245%20750%20248Q757%20242%20764%20246Q771%20242%20778%20245Q786%20239%20792%20244Q801%20239%20806%20246Q814%20245%20815%20252Q821%20256%20817%20263Q822%20269%20817%20274Q819%20281%20812%20283Q810%20290%20802%20290Q798%20297%20790%20296Q784%20303%20775%20299Q768%20305%20760%20300Q752%20305%20745%20300Q736%20303%20731%20297Q722%20299%20721%20292Q713%20289%20716%20283Q711%20283%20714%20278Z%22%20fill%3D%22%23fbf6e8%22%2F%3E%3Cpath%20d%3D%22M737%20257Q731%20249%20735%20244Q741%20242%20746%20253M763%20251Q758%20242%20763%20236Q770%20236%20773%20248L769%20258Z%22%20fill%3D%22%23494653%22%2F%3E%3Cpath%20d%3D%22M738%20253Q736%20249%20739%20247M765%20250Q763%20244%20766%20241Q770%20243%20770%20250%22%20fill%3D%22none%22%20stroke%3D%22%23b49ab7%22%2F%3E%3Cg%3E%3Cpolygon%20points%3D%22781%20249%20777%20240%20785%20241%20788%20232%20795%20238%20802%20231%20804%20241%20814%20239%20810%20249%20816%20254%20805%20257%20800%20264%20793%20257%20783%20260%22%20fill%3D%22%233d3b49%22%2F%3E%3Cpath%20d%3D%22M786%20247L793%20252L804%20247M793%20252L799%20241%22%20fill%3D%22none%22%20stroke%3D%22%23d5bcc4%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%23514c5d%22%20stroke%3D%22none%22%3E%3Ccircle%20cx%3D%22726%22%20cy%3D%22278%22%20r%3D%224%22%2F%3E%3Ccircle%20cx%3D%22745%22%20cy%3D%22292%22%20r%3D%224%22%2F%3E%3Ccircle%20cx%3D%22738%22%20cy%3D%22272%22%20r%3D%221.5%22%2F%3E%3Ccircle%20cx%3D%22761%22%20cy%3D%22286%22%20r%3D%221.5%22%2F%3E%3Ccircle%20cx%3D%22785%22%20cy%3D%22277%22%20r%3D%221.5%22%2F%3E%3Ccircle%20cx%3D%22805%22%20cy%3D%22266%22%20r%3D%221.5%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20stroke%3D%22%23d99bbd%22%20stroke-width%3D%221.1%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M581%20107Q579%20102%20575%2098Q572%2093%20576%2093Q581%2093%20585%20101L588%20104Q600%2099%20612%20104L619%2099Q622%2095%20625%2097Q628%20100%20622%20104L619%20108Q623%20117%20624%20124Q625%20130%20630%20133Q634%20135%20632%20138Q630%20140%20625%20137Q626%20143%20621%20145Q618%20146%20615%20141Q612%20140%20610%20145Q608%20149%20604%20145L600%20142Q597%20148%20592%20148Q589%20147%20587%20142Q583%20140%20580%20143Q575%20145%20575%20139Q569%20140%20567%20136Q567%20133%20573%20131Q578%20127%20579%20120Q579%20112%20581%20107Z%22%20fill%3D%22%23f4beda%22%2F%3E%3Cpath%20d%3D%22M576%2096L583%20105Q581%20106%20580%20105ZM619%20102L624%2098Q624%20101%20621%20103Z%22%20fill%3D%22%23d998bd%22%20stroke%3D%22none%22%2F%3E%3Cpath%20d%3D%22M587%20107Q600%20101%20612%20108%22%20fill%3D%22none%22%20stroke%3D%22%23ffe3ef%22%20stroke-width%3D%222%22%2F%3E%3Cpath%20d%3D%22M573%20133Q578%20133%20581%20138Q584%20136%20588%20139L592%20145Q596%20142%20600%20139Q605%20142%20608%20144Q611%20136%20616%20138L621%20142Q623%20137%20627%20135L625%20137Q626%20143%20621%20145Q618%20146%20615%20141Q612%20140%20610%20145Q608%20149%20604%20145L600%20142Q597%20148%20592%20148Q589%20147%20587%20142Q583%20140%20580%20143Q575%20145%20575%20139L570%20137Z%22%20fill%3D%22%23e99dbf%22%20stroke%3D%22none%22%2F%3E%3Cg%20fill%3D%22%23715483%22%20stroke%3D%22none%22%3E%3Cellipse%20cx%3D%22591%22%20cy%3D%22114%22%20rx%3D%222.7%22%20ry%3D%223.3%22%2F%3E%3Cellipse%20cx%3D%22609%22%20cy%3D%22113%22%20rx%3D%222.8%22%20ry%3D%223.2%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%23fff0f6%22%20stroke%3D%22none%22%3E%3Ccircle%20cx%3D%22590.3%22%20cy%3D%22112.9%22%20r%3D%22.8%22%2F%3E%3Ccircle%20cx%3D%22608.2%22%20cy%3D%22111.9%22%20r%3D%22.8%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --tk-mascot-living-art: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201200%20800%22%3E%3Ctitle%3EInuDOGE%2C%20Iroha%20fox%2C%20FUSHI%2C%20and%20a%20pink%20companion%3C%2Ftitle%3E%3Cdesc%3EFan-drawn%20vector%20renditions%20of%20InuDOGE%2C%20an%20Iroha%20fox%20costume%2C%20FUSHI%2C%20and%20a%20pink%20companion.%20They%20move%20gently.%3C%2Fdesc%3E%3Cg%20stroke%3D%22%23343343%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cg%20transform%3D%22translate(-225%200)%22%20stroke-width%3D%221.2%22%3E%3Cg%3E%3CanimateTransform%20attributeName%3D%22transform%22%20type%3D%22rotate%22%20values%3D%22-7%20444%20270%3B7%20444%20270%3B-7%20444%20270%22%20keyTimes%3D%220%3B.5%3B1%22%20dur%3D%224s%22%20repeatCount%3D%22indefinite%22%20calcMode%3D%22linear%22%2F%3E%3Cpath%20d%3D%22M445%20265Q420%20246%20397%20254L389%20260Q384%20250%20390%20240Q377%20254%20380%20278Q383%20299%20404%20302Q428%20301%20449%20281Z%22%20fill%3D%22%2358c8c4%22%2F%3E%3Cpath%20d%3D%22M442%20266Q420%20251%20399%20258L393%20263Q388%20256%20391%20249Q385%20258%20386%20277Q389%20294%20405%20296Q426%20296%20445%20278Z%22%20fill%3D%22%23e2b66f%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M447%20252Q428%20251%20419%20271Q410%20293%20426%20302Q440%20310%20455%20301L465%20282L462%20257Z%22%20fill%3D%22%23e2b66f%22%2F%3E%3Cpath%20d%3D%22M455%20241Q433%20244%20421%20268Q415%20285%20431%20299L454%20288L467%20251Z%22%20fill%3D%22%23668d53%22%2F%3E%3Cpath%20d%3D%22M457%20247Q440%20261%20432%20290M447%20258L433%20252M440%20272L424%20268%22%20fill%3D%22none%22%20stroke%3D%22%23405c3a%22%2F%3E%3Cpath%20d%3D%22M457%20239Q449%20250%20449%20270L447%20300Q455%20308%20466%20303Q475%20310%20486%20304Q498%20308%20502%20299L497%20262Q493%20244%20480%20239Z%22%20fill%3D%22%23e2b66f%22%2F%3E%3Cpath%20d%3D%22M445%20304Q456%20311%20469%20304Q461%20298%20449%20297M477%20304Q490%20311%20503%20302Q492%20297%20479%20298%22%20fill%3D%22%2358c8c4%22%20stroke%3D%22none%22%2F%3E%3Cpath%20d%3D%22M447%20297Q457%20303%20469%20298L469%20304Q458%20311%20447%20302ZM478%20298Q490%20304%20502%20297L502%20303Q490%20311%20478%20304Z%22%20fill%3D%22%238e6d6c%22%2F%3E%3Cpath%20d%3D%22M472%20267L471%20302%22%20fill%3D%22none%22%2F%3E%3Cpath%20d%3D%22M439%20209Q405%20204%20399%20169Q423%20168%20454%20188ZM480%20184L494%20155Q497%20151%20501%20156Q510%20176%20505%20202%22%20fill%3D%22%2358c8c4%22%2F%3E%3Cpath%20d%3D%22M440%20204Q412%20199%20405%20173Q426%20174%20453%20188ZM483%20185L496%20158Q498%20155%20500%20159Q507%20177%20503%20199%22%20fill%3D%22%23e2b66f%22%2F%3E%3Cpath%20d%3D%22M438%20197Q418%20191%20411%20176L420%20177L424%20181L430%20178L436%20184L449%20187M486%20183L497%20164L499%20171L503%20173L501%20194%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cpath%20d%3D%22M429%20207Q431%20188%20450%20181Q474%20173%20494%20188Q510%20200%20510%20219Q509%20239%20491%20249Q471%20259%20449%20251Q431%20246%20426%20230Q423%20218%20429%20207Z%22%20fill%3D%22%23e2b66f%22%2F%3E%3Cellipse%20cx%3D%22439%22%20cy%3D%22228%22%20rx%3D%2210%22%20ry%3D%228%22%20fill%3D%22%23ed927d%22%20opacity%3D%22.28%22%20stroke%3D%22none%22%2F%3E%3Cellipse%20cx%3D%22498%22%20cy%3D%22225%22%20rx%3D%229%22%20ry%3D%228%22%20fill%3D%22%23ed927d%22%20opacity%3D%22.28%22%20stroke%3D%22none%22%2F%3E%3Cellipse%20cx%3D%22450%22%20cy%3D%22203%22%20rx%3D%229%22%20ry%3D%226%22%20fill%3D%22%23f7eed8%22%20transform%3D%22rotate(-28%20450%20203)%22%20stroke%3D%22none%22%2F%3E%3Cellipse%20cx%3D%22479%22%20cy%3D%22200%22%20rx%3D%229%22%20ry%3D%226%22%20fill%3D%22%23f7eed8%22%20transform%3D%22rotate(22%20479%20200)%22%20stroke%3D%22none%22%2F%3E%3Cpath%20d%3D%22M440%20211Q445%20208%20449%20210M489%20209Q494%20207%20498%20210%22%20fill%3D%22none%22%20stroke%3D%22%23343343%22%20stroke-width%3D%222.2%22%2F%3E%3Cellipse%20cx%3D%22470%22%20cy%3D%22229%22%20rx%3D%2220%22%20ry%3D%2217%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cellipse%20cx%3D%22471%22%20cy%3D%22222%22%20rx%3D%222.5%22%20ry%3D%221.4%22%20fill%3D%22%23e2b66f%22%2F%3E%3Cpath%20d%3D%22M466%20232Q470%20236%20475%20232%22%20fill%3D%22none%22%2F%3E%3Cpath%20d%3D%22M468%20234Q471%20241%20475%20234Z%22%20fill%3D%22%23d96f72%22%2F%3E%3Cpath%20d%3D%22M438%20240Q445%20252%20455%20253L460%20243Q450%20243%20438%20240Z%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cpath%20d%3D%22M455%20253L466%20256L468%20244L460%20243Z%22%20fill%3D%22%23d96f72%22%2F%3E%3Cpath%20d%3D%22M481%20244L484%20256Q494%20253%20501%20241Q491%20244%20481%20244Z%22%20fill%3D%22%23d96f72%22%2F%3E%3Cpath%20d%3D%22M474%20244L481%20244L484%20256L475%20259Z%22%20fill%3D%22%23f7eed8%22%2F%3E%3Ccircle%20cx%3D%22470%22%20cy%3D%22254%22%20r%3D%2213%22%20fill%3D%22%2358c8c4%22%2F%3E%3Cpath%20d%3D%22M459%20258Q470%20269%20481%20258Q478%20267%20470%20268Q462%20267%20459%20258Z%22%20fill%3D%22%23f7eed8%22%20stroke%3D%22none%22%2F%3E%3Ccircle%20cx%3D%22466%22%20cy%3D%22249%22%20r%3D%223%22%20fill%3D%22%23f7eed8%22%20stroke%3D%22none%22%2F%3E%3Cpolygon%20points%3D%22456%20263%20462%20268%20456%20275%20450%20269%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cpolygon%20points%3D%22453%20275%20460%20281%20453%20288%20447%20282%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cpolygon%20points%3D%22451%20288%20458%20294%20451%20302%20445%20295%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cpolygon%20points%3D%22479%20263%20486%20268%20481%20275%20475%20269%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cpolygon%20points%3D%22482%20275%20489%20281%20483%20288%20477%20282%22%20fill%3D%22%23f7eed8%22%2F%3E%3Cpolygon%20points%3D%22484%20288%20491%20294%20486%20302%20480%20295%22%20fill%3D%22%23f7eed8%22%2F%3E%3C%2Fg%3E%3Cg%3E%3CanimateTransform%20attributeName%3D%22transform%22%20type%3D%22rotate%22%20values%3D%22-1.5%20405%20190%3B1.5%20405%20190%3B-1.5%20405%20190%22%20keyTimes%3D%220%3B.5%3B1%22%20dur%3D%227s%22%20repeatCount%3D%22indefinite%22%20calcMode%3D%22linear%22%2F%3E%3Cg%20transform%3D%22translate(362%20144)%20scale(.222)%22%20stroke%3D%22%236b5148%22%20stroke-width%3D%222%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M48%209Q53-2%2062%203Q99%2032%20148%2076Q196%2066%20249%2076Q291%2035%20332%203Q343-4%20350%2014Q371%2074%20349%20158L372%20166L353%20168L366%20183L350%20177L361%20200L348%20188Q355%20234%20371%20253L384%20264L368%20269L378%20273L363%20276Q344%20301%20311%20321Q266%20350%20207%20353Q151%20353%20105%20334Q68%20318%2038%20287L22%20278L12%20271L31%20270L23%20265L37%20258Q51%20235%2058%20195L35%20212L50%20189L30%20191L48%20173L26%20175L45%20162Q24%2094%2037%2035Q41%2016%2048%209Z%22%20fill%3D%22%23dfaa88%22%2F%3E%3Cg%20stroke%3D%22none%22%3E%3Cpath%20d%3D%22M51%2013Q57%206%2066%2017L132%2072Q102%2045%2075%2030L57%2025L66%2045L47%2044L58%2057L43%2063L51%2080L41%2094Q36%2055%2051%2013ZM337%2012Q343%2016%20348%2038Q362%2091%20346%20145L332%20112L334%2084L326%2075L344%2063L325%2055L335%2037L310%2051Z%22%20fill%3D%22%23b88d7f%22%2F%3E%3Cpath%20d%3D%22M59%2020L89%2043L77%2039L108%2069L87%2062L120%2082L135%2088L117%2091L130%2095L107%20107L121%20104Q98%20128%2085%20151L68%20177Q58%20157%2056%20129Q54%20103%2070%2082L48%2095L62%2072L46%2072L69%2057L44%2054L66%2047Z%22%20fill%3D%22%23ece8d5%22%2F%3E%3Cpath%20d%3D%22M333%2020L309%2043L321%2039L294%2067L312%2059L282%2082L266%2089L285%2091L273%2096L295%20108L282%20104Q308%20130%20320%20154L336%20178Q347%20150%20344%20122Q342%2098%20329%2082L349%2094L336%2072L352%2072L330%2057L354%2055L333%2047Z%22%20fill%3D%22%23ece8d5%22%2F%3E%3Cpath%20d%3D%22M57%20135Q56%20104%2081%2084Q72%20112%2071%20139L67%20167ZM340%20137Q340%20107%20316%2087Q326%20118%20330%20145L334%20168Z%22%20fill%3D%22%23d5d3c0%22%2F%3E%3Cpath%20d%3D%22M39%20287Q45%20268%2062%20263Q79%20256%20107%20263Q135%20270%20158%20258Q181%20245%20197%20247Q218%20247%20241%20260Q264%20269%20291%20263Q320%20257%20338%20267Q350%20274%20356%20285Q327%20317%20283%20335Q246%20350%20208%20353Q158%20353%20110%20335Q70%20320%2039%20287Z%22%20fill%3D%22%23f6f1da%22%2F%3E%3Cpath%20d%3D%22M72%20222Q103%20219%20139%20235Q116%20229%2090%20228L65%20226Q63%20223%2072%20222ZM254%20235Q280%20219%20319%20223L332%20225L310%20228Q279%20228%20254%20235Z%22%20fill%3D%22%233d2c25%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M168%20230Q153%20239%20146%20250%22%20fill%3D%22none%22%20stroke%3D%22%238d6852%22%20stroke-width%3D%222.3%22%2F%3E%3Cpath%20d%3D%22M194%20247Q198%20246%20208%20247Q219%20248%20218%20255L210%20263Q208%20270%20201%20270Q195%20270%20193%20263L187%20254Q185%20249%20194%20247Z%22%20fill%3D%22%23664b3b%22%2F%3E%3Cpath%20d%3D%22M191%20250Q198%20247%20204%20250L198%20256Z%22%20fill%3D%22%23b99c80%22%20stroke%3D%22none%22%2F%3E%3Cpath%20d%3D%22M201%20282L192%20290M205%20284L220%20291%22%20fill%3D%22none%22%20stroke%3D%22%23806d57%22%20stroke-width%3D%222.1%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(225%20-20)%22%3E%3Cg%3E%3CanimateTransform%20attributeName%3D%22transform%22%20type%3D%22translate%22%20values%3D%220%200%3B0%20-3%3B0%200%22%20keyTimes%3D%220%3B.5%3B1%22%20dur%3D%225s%22%20repeatCount%3D%22indefinite%22%20calcMode%3D%22linear%22%2F%3E%3Cpath%20d%3D%22M712%20283Q713%20259%20737%20251Q758%20244%20777%20247Q796%20240%20811%20250Q821%20259%20817%20276Q812%20294%20790%20301Q765%20309%20738%20304Q715%20301%20712%20283Z%22%20fill%3D%22%2358c8c4%22%20stroke%3D%22none%22%2F%3E%3Cpath%20d%3D%22M714%20278Q711%20273%20716%20269Q713%20263%20719%20261Q720%20254%20727%20256Q731%20249%20738%20251Q743%20245%20750%20248Q757%20242%20764%20246Q771%20242%20778%20245Q786%20239%20792%20244Q801%20239%20806%20246Q814%20245%20815%20252Q821%20256%20817%20263Q822%20269%20817%20274Q819%20281%20812%20283Q810%20290%20802%20290Q798%20297%20790%20296Q784%20303%20775%20299Q768%20305%20760%20300Q752%20305%20745%20300Q736%20303%20731%20297Q722%20299%20721%20292Q713%20289%20716%20283Q711%20283%20714%20278Z%22%20fill%3D%22%23fbf6e8%22%2F%3E%3Cpath%20d%3D%22M737%20257Q731%20249%20735%20244Q741%20242%20746%20253M763%20251Q758%20242%20763%20236Q770%20236%20773%20248L769%20258Z%22%20fill%3D%22%23494653%22%2F%3E%3Cpath%20d%3D%22M738%20253Q736%20249%20739%20247M765%20250Q763%20244%20766%20241Q770%20243%20770%20250%22%20fill%3D%22none%22%20stroke%3D%22%23b49ab7%22%2F%3E%3Cg%3E%3CanimateTransform%20attributeName%3D%22transform%22%20type%3D%22rotate%22%20values%3D%22-3%20793%20253%3B3%20793%20253%3B-3%20793%20253%22%20keyTimes%3D%220%3B.5%3B1%22%20dur%3D%226s%22%20repeatCount%3D%22indefinite%22%20calcMode%3D%22linear%22%2F%3E%3Cpolygon%20points%3D%22781%20249%20777%20240%20785%20241%20788%20232%20795%20238%20802%20231%20804%20241%20814%20239%20810%20249%20816%20254%20805%20257%20800%20264%20793%20257%20783%20260%22%20fill%3D%22%233d3b49%22%2F%3E%3Cpath%20d%3D%22M786%20247L793%20252L804%20247M793%20252L799%20241%22%20fill%3D%22none%22%20stroke%3D%22%23d5bcc4%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%23514c5d%22%20stroke%3D%22none%22%3E%3Ccircle%20cx%3D%22726%22%20cy%3D%22278%22%20r%3D%224%22%2F%3E%3Ccircle%20cx%3D%22745%22%20cy%3D%22292%22%20r%3D%224%22%2F%3E%3Ccircle%20cx%3D%22738%22%20cy%3D%22272%22%20r%3D%221.5%22%2F%3E%3Ccircle%20cx%3D%22761%22%20cy%3D%22286%22%20r%3D%221.5%22%2F%3E%3Ccircle%20cx%3D%22785%22%20cy%3D%22277%22%20r%3D%221.5%22%2F%3E%3Ccircle%20cx%3D%22805%22%20cy%3D%22266%22%20r%3D%221.5%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20stroke%3D%22%23d99bbd%22%20stroke-width%3D%221.1%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3CanimateTransform%20attributeName%3D%22transform%22%20type%3D%22translate%22%20values%3D%220%200%3B0%20-2%3B0%200%22%20keyTimes%3D%220%3B.5%3B1%22%20dur%3D%226s%22%20repeatCount%3D%22indefinite%22%20calcMode%3D%22linear%22%2F%3E%3Cpath%20d%3D%22M581%20107Q579%20102%20575%2098Q572%2093%20576%2093Q581%2093%20585%20101L588%20104Q600%2099%20612%20104L619%2099Q622%2095%20625%2097Q628%20100%20622%20104L619%20108Q623%20117%20624%20124Q625%20130%20630%20133Q634%20135%20632%20138Q630%20140%20625%20137Q626%20143%20621%20145Q618%20146%20615%20141Q612%20140%20610%20145Q608%20149%20604%20145L600%20142Q597%20148%20592%20148Q589%20147%20587%20142Q583%20140%20580%20143Q575%20145%20575%20139Q569%20140%20567%20136Q567%20133%20573%20131Q578%20127%20579%20120Q579%20112%20581%20107Z%22%20fill%3D%22%23f4beda%22%2F%3E%3Cpath%20d%3D%22M576%2096L583%20105Q581%20106%20580%20105ZM619%20102L624%2098Q624%20101%20621%20103Z%22%20fill%3D%22%23d998bd%22%20stroke%3D%22none%22%2F%3E%3Cpath%20d%3D%22M587%20107Q600%20101%20612%20108%22%20fill%3D%22none%22%20stroke%3D%22%23ffe3ef%22%20stroke-width%3D%222%22%2F%3E%3Cpath%20d%3D%22M573%20133Q578%20133%20581%20138Q584%20136%20588%20139L592%20145Q596%20142%20600%20139Q605%20142%20608%20144Q611%20136%20616%20138L621%20142Q623%20137%20627%20135L625%20137Q626%20143%20621%20145Q618%20146%20615%20141Q612%20140%20610%20145Q608%20149%20604%20145L600%20142Q597%20148%20592%20148Q589%20147%20587%20142Q583%20140%20580%20143Q575%20145%20575%20139L570%20137Z%22%20fill%3D%22%23e99dbf%22%20stroke%3D%22none%22%2F%3E%3Cg%20fill%3D%22%23715483%22%20stroke%3D%22none%22%3E%3Cellipse%20cx%3D%22591%22%20cy%3D%22114%22%20rx%3D%222.7%22%20ry%3D%223.3%22%2F%3E%3Cellipse%20cx%3D%22609%22%20cy%3D%22113%22%20rx%3D%222.8%22%20ry%3D%223.2%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%23fff0f6%22%20stroke%3D%22none%22%3E%3Ccircle%20cx%3D%22590.3%22%20cy%3D%22112.9%22%20r%3D%22.8%22%2F%3E%3Ccircle%20cx%3D%22608.2%22%20cy%3D%22111.9%22%20r%3D%22.8%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --tk-mirror-art: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20220%20180%22%3E%3Ctitle%3EMirror%20and%20orbital%20arcs%3C%2Ftitle%3E%3Cdesc%3EOriginal%20colored%20orbital%20arcs%20and%20hanging%20mirror%20in%20their%20gate%20coordinates%2C%20separated%20for%20independent%20CSS%20motion.%20No%20animation%20is%20embedded%20in%20this%20asset.%3C%2Fdesc%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M56%20127A68%2068%200%201%201%20176%20103%22%20stroke%3D%22%2379ded6%22%20stroke-width%3D%222%22%2F%3E%3Cpath%20d%3D%22M44%20120A75%2075%200%200%201%20173%2045M185%2084A75%2075%200%200%201%20151%20149%22%20stroke%3D%22%23b6a2ea%22%20stroke-width%3D%222%22%20opacity%3D%22.8%22%2F%3E%3Cpath%20d%3D%22M43%2043A80%2080%200%200%201%20182%20122M126%20164A80%2080%200%200%201%2041%20126%22%20stroke%3D%22%23dfc38a%22%20stroke-width%3D%222%22%20opacity%3D%22.8%22%2F%3E%3Ccircle%20cx%3D%22110%22%20cy%3D%22115%22%20r%3D%2215%22%20fill%3D%22%2323334b%22%20stroke%3D%22%23dfc38a%22%20stroke-width%3D%223%22%2F%3E%3Ccircle%20cx%3D%22110%22%20cy%3D%22115%22%20r%3D%229%22%20stroke%3D%22%2379ded6%22%20stroke-width%3D%222%22%20opacity%3D%22.65%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+.workspace-leaf-content[data-type="file-explorer"] {
+  container: tk-navigation / inline-size;
+}
+
+/* irop.one-inspired ink sign, paper lettering and offset colored outlines. */
+body:not(.tk-minimal) .workspace-leaf-content[data-type="file-explorer"] .nav-files-container::before {
+  content: "月読\a TSUKUYOMI";
+  display: block;
+  box-sizing: border-box;
+  min-height: 112px;
+  margin: 8px 4px 18px 0;
+  padding: 18px 62px 16px 16px;
+  border: 1px solid var(--tk-sign-paper);
+  border-inline-start: 4px solid var(--tk-sign-sea);
+  border-radius: 2px 20px 2px 2px;
+  color: var(--tk-sign-paper);
+  background-color: var(--tk-sign-ink);
+  background-image: var(--tk-cloud-art);
+  background-position: right -75px center;
+  background-size: 200px 125px;
+  background-repeat: no-repeat;
+  box-shadow: 3px 3px 0 var(--tk-sign-coral), 5px 5px 0 var(--tk-sign-ink);
+  font-size: 1.05em;
+  font-weight: 800;
+  line-height: 1.8;
+  letter-spacing: 0.1em;
+  white-space: pre;
+  pointer-events: none;
+}
+
+/* A quiet cloud seal follows the tree; it never sits beneath file names. */
+body:not(.tk-minimal) .workspace-leaf-content[data-type="file-explorer"] .nav-files-container::after {
+  content: "";
+  display: block;
+  height: 68px;
+  margin: 18px 10px 8px;
+  border-top: 1px solid var(--tk-border);
+  background: var(--tk-cloud-art) right center / 120px 75px no-repeat;
+  pointer-events: none;
+}
+
+.workspace-leaf-content[data-type="empty"] {
+  position: relative;
+  container: tk-empty / size;
+  --tk-stage-height: clamp(160px, 24vh, 240px);
+}
+
+/* Companions occupy upper whitespace, independently of the city below. */
+body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"]::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: var(--header-height, 40px) 0 0;
+  max-width: 1200px;
+  max-height: 800px;
+  margin: auto;
+  background: var(--tk-mascot-art) center / contain no-repeat;
+  opacity: var(--tk-decoration-opacity);
+  pointer-events: none;
+}
+
+body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .view-content {
+  position: relative;
+  isolation: isolate;
+  overflow: auto;
+  background-color: var(--tk-background);
+}
+
+/* Equal tracks center the gate itself. The menu owns the following row;
+   its intrinsic height takes priority when a short pane needs to scroll. */
+body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state {
+  display: grid;
+  grid-template-columns: min(100%, 480px);
+  grid-template-rows: minmax(0, 1fr) var(--tk-stage-height) minmax(max-content, 1fr);
+  justify-content: center;
+  justify-items: center;
+  row-gap: 12px;
+}
+
+body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state-container {
+  position: relative;
+  z-index: 2;
+  grid-area: 3 / 1;
+  align-self: start;
+  max-height: none;
+}
+
+/* Gate and mirror share one normal-flow grid cell above the menu. */
+body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state::before,
+body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state::after {
+  content: "";
+  grid-area: 2 / 1;
+  z-index: 1;
+  width: min(80%, 300px);
+  height: var(--tk-stage-height);
+  opacity: var(--tk-decoration-opacity);
+  pointer-events: none;
+}
+
+body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state::before {
+  background: var(--tk-gate-art) center / contain no-repeat;
+}
+
+body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state::after {
+  background: var(--tk-mirror-art) center / contain no-repeat;
+}
+
+/* City stays fixed; fish pass in their own lower side lanes. */
+body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .view-content::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: auto 0 0;
+  height: min(32%, 320px);
+  background: var(--tk-city-art) center bottom / contain no-repeat;
+  opacity: var(--tk-decoration-opacity);
+  pointer-events: none;
+}
+
+body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .view-content::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+
+  /* SVG routes stay inside the image bounds; this box never translates. */
+  inset: auto 0 0;
+  height: min(32%, 320px);
+  background: var(--tk-fish-art) center bottom / contain no-repeat;
+  opacity: var(--tk-decoration-opacity);
+  pointer-events: none;
+}
+
+/* This small ripple follows the menu in flow and cannot cover its actions. */
+body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state-container::after {
+  content: "";
+  display: block;
+  width: min(60%, 220px);
+  height: 12px;
+  margin: 16px auto 0;
+  border: 1px solid var(--tk-sea);
+  border-radius: 50%;
+  opacity: calc(var(--tk-decoration-opacity) * 0.45);
+  pointer-events: none;
+}
+
+/* Visible motion belongs only to decorative empty-page elements. */
+@keyframes tk-mirror-breathe {
+  0%, 100% { opacity: calc(var(--tk-decoration-opacity) * 0.4); }
+  50% { opacity: var(--tk-decoration-opacity); }
+}
+
+@keyframes tk-water-ripple {
+  0% {
+    transform: scale(0.55);
+    opacity: 0;
+  }
+
+  35% { opacity: calc(var(--tk-decoration-opacity) * 0.65); }
+
+  100% {
+    transform: scale(1.12);
+    opacity: 0;
+  }
+}
+
+/* Keep playing in a visible pane even while the user focuses another app. */
+@media screen and (prefers-reduced-motion: no-preference) and (min-width: 601px) and (min-height: 561px) {
+  /* A static image is the default; no embedded timeline is selected in
+     reduced-motion, inactive, narrow or short panes. */
+  @container tk-empty (min-width: 601px) and (min-height: 561px) {
+    body:not(.tk-minimal):not(.tk-disable-motion) .workspace-leaf.mod-active .workspace-leaf-content[data-type="empty"] .view-content::before {
+      background-image: var(--tk-fish-swimming-art);
+    }
+
+    body:not(.tk-minimal):not(.tk-disable-motion) .workspace-leaf.mod-active .workspace-leaf-content[data-type="empty"]::before {
+      background-image: var(--tk-mascot-living-art);
+    }
+  }
+
+  body:not(.tk-minimal):not(.tk-disable-motion) .workspace-leaf.mod-active .workspace-leaf-content[data-type="empty"] .view-content .empty-state::after {
+    animation: tk-mirror-breathe 5s ease-in-out infinite;
+  }
+
+  body:not(.tk-minimal):not(.tk-disable-motion) .workspace-leaf.mod-active .workspace-leaf-content[data-type="empty"] .view-content .empty-state-container::after {
+    animation: tk-water-ripple 4s ease-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body:not(.tk-disable-motion) :is(
+    .workspace-tab-header,
+    .nav-file-title,
+    .nav-folder-title,
+    .tree-item-self,
+    .clickable-icon,
+    button,
+    .suggestion-item,
+    .menu-item,
+    .canvas-node-container
+  ) {
+    transition:
+      color var(--tk-transition-duration) ease,
+      background-color var(--tk-transition-duration) ease,
+      border-color var(--tk-transition-duration) ease,
+      box-shadow var(--tk-transition-duration) ease;
+  }
+}
+
+/* Source: 90-mobile-print.css */
+@media (max-width: 600px) {
+  body {
+    --tk-space-ui: 5px;
+  }
+
+  .markdown-preview-view,
+  .markdown-source-view.mod-cm6 .cm-scroller {
+    padding-inline: 0.75rem;
+  }
+
+  .view-header {
+    padding-inline: 0.35rem;
+  }
+
+  .modal,
+  .prompt {
+    border-radius: var(--tk-radius-medium);
+  }
+
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="file-explorer"] .nav-files-container::before,
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="file-explorer"] .nav-files-container::after {
+    display: none;
+  }
+
+  .callout {
+    padding: 0.75rem;
+  }
+
+  .markdown-rendered table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+}
+
+/* Small windows retain native empty-page spacing and hide scene geometry. */
+@media (max-width: 600px), (max-height: 560px) {
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state {
+    display: flex;
+    row-gap: 0;
+  }
+
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state-container {
+    align-self: center;
+  }
+
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"]::before,
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .view-content::before,
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .view-content::after,
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state::before,
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state::after,
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state-container::after {
+    display: none;
+  }
+}
+
+/* Pane width can be smaller than the window (split panes / side docks). */
+@container tk-empty (max-width: 600px) or (max-height: 560px) {
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state {
+    display: flex;
+    row-gap: 0;
+  }
+
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state-container {
+    align-self: center;
+  }
+
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"]::before,
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .view-content::before,
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .view-content::after,
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state::before,
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state::after,
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state-container::after {
+    display: none;
+  }
+}
+
+/* Keep the sign readable when a desktop file tree is resized narrowly. */
+@container tk-navigation (max-width: 240px) {
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="file-explorer"] .nav-files-container::before {
+    padding-inline: 10px;
+    background-image: none;
+    text-align: center;
+  }
+}
+
+@media print {
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state {
+    display: flex;
+    row-gap: 0;
+  }
+
+  body:not(.tk-minimal) .workspace-leaf-content[data-type="empty"] .empty-state-container {
+    align-self: center;
+  }
+
+  body.theme-dark,
+  body.theme-light {
+    --tk-background: #fff;
+    --tk-sidebar: #fff;
+    --tk-raised: #fff;
+    --tk-text: #1f2933;
+    --tk-muted: #465565;
+    --tk-faint: #586879;
+    --tk-border: #aeb7b1;
+    --tk-border-strong: #7d8982;
+    --text-normal: #1f2933;
+    --text-muted: #465565;
+    --text-faint: #586879;
+    --code-normal: #1f2933;
+    --code-comment: #465565;
+    --code-function: #1f2933;
+    --code-important: #1f2933;
+    --code-keyword: #1f2933;
+    --code-operator: #1f2933;
+    --code-property: #1f2933;
+    --code-punctuation: #1f2933;
+    --code-string: #1f2933;
+    --code-tag: #1f2933;
+    --code-value: #1f2933;
+  }
+
+  body,
+  .markdown-preview-view,
+  .markdown-rendered {
+    color: #1f2933 !important;
+    background: #fff !important;
+  }
+
+  body .workspace-leaf-content[data-type="file-explorer"] .nav-files-container::before,
+  body .workspace-leaf-content[data-type="file-explorer"] .nav-files-container::after,
+  body .view-header::after,
+  body .workspace-leaf-content[data-type="empty"]::before,
+  body .workspace-leaf-content[data-type="empty"] .view-content::before,
+  body .workspace-leaf-content[data-type="empty"] .view-content::after,
+  body .workspace-leaf-content[data-type="empty"] .empty-state::before,
+  body .workspace-leaf-content[data-type="empty"] .empty-state::after,
+  body .workspace-leaf-content[data-type="empty"] .empty-state-container::after {
+    display: none !important;
+  }
+
+  .markdown-rendered a,
+  .markdown-rendered .internal-link,
+  .markdown-rendered .external-link {
+    color: #0f625e !important;
+    text-decoration: underline;
+  }
+
+  .markdown-rendered :is(h1, h2, h3, h4, h5, h6) {
+    color: #1f2933 !important;
+    break-after: avoid;
+  }
+
+  .markdown-rendered :is(pre, code),
+  .callout,
+  .markdown-rendered blockquote,
+  .markdown-rendered :is(th, td) {
+    color: #1f2933 !important;
+    background: #fff !important;
+    border-color: #aeb7b1 !important;
+    box-shadow: none !important;
+  }
+
+  .callout-title,
+  .callout-content {
+    color: #273442 !important;
+  }
+
+  .markdown-rendered pre :is(
+    .token,
+    [class*="language-"],
+    [class*="cm-"],
+    span
+  ) {
+    color: #1f2933 !important;
+  }
+
+  .markdown-rendered pre,
+  .callout,
+  .markdown-rendered table,
+  .markdown-rendered blockquote {
+    break-inside: avoid;
+  }
+}

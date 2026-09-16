@@ -1,15 +1,17 @@
 {
   "name": "irop-portal-skill",
-  "version": "0.4.0",
+  "version": "0.5.0",
+  "updatedAt": "2026-09-16",
   "owner": "八六 / HacchiRoku",
   "contact": "me@irop.one",
   "runtime": "local retrieval with optional Kimi K3 server assistant endpoint",
-  "description": "A public portfolio knowledge base used by the Iroha pixel pet on irop.one.",
+  "description": "A public portfolio knowledge base used by the Iroha pixel pet on irop.one, including Tsukuyomi theme facts.",
   "apiContract": "/knowledge/irop-assistant-api.md",
   "serverlessEndpoint": "/api/iroha-assistant",
   "optionalFrontendEnv": "VITE_IROP_ASSISTANT_ENDPOINT",
   "boundaries": [
-    "Use public portfolio facts only.",
+    "Use public portfolio and Tsukuyomi theme facts only.",
+    "Do not claim Tsukuyomi is searchable or installable through Obsidian's theme manager while client directory synchronization is pending.",
     "Do not reveal or infer real name, home address, employer name, school name, private contact routes, income, or anything that needs deeper trust before sharing.",
     "When unsure or when a topic is unrelated, gently refuse instead of inventing details."
   ],
@@ -39,10 +41,10 @@
       "href": "https://www.npmjs.com/package/@kuguya-ai/nature-live2d"
     },
     {
-      "id": "mimo-usage-watcher",
-      "title": "mimo-usage-watcher",
+      "id": "tsukuyomi",
+      "title": "Tsukuyomi (Obsidian theme)",
       "type": "project",
-      "href": "https://github.com/kuguya-AI-app-develop/mimo-usage-watcher"
+      "href": "https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme"
     },
     {
       "id": "blog",

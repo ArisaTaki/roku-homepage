@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore Tsukuyomi 1.0.2, an unofficial Obsidian theme with dark and light palettes, quiet reading and an animated Japanese nightscape.">
+  <title>Tsukuyomi · Obsidian Theme · irop.one</title>
+  <link rel="stylesheet" href="./preview.css">
+  <link rel="stylesheet" href="./theme.css">
+  <script src="./preview.js" defer></script>
+</head>
+<body class="theme-dark tk-disable-motion">
+  <header class="preview-header">
+    <a class="back-link" href="/#work-tsukuyomi">← irop.one</a>
+    <span class="edition">EXHIBIT 03 / OBSIDIAN THEME</span>
+    <label class="language-label"><span data-copy="language">语言</span>
+      <select id="language"><option value="zh">中文</option><option value="en">English</option><option value="ja">日本語</option></select>
+    </label>
+  </header>
+  <main>
+    <section class="intro">
+      <div><p class="eyebrow">月読 · v1.0.2</p><h1>Tsukuyomi<span>月光落在笔记之间。</span></h1></div>
+      <p class="intro-description" data-copy="intro">将月读夜景放进 Obsidian：让鱼群游过留白，让阅读回到安静。</p>
+    </section>
+    <nav class="preview-toolbar" aria-label="Preview controls">
+      <div class="control-group" role="group" aria-label="Color mode">
+        <button type="button" data-mode="dark" aria-pressed="true" data-copy="dark">月读夜景</button>
+        <button type="button" data-mode="light" aria-pressed="false" data-copy="light">月白</button>
+      </div>
+      <div class="control-group" role="group" aria-label="Preview view">
+        <button type="button" data-view="scene" aria-pressed="true" data-copy="scene">空白场景</button>
+        <button type="button" data-view="reading" aria-pressed="false" data-copy="reading">阅读笔记</button>
+      </div>
+      <button type="button" id="motion-toggle" aria-pressed="false" data-copy="static">静态场景</button>
+      <button type="button" id="minimal-toggle" aria-pressed="false" data-copy="minimal">简洁模式</button>
+    </nav>
+    <div class="stage-viewport">
+      <div class="preview-window">
+        <div class="titlebar"><span aria-hidden="true">● ● ●</span><span>Tsukuyomi Lab</span><span>Obsidian</span></div>
+        <div class="workspace">
+          <aside class="workspace-ribbon mod-left" aria-hidden="true"><span>◈</span><span>⌕</span><span>⌘</span><span>▦</span><span class="ribbon-bottom">⚙</span></aside>
+          <aside class="workspace-split mod-left-split">
+            <div class="workspace-tab-header-container sidebar-tabs"><span>☷</span><span>⌕</span><span>☆</span></div>
+            <div class="workspace-leaf-content" data-type="file-explorer">
+              <div class="nav-header"><span>TSUKUYOMI LAB</span><span aria-hidden="true">＋ ···</span></div>
+              <div class="nav-files-container">
+                <div class="nav-folder-title">⌄ &nbsp; <span data-copy="folder">月读手帖</span></div>
+                <button type="button" class="nav-file-title is-active" data-view="scene"><span aria-hidden="true">◇</span><span data-copy="sceneFile">00 · 月读入口</span></button>
+                <button type="button" class="nav-file-title" data-view="reading"><span aria-hidden="true">▤</span><span data-copy="noteFile">01 · 把夜色写进笔记</span></button>
+                <div class="nav-file-title sample-file"><span aria-hidden="true">▤</span><span data-copy="ideas">02 · 灵感与碎片</span></div>
+                <div class="nav-file-title sample-file"><span aria-hidden="true">▤</span><span data-copy="links">03 · 星光的连线</span></div>
+              </div>
+            </div>
+            <div class="vault-label">◈ &nbsp; Tsukuyomi Lab <span>⌄</span></div>
+          </aside>
+          <div class="workspace-split mod-root">
+            <div class="workspace-tab-header-container">
+              <button class="workspace-tab-header is-active" data-view="scene"><span data-copy="sceneFile">00 · 月读入口</span><span aria-hidden="true">×</span></button>
+              <button class="workspace-tab-header" data-view="reading"><span data-copy="noteFile">01 · 把夜色写进笔记</span><span aria-hidden="true">×</span></button>
+            </div>
+            <div class="workspace-leaf mod-active">
+              <div class="workspace-leaf-content" data-type="empty" id="scene-pane">
+                <div class="view-header"><span data-copy="scene">空白场景</span><span aria-hidden="true">◫ &nbsp; ···</span></div>
+                <div class="view-content">
+                  <div class="empty-state"><div class="empty-state-container">
+                    <h2 data-copy="welcome">欢迎来到月读</h2>
+                    <p data-copy="welcomeSubtitle">留一片夜色，等下一个念头。</p>
+                    <button type="button" data-view="reading" class="mod-cta" data-copy="openNote">打开示例笔记 ↗</button>
+                    <span class="scene-hint" data-copy="sceneHint">光鱼 · 鸟居 · 四位小伙伴</span>
+                  </div></div>
+                </div>
+              </div>
+              <div class="workspace-leaf-content" data-type="markdown" id="reading-pane" hidden>
+                <div class="view-header"><span>Tsukuyomi / <span data-copy="noteFile">01 · 把夜色写进笔记</span></span><span aria-hidden="true">▤ &nbsp; ···</span></div>
+                <div class="view-content markdown-reading-view"><article class="markdown-preview-view markdown-rendered">
+                  <p class="note-date">2026.09.16 &nbsp; / &nbsp; TSUKUYOMI JOURNAL</p>
+                  <h1 data-copy="noteTitle">把夜色写进笔记</h1>
+                  <p data-copy="noteIntro">窗外是流动的光，纸上是安静的字。月读把热闹留给空白页，把注意力还给正在写作的人。</p>
+                  <blockquote data-copy="quote">好的主题，是每次打开笔记时，刚刚好的陪伴。</blockquote>
+                  <h2 data-copy="noteHeading">为阅读留白</h2>
+                  <p data-copy="noteBody">深蓝灰与月白两套色板，搭配青绿、朱红和一点点金色。正文保持纯色背景，沿用你自己的字体。</p>
+                  <div class="callout" data-callout="note"><div class="callout-title" data-copy="calloutTitle">✧ 小小的约定</div><div class="callout-content" data-copy="callout">场景只在空白页与工作区边缘出现。阅读时，文字始终是主角。</div></div>
+                  <h2 data-copy="details">细节备忘</h2>
+                  <ul><li data-copy="detailOne">40rem 默认阅读宽度，1.75 倍行高</li><li data-copy="detailTwo">无需插件；可用 Style Settings 调整五项设置</li><li data-copy="detailThree">支持系统减少动态效果，也可以切换静态场景</li></ul>
+                  <pre><code>theme: Tsukuyomi
+version: 1.0.2
+palette: moonlit</code></pre>
+                  <p class="note-end">月読 / TSUKUYOMI — <span data-copy="noteEnd">写下此刻，留待重逢。</span></p>
+                </article></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="status-bar"><span data-copy="status">本地主题预览</span><span>CSS + SVG · Tsukuyomi 1.0.2</span></div>
+      </div>
+    </div>
+    <section class="preview-notes">
+      <p data-copy="disclaimer">此页面用主题原始 CSS 展示示例界面，并非完整 Obsidian。小屏幕会按比例缩放桌面场景。</p>
+      <p id="motion-note" data-copy="motionNote" hidden>系统已开启减少动态效果，场景保持静止。</p>
+      <div class="project-links">
+        <a href="https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme/releases/tag/1.0.2" target="_blank" rel="noreferrer" data-copy="download">下载主题 1.0.2 ↗</a>
+        <a href="https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme" target="_blank" rel="noreferrer" data-copy="repository">GitHub 源码 ↗</a>
+        <a href="https://community.obsidian.md/themes/tsukuyomi" target="_blank" rel="noreferrer" data-copy="listing">官方网页条目 ↗</a>
+        <a href="./theme.css" download>theme.css ↓</a><a href="./manifest.json" download>manifest.json ↓</a>
+      </div>
+      <p data-copy="install">适用于 Obsidian 1.13.7+。将两个文件放入笔记库的 .obsidian/themes/Tsukuyomi/，然后在外观中选择主题。2026-09-16：官方网页已有条目，客户端目录仍待同步，建议手动安装。</p>
+    </section>
+  </main>
+  <footer class="preview-footer"><span data-copy="credit">ArisaTaki 的非官方粉丝主题 · 免费分享</span><span><a href="./LICENSE">MIT</a> / <a href="./NOTICE.md" data-copy="notice">素材与权利说明</a></span></footer>
+</body>
+</html>

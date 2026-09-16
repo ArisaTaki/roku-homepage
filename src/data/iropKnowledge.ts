@@ -60,28 +60,28 @@ export const iropProfile = {
 export const starterQuestions = [
   "What can you answer?",
   "Hermes-Yachiyo?",
-  "自然语言 Live2D?",
+  "Tsukuyomi theme?",
   "All links?",
 ];
 
 export const assistantSkill = {
   name: "irop-portal-skill",
-  version: "0.4.0",
+  version: "0.5.0",
   runtime: "local retrieval with an optional OpenAI-compatible server assistant endpoint",
   specHref: "/knowledge/irop-skill.md",
   manifestHref: "/knowledge/irop-skill.json",
   apiHref: "/knowledge/irop-assistant-api.md",
   role:
-    "Answer visitor questions about 八六 / HacchiRoku, public projects, writing, visual archives, WebGL demos, collaboration fit and contact routes from the local curated knowledge base.",
+    "Answer visitor questions about 八六 / HacchiRoku, public projects including the Tsukuyomi Obsidian theme, writing, visual archives, WebGL demos, collaboration fit and contact routes from the local curated knowledge base.",
   style:
     "Be concise, cute, friendly and factual. Follow the visitor's language when possible. If the visitor asks for something private or unknown, gently refuse or say it is not in the public notes.",
   boundaries:
     "Do not reveal or infer real name, home address, employer name, school name, private contact routes, income, private relationships, precise availability, private credentials, or anything that needs deeper trust before sharing.",
   dataPolicy:
-    "Public portfolio facts only. Unknown, unrelated, private, or sensitive questions must be answered with a gentle refusal instead of invented biography.",
+    "Public portfolio and Tsukuyomi theme facts only. Unknown, unrelated, private, or sensitive questions must be answered with a gentle refusal instead of invented biography or availability claims.",
   capabilities: [
     "Profile and contact routing",
-    "Public project explainers",
+    "Public project and Tsukuyomi theme explainers",
     "Technology stack and collaboration direction",
     "Public career and experience summary",
     "Blog, gallery and shader navigation",
@@ -94,7 +94,7 @@ export const knowledgeCollections: KnowledgeCollection[] = [
   {
     label: "Projects",
     accent: "cyan",
-    entryIds: ["hermes-yachiyo", "nature-live2d", "shader", "mimo-usage-watcher"],
+    entryIds: ["hermes-yachiyo", "nature-live2d", "shader", "tsukuyomi"],
   },
   {
     label: "Places",
@@ -244,18 +244,25 @@ export const knowledgeEntries: KnowledgeEntry[] = [
     ],
   },
   {
-    id: "mimo-usage-watcher",
-    title: "mimo-usage-watcher",
+    id: "tsukuyomi",
+    title: "Tsukuyomi (Obsidian theme)",
     type: "project",
-    href: "https://github.com/kuguya-AI-app-develop/mimo-usage-watcher",
+    href: "https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme",
     visibility: "public",
-    keywords: ["mimo", "usage", "quota", "token", "balance", "xiaomi", "monitor", "额度", "监控", "余额"],
+    keywords: [
+      "tsukuyomi", "月读", "月読", "obsidian",
+      "ink blue", "turquoise", "style settings", "static scene", "skeletal fish", "mascots",
+      "1.0.2", "1.13.7", "install", "installation", "安装", "手动安装", "インストール",
+    ],
     answer:
-      "mimo-usage-watcher is an Electron dashboard for monitoring Xiaomi MiMo token-plan usage and API key balance across multiple accounts.",
+      "Tsukuyomi is an unofficial Obsidian theme by ArisaTaki, inspired by Tsukuyomi from Cosmic Princess Kaguya!. Version 1.0.2 pairs ink-blue nights and turquoise lights with calm dark and light reading surfaces.",
     details: [
-      "It tracks token-plan usage and API key balance side by side.",
-      "Sensitive cookie headers and saved API keys are stored in macOS Keychain.",
-      "Non-sensitive metadata and snapshots live under the local MiMo watcher config.",
+      "Requires Obsidian 1.13.7 or newer. The official web listing exists, but as of 2026-09-16 the client theme directory sync is pending, so it is not yet searchable or installable through the theme manager.",
+      "Install now by extracting the Tsukuyomi folder from the 1.0.2 release ZIP into a vault's .obsidian/themes/ folder, then select it in Settings → Appearance.",
+      "It is self-contained: CSS with embedded SVG artwork, no runtime JavaScript, network requests, dependencies, or required plugins.",
+      "Empty panes show a city and torii with skeletal fish and four vector companions, while note text remains calm and unobscured.",
+      "Style Settings can optionally change Minimal mode, reading width, interface density, scene opacity, and Static scene. Static/minimal/reduced-motion states keep decoration still or hidden.",
+      "Validated in Obsidian 1.13.7 on macOS; Windows, Linux, and mobile remain untested. Try the local browser preview at /previews/tsukuyomi/index.html.",
     ],
   },
   {

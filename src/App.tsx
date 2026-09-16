@@ -1,7 +1,7 @@
 import {
   Bot,
+  BookOpen,
   FileText,
-  Gauge,
   Images,
   ScanFace,
   Waves,
@@ -33,6 +33,7 @@ import {
   loadHermesReplay,
   loadNatureLive2DReplay,
   loadShaderReplay,
+  loadTsukuyomiThemePreview,
   preloadWorkPreview,
   isWorkPreviewReady,
   subscribeWorkPreview,
@@ -51,6 +52,9 @@ const NatureLive2DReplay = lazy(() => (
 ));
 const GalleryReplay = lazy(() => loadGalleryReplay().then((module) => ({ default: module.GalleryReplay })));
 const ShaderReplay = lazy(() => loadShaderReplay().then((module) => ({ default: module.ShaderReplay })));
+const TsukuyomiThemePreview = lazy(() => (
+  loadTsukuyomiThemePreview().then((module) => ({ default: module.TsukuyomiThemePreview }))
+));
 
 type WorkBase = {
   id: WorkId;
@@ -112,9 +116,9 @@ const workShells: WorkBase[] = [
     left: 2440,
   },
   {
-    id: "mimo-usage-watcher",
-    href: "https://github.com/kuguya-AI-app-develop/mimo-usage-watcher",
-    visual: "visual-mimo",
+    id: "tsukuyomi",
+    href: "/previews/tsukuyomi/index.html",
+    visual: "visual-tsukuyomi",
     width: 540,
     left: 3290,
   },
@@ -144,7 +148,7 @@ const workShells: WorkBase[] = [
 const workNavIcons: Record<WorkId, LucideIcon> = {
   "hermes-yachiyo": Bot,
   "nature-live2d": ScanFace,
-  "mimo-usage-watcher": Gauge,
+  tsukuyomi: BookOpen,
   blog: FileText,
   gallery: Images,
   shader: Waves,
@@ -1155,11 +1159,13 @@ function WorkVisual({
   work,
   copy,
   layout,
+  locale,
   playing,
 }: {
   work: Work;
   copy: UiCopy;
   layout: "desktop" | "mobile";
+  locale: Locale;
   playing?: boolean;
 }) {
   if (work.image) {
@@ -1198,6 +1204,14 @@ function WorkVisual({
     );
   }
 
+  if (work.visual === "visual-tsukuyomi") {
+    return (
+      <DeferredWorkPreview work={work}>
+        <TsukuyomiThemePreview playing={playing} locale={locale} />
+      </DeferredWorkPreview>
+    );
+  }
+
   return <WorkVisualPlaceholder work={work} />;
 }
 
@@ -1206,23 +1220,27 @@ const MemoPetAssistant = memo(PetAssistant);
 const DesktopWorkCard = memo(function DesktopWorkCard({
   work,
   copy,
+  locale,
   index,
   total,
 }: {
   work: Work;
   copy: UiCopy;
+  locale: Locale;
   index: number;
   total: number;
 }) {
+  const href = workHref(work, locale);
+  const external = href.startsWith("http");
   return (
     <a
       className={workCardClass("work-card", work)}
       data-work-id={work.id}
       data-exhibit-number={String(index + 1).padStart(2, "0")}
-      href={work.href}
+      href={href}
       style={{ left: `${work.left}px`, width: `${work.width}px` }}
-      target={work.href?.startsWith("http") ? "_blank" : undefined}
-      rel={work.href?.startsWith("http") ? "noreferrer" : undefined}
+      target={external ? "_blank" : undefined}
+      rel={external ? "noreferrer" : undefined}
       onFocus={(event) => {
         if (event.currentTarget.contains(event.relatedTarget)) return;
         prepareWorkPreview(work.id);
@@ -1242,7 +1260,7 @@ const DesktopWorkCard = memo(function DesktopWorkCard({
         <span className="work-number">{String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}</span>
         <span className="work-category">{work.meta.split(",")[0]}</span>
       </div>
-      <WorkVisual work={work} copy={copy} layout="desktop" />
+      <WorkVisual work={work} copy={copy} layout="desktop" locale={locale} />
       <div className="work-heading">
         <h2>{work.title}</h2>
         <span className="work-open-arrow" aria-hidden="true">↗</span>
@@ -1261,8 +1279,14 @@ function workCardClass(baseClass: string, work: Work): string {
   } ${
     work.visual === "visual-shader" ? "is-shader" : ""
   } ${
+    work.visual === "visual-tsukuyomi" ? "is-tsukuyomi" : ""
+  } ${
     work.square ? "square" : ""
   } ${work.short ? "short" : ""}`;
+}
+
+function workHref(work: Work, locale: Locale): string {
+  return work.id === "tsukuyomi" ? `${work.href}?lang=${locale}` : work.href;
 }
 
 function LanguageSwitcher({
@@ -1453,11 +1477,13 @@ function SiteNavigation({ works, locale, onLocaleChange, copy, flow }: {
   );
 }
 
-function MobileWorkCard({ work, copy, index, total }: { work: Work; copy: UiCopy; index: number; total: number }) {
+function MobileWorkCard({ work, copy, locale, index, total }: { work: Work; copy: UiCopy; locale: Locale; index: number; total: number }) {
   const [playing, setPlaying] = useState<boolean | undefined>(undefined);
   const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
-  const hasReplay = ["visual-hermes", "visual-live2d", "visual-gallery", "visual-shader"].includes(work.visual ?? "");
+  const hasReplay = ["visual-hermes", "visual-live2d", "visual-gallery", "visual-shader", "visual-tsukuyomi"].includes(work.visual ?? "");
   const shouldPlay = playing ?? !reducedMotion;
+  const href = workHref(work, locale);
+  const external = href.startsWith("http");
   return (
     <article id={`work-${work.id}`} className={workCardClass("mobile-work", work)} data-work-id={work.id}
       data-exhibit-number={String(index + 1).padStart(2, "0")}>
@@ -1465,7 +1491,7 @@ function MobileWorkCard({ work, copy, index, total }: { work: Work; copy: UiCopy
         <span className="work-number">{String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}</span>
         <span className="work-category">{work.meta.split(",")[0]}</span>
       </div>
-      <WorkVisual work={work} copy={copy} layout="mobile" playing={playing} />
+      <WorkVisual work={work} copy={copy} layout="mobile" locale={locale} playing={playing} />
       {hasReplay && <div className="preview-controls">
         <span>{copy.preview.label}</span>
         <button type="button" aria-label={`${shouldPlay ? copy.preview.pause : copy.preview.play}: ${work.title}`}
@@ -1473,7 +1499,7 @@ function MobileWorkCard({ work, copy, index, total }: { work: Work; copy: UiCopy
           <span aria-hidden="true">{shouldPlay ? "Ⅱ" : "▷"}</span>{shouldPlay ? copy.preview.pause : copy.preview.play}
         </button>
       </div>}
-      <a className="work-heading" href={work.href} target="_blank" rel="noreferrer">
+      <a className="work-heading" href={href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>
         <h2>{work.title}</h2><span className="work-open-arrow" aria-hidden="true">↗</span>
       </a>
       <p>{work.description}</p><small>{work.meta}</small>
@@ -1498,12 +1524,14 @@ function DesktopScene({
   activeIndex,
   works,
   copy,
+  locale,
   petSessionKey,
 }: {
   layout: SceneLayout;
   activeIndex: number;
   works: Work[];
   copy: UiCopy;
+  locale: Locale;
   petSessionKey: string;
 }) {
   return (
@@ -1551,7 +1579,7 @@ function DesktopScene({
         </a>
         </div>
         {works.map((work, index) => (
-          <DesktopWorkCard work={work} copy={copy} index={index} total={works.length} key={work.id} />
+          <DesktopWorkCard work={work} copy={copy} locale={locale} index={index} total={works.length} key={work.id} />
         ))}
       </div>
       <nav className="exhibition-nav" aria-label={copy.hero.indexAria}>
@@ -1584,11 +1612,13 @@ function DesktopScene({
 function MobilePage({
   works,
   copy,
+  locale,
   petSessionKey,
   navigation,
 }: {
   works: Work[];
   copy: UiCopy;
+  locale: Locale;
   petSessionKey: string;
   navigation?: ReactNode;
 }) {
@@ -1630,7 +1660,7 @@ function MobilePage({
       </section>
       <section id="mobile-works" className="mobile-works" aria-label={copy.nav.works}>
         {works.map((work, index) => (
-          <MobileWorkCard work={work} copy={copy} index={index} total={works.length} key={work.id} />
+          <MobileWorkCard work={work} copy={copy} locale={locale} index={index} total={works.length} key={work.id} />
         ))}
       </section>
       <section id="mobile-about" className="mobile-about" aria-label={copy.about.aria}>
@@ -1765,12 +1795,12 @@ export default function App({ isBooting = false, onReady }: AppProps) {
         <div id="top" />
         <main>
           <section id="project" ref={sceneRef} className="scroll-scene" style={isMobileLayout ? undefined : { height: layout.sectionHeight }}>
-            {isMobileLayout ? <MobilePage works={works} copy={copy} petSessionKey={petSessionKey}
+            {isMobileLayout ? <MobilePage works={works} copy={copy} locale={locale} petSessionKey={petSessionKey}
               navigation={!isPhoneNavigation ? <FloatingNav works={works} locale={locale} onLocaleChange={setLocale}
                 copy={copy} flow progressRef={progressRef} /> : undefined} /> : (
               <>
                 <DesktopProjectAnchors works={works} layout={layout} />
-                <DesktopScene layout={layout} activeIndex={activeIndex} works={works} copy={copy} petSessionKey={petSessionKey} />
+                <DesktopScene layout={layout} activeIndex={activeIndex} works={works} copy={copy} locale={locale} petSessionKey={petSessionKey} />
               </>
             )}
           </section>

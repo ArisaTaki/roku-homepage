@@ -21,7 +21,7 @@ export function isLocale(value: string | null): value is Locale {
 export type WorkId =
   | "hermes-yachiyo"
   | "nature-live2d"
-  | "mimo-usage-watcher"
+  | "tsukuyomi"
   | "blog"
   | "gallery"
   | "shader";
@@ -44,10 +44,10 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
       description: "Describe an emotion in plain language, then turn it into safe Live2D expression controls.",
       meta: "Live2D, LLM, TypeScript, Python",
     },
-    "mimo-usage-watcher": {
-      title: "mimo-usage-watcher",
-      description: "A small desktop dashboard for keeping MiMo quota, keys and balances visible.",
-      meta: "Electron, Quota Watcher, macOS Keychain",
+    tsukuyomi: {
+      title: "Tsukuyomi",
+      description: "An Obsidian theme with dark and light palettes, animated fish and companions, and calm reading surfaces.",
+      meta: "Obsidian, CSS Theme, v1.0.2",
     },
     blog: {
       title: "blog.irop.one",
@@ -76,10 +76,10 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
       description: "用一句自然语言描述情绪，再把它变成安全可控的 Live2D 表情参数。",
       meta: "Live2D, LLM, TypeScript, Python",
     },
-    "mimo-usage-watcher": {
-      title: "mimo-usage-watcher",
-      description: "一个小小的桌面看板，把 MiMo 额度、API Key 和余额状态放在眼前。",
-      meta: "Electron, 额度看板, macOS Keychain",
+    tsukuyomi: {
+      title: "Tsukuyomi",
+      description: "墨蓝与月白配色的 Obsidian 主题，空白页有游鱼与吉祥物，阅读区保留安静的留白。",
+      meta: "Obsidian, CSS Theme, v1.0.2",
     },
     blog: {
       title: "blog.irop.one",
@@ -108,10 +108,10 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
       description: "ことばで伝えた感情を、Live2D の安全な表情パラメータへ落とし込むための仕組み。",
       meta: "Live2D, LLM, TypeScript, Python",
     },
-    "mimo-usage-watcher": {
-      title: "mimo-usage-watcher",
-      description: "MiMo の利用量、API Key、残高まわりを手元で見ておくための小さな Electron ダッシュボード。",
-      meta: "Electron, Quota Watcher, macOS Keychain",
+    tsukuyomi: {
+      title: "Tsukuyomi",
+      description: "魚やマスコット、ノートがダークとライトの中で静かに馴染む、Obsidian 用の CSS テーマ。",
+      meta: "Obsidian, CSS Theme, v1.0.2",
     },
     blog: {
       title: "blog.irop.one",

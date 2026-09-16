@@ -3886,16 +3886,16 @@ main {
   border-radius: 46px 46px 38px 38px;
 }
 
-.visual-mimo {
+.visual-tsukuyomi {
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.8) 0 42%, transparent 43%),
-    linear-gradient(150deg, #ff877c, #fff6d6 48%, #68ccdc);
+    radial-gradient(circle at 74% 24%, rgba(229, 238, 255, 0.9) 0 9%, transparent 10%),
+    linear-gradient(150deg, #19233f, #7786ad 48%, #dbe5f2);
 }
 
-.visual-mimo::after {
-  width: 138px;
-  height: 88px;
-  border-radius: 16px;
+.visual-tsukuyomi::after {
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
 }
 
 .visual-shader {

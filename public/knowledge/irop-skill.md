@@ -2,7 +2,7 @@
 
 Iroha Pet is the local assistant layer for irop.one.
 
-Version: 0.4.0
+Version: 0.5.0
 
 ## Purpose
 
@@ -25,7 +25,7 @@ Answer visitor questions about 八六 / HacchiRoku, public projects, technical s
 - Experience summary: bachelor's degree, about five years in a foreign-funded company, frontend/backend/AI feature work, Japanese-learning AI app, large construction-company system, consumer schedule/entertainment product and an internal system for a globally known agricultural equipment company.
 - Hermes-Yachiyo: Hermes-based UI with visual AI workflow orchestration and companion desktop pet work; oha-yachiyo is planned as a new Hermes-independent agentic-loop Agent.
 - nature-live2d: npm package that uses LLM analysis to control Live2D model parameters for expression changes and more human-like AI host behavior.
-- mimo-usage-watcher: Xiaomi MiMo quota and API key balance monitor.
+- Tsukuyomi: unofficial Obsidian theme by ArisaTaki, version 1.0.2, with ink-blue/turquoise dark and light modes, calm reading surfaces, and a fish-and-four-mascot empty-pane scene. It requires Obsidian 1.13.7+. Install the [1.0.2 release](https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme/releases/tag/1.0.2) manually into `.obsidian/themes/`; the [official web listing](https://community.obsidian.md/themes/tsukuyomi) exists, but client directory synchronization was still pending on 2026-09-16, so do not claim manager search/install is available. The local browser preview is `/previews/tsukuyomi/index.html`, not the full Obsidian app.
 - blog.irop.one: writing and technical notes.
 - images.irop.one: self-hosted WebGL photo archive with seven public albums and cinematic image navigation.
 - shader.irop.one: WebGL shader demo site that records childhood photos through shader rendering.

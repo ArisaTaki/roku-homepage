@@ -48,6 +48,8 @@ async function fixture(t) {
   t.after(() => rm(root, { recursive: true, force: true }));
   await mkdir(path.join(root, preview), { recursive: true });
   await mkdir(path.join(root, 'public/knowledge'), { recursive: true });
+  await mkdir(path.join(root, 'src/data'), { recursive: true });
+  await writeFile(path.join(root, 'src/data/tsukuyomi-release.json'), 'old generated metadata');
   await writeFile(path.join(root, knowledgePath), '# Knowledge\nKeep other project facts.\n<!-- TSUKUYOMI_RELEASE_START -->\nOld release.\n<!-- TSUKUYOMI_RELEASE_END -->\nKeep footer.\n');
   for (const name of ['theme.css', 'manifest.json', 'LICENSE', 'NOTICE.md', 'release.json']) await writeFile(path.join(root, preview, name), `old ${name}`);
   return root;
@@ -55,7 +57,7 @@ async function fixture(t) {
 
 async function snapshot(root) {
   const result = {};
-  for (const directory of [preview, 'public/knowledge']) {
+  for (const directory of [preview, 'public/knowledge', 'src/data']) {
     for (const name of await readdir(path.join(root, directory))) result[`${directory}/${name}`] = await readFile(path.join(root, directory, name), 'utf8');
   }
   return result;
@@ -77,6 +79,7 @@ test('sync uses release bytes and stable provenance; check is read-only and a se
     releaseUrl: `https://github.com/${SOURCE_REPO}/releases/tag/1.2.0`, publishedAt: '2026-09-17T13:59:36Z',
     cssSha256: hash(remote.files['theme.css']), manifestSha256: hash(remote.files['manifest.json']),
   });
+  assert.deepEqual(JSON.parse(after['src/data/tsukuyomi-release.json']), { ...metadata, minAppVersion: '1.13.7' });
   assert.match(after[knowledgePath], /^# Knowledge\nKeep other project facts\./);
   assert.match(after[knowledgePath], /1\.2\.0.*1\.13\.7/);
   assert.match(after[knowledgePath], /Keep footer\.\n$/);

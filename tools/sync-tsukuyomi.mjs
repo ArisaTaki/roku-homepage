@@ -176,6 +176,7 @@ export async function syncTsukuyomi({ root = fileURLToPath(new URL('..', import.
   };
   const outputs = new Map(['theme.css', 'manifest.json', 'LICENSE', 'NOTICE.md'].map((name) => [`${PREVIEW}/${name}`, bytes[name]]));
   outputs.set(`${PREVIEW}/release.json`, Buffer.from(`${JSON.stringify(metadata, null, 2)}\n`));
+  outputs.set('src/data/tsukuyomi-release.json', Buffer.from(`${JSON.stringify({ ...metadata, minAppVersion: manifest.minAppVersion }, null, 2)}\n`));
   const knowledge = await readFile(path.join(root, KNOWLEDGE), 'utf8');
   outputs.set(KNOWLEDGE, Buffer.from(replaceKnowledgeBlock(knowledge, releaseKnowledge(manifest, metadata))));
   const updates = [];

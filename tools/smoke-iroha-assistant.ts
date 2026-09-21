@@ -1,5 +1,4 @@
-import tsukuyomiManifest from "../public/previews/tsukuyomi/manifest.json";
-import tsukuyomiRelease from "../public/previews/tsukuyomi/release.json";
+import tsukuyomiRelease from "../src/data/tsukuyomi-release.json";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import handler from "../api/iroha-assistant";
@@ -48,8 +47,8 @@ assert(local.source === "Hermes-Yachiyo", "local client should match Hermes-Yach
 
 const tsukuyomi = await askIroha("Can I install the Tsukuyomi Obsidian theme from the theme manager?");
 assert(tsukuyomi.source === "Tsukuyomi (Obsidian theme)", "Tsukuyomi question should not be shadowed by the generic guide");
-assert(tsukuyomi.text.includes(tsukuyomiManifest.version), "Tsukuyomi answer should report the bundled release version");
-assert(tsukuyomi.details?.join(" ").includes(tsukuyomiManifest.minAppVersion), "Tsukuyomi answer should retain its Obsidian version requirement");
+assert(tsukuyomi.text.includes(tsukuyomiRelease.version), "Tsukuyomi answer should report the bundled release version");
+assert(tsukuyomi.details?.join(" ").includes(tsukuyomiRelease.minAppVersion), "Tsukuyomi answer should retain its Obsidian version requirement");
 assert(/GitHub release alone does not verify theme-manager availability/.test(tsukuyomi.details?.join(" ") || ""), "Tsukuyomi answer should separate GitHub publication from directory availability");
 assert(tsukuyomi.details?.join(" ").includes(tsukuyomiRelease.releaseUrl), "Tsukuyomi answer should link to the bundled release");
 const motionTsukuyomi = await askIroha("How does Tsukuyomi animate navigation and note transitions?");

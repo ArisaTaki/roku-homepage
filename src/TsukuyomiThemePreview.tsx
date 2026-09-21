@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePreviewInteraction, type PreviewPlaybackProps } from "./usePreviewVisibility";
 import type { Locale } from "./i18n";
 import "./TsukuyomiThemePreview.css";
-import manifest from "../public/previews/tsukuyomi/manifest.json";
+import manifest from "./data/tsukuyomi-release.json";
 
 /** The original theme runs in its own document so its body selectors stay isolated. */
 export function TsukuyomiThemePreview({ playing, locale }: PreviewPlaybackProps & { locale: Locale }) {

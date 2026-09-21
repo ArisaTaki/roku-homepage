@@ -1,4 +1,4 @@
-import tsukuyomiManifest from "../public/previews/tsukuyomi/manifest.json";
+import tsukuyomiManifest from "./data/tsukuyomi-release.json";
 
 export const locales = ["en", "zh", "ja"] as const;
 

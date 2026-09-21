@@ -1,5 +1,4 @@
-import tsukuyomiManifest from "../../public/previews/tsukuyomi/manifest.json";
-import tsukuyomiRelease from "../../public/previews/tsukuyomi/release.json";
+import tsukuyomiRelease from "./tsukuyomi-release.json";
 
 export type ProfileLink = {
   label: string;
@@ -255,14 +254,14 @@ export const knowledgeEntries: KnowledgeEntry[] = [
     keywords: [
       "tsukuyomi", "月读", "月読", "obsidian",
       "ink blue", "turquoise", "style settings", "static scene", "skeletal fish", "mascots",
-      tsukuyomiManifest.version, tsukuyomiManifest.minAppVersion, "motion", "animation", "phone layout", "mobile layout", "compact phone", "preview",
+      tsukuyomiRelease.version, tsukuyomiRelease.minAppVersion, "motion", "animation", "phone layout", "mobile layout", "compact phone", "preview",
       "手机布局", "手机预览", "モバイル", "スマホ", "install", "installation", "安装", "手动安装", "インストール",
     ],
     answer:
-      `Tsukuyomi is an unofficial Obsidian theme by ArisaTaki, inspired by Tsukuyomi from Cosmic Princess Kaguya!. Version ${tsukuyomiManifest.version} pairs ink-blue nights and turquoise lights with calm dark and light reading surfaces, a compact phone scene, springy navigation and gentle note entry transitions.`,
+      `Tsukuyomi is an unofficial Obsidian theme by ArisaTaki, inspired by Tsukuyomi from Cosmic Princess Kaguya!. Version ${tsukuyomiRelease.version} pairs ink-blue nights and turquoise lights with calm dark and light reading surfaces, a compact phone scene, springy navigation and gentle note entry transitions.`,
     details: [
-      `Requires Obsidian ${tsukuyomiManifest.minAppVersion} or newer. This website bundles a verified GitHub release; check https://community.obsidian.md/themes/tsukuyomi for current directory/review status. A GitHub release alone does not verify theme-manager availability.`,
-      `Install manually by extracting the Tsukuyomi folder from release ${tsukuyomiManifest.version}'s ZIP into a vault's .obsidian/themes/ folder, then select it in Settings → Appearance. Release: ${tsukuyomiRelease.releaseUrl}.`,
+      `Requires Obsidian ${tsukuyomiRelease.minAppVersion} or newer. This website bundles a verified GitHub release; check https://community.obsidian.md/themes/tsukuyomi for current directory/review status. A GitHub release alone does not verify theme-manager availability.`,
+      `Install manually by extracting the Tsukuyomi folder from release ${tsukuyomiRelease.version}'s ZIP into a vault's .obsidian/themes/ folder, then select it in Settings → Appearance. Release: ${tsukuyomiRelease.releaseUrl}.`,
       "It is self-contained: CSS with embedded SVG artwork, no runtime JavaScript, network requests, dependencies, or required plugins.",
       "Empty panes show a city and torii with skeletal fish and four vector companions. On phones, the compact stage and action menu leave top and bottom clearance for native controls, retain an 80px sidebar sign, and remove the decorative frame from an empty file toolbar.",
       "Scene animation needs both the viewport and active empty pane to be at least 320 × 480. Reduced motion, Static scene, Minimal mode, inactive panes, printing, or a smaller area keep the art static or hidden.",

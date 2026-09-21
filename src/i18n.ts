@@ -1,3 +1,5 @@
+import tsukuyomiManifest from "../public/previews/tsukuyomi/manifest.json";
+
 export const locales = ["en", "zh", "ja"] as const;
 
 export type Locale = (typeof locales)[number];
@@ -46,8 +48,8 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
     },
     tsukuyomi: {
       title: "Tsukuyomi",
-      description: "An Obsidian theme with calm reading surfaces and a compact phone empty scene designed with top and bottom clearance for native controls.",
-      meta: "Obsidian, CSS Theme, v1.0.4",
+      description: "An Obsidian theme with calm reading surfaces, a compact phone scene, springy navigation and gentle note entry transitions.",
+      meta: `Obsidian, CSS Theme, v${tsukuyomiManifest.version}`,
     },
     blog: {
       title: "blog.irop.one",
@@ -78,8 +80,8 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
     },
     tsukuyomi: {
       title: "Tsukuyomi",
-      description: "墨蓝与月白配色的 Obsidian 主题，手机空白页保留紧凑场景，并为顶部和底部原生控件预留间距。",
-      meta: "Obsidian, CSS Theme, v1.0.4",
+      description: "墨蓝与月白配色的 Obsidian 主题，保留安静的阅读区与紧凑手机场景，加入导航回弹和文章入场动效。",
+      meta: `Obsidian, CSS Theme, v${tsukuyomiManifest.version}`,
     },
     blog: {
       title: "blog.irop.one",
@@ -110,8 +112,8 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
     },
     tsukuyomi: {
       title: "Tsukuyomi",
-      description: "静かな読書面と、ネイティブの上下操作領域に余白を設けたコンパクトなスマホ空白ビューを備えた Obsidian 用 CSS テーマ。",
-      meta: "Obsidian, CSS Theme, v1.0.4",
+      description: "静かな読書面とコンパクトなスマホ向けシーンに、ナビゲーションのバウンスとノート表示時の穏やかな動きを添えた Obsidian 用 CSS テーマ。",
+      meta: `Obsidian, CSS Theme, v${tsukuyomiManifest.version}`,
     },
     blog: {
       title: "blog.irop.one",

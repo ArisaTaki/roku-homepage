@@ -3,13 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Explore Tsukuyomi 1.0.4, an unofficial Obsidian theme with dark and light palettes, quiet reading and an animated Japanese nightscape.">
+  <meta name="description" content="Explore Tsukuyomi, an unofficial Obsidian theme with dark and light palettes, quiet reading and an animated Japanese nightscape.">
   <title>Tsukuyomi · Obsidian Theme · irop.one</title>
-  <link rel="stylesheet" href="./preview.css?v=1.0.4">
-  <link rel="stylesheet" href="./theme.css?v=1.0.4">
-  <script src="./preview.js?v=1.0.4" defer></script>
+  <link rel="stylesheet" href="./preview.css">
+  <script src="./preview.js" defer></script>
 </head>
-<body class="theme-dark tk-disable-motion">
+<body class="theme-dark tk-disable-motion" data-theme-state="loading">
   <header class="preview-header">
     <a class="back-link" href="/#work-tsukuyomi">← irop.one</a>
     <span class="edition">EXHIBIT 03 / OBSIDIAN THEME</span>
@@ -19,7 +18,7 @@
   </header>
   <main>
     <section class="intro">
-      <div><p class="eyebrow">月読 · v1.0.4</p><h1>Tsukuyomi<span>月光落在笔记之间。</span></h1></div>
+      <div><p class="eyebrow">月読 · <span data-version>…</span></p><h1>Tsukuyomi<span>月光落在笔记之间。</span></h1></div>
       <p class="intro-description" data-copy="intro">将月读夜景放进 Obsidian：让鱼群游过留白，让阅读回到安静。</p>
     </section>
     <nav class="preview-toolbar" aria-label="Preview controls">
@@ -38,6 +37,7 @@
       <button type="button" id="motion-toggle" aria-pressed="false" data-copy="static">静态场景</button>
       <button type="button" id="minimal-toggle" aria-pressed="false" data-copy="minimal">简洁模式</button>
     </nav>
+    <p id="load-status" role="status" data-copy="loading">正在载入主题…</p>
     <div class="stage-viewport">
       <div class="preview-window">
         <div class="titlebar"><span aria-hidden="true">● ● ●</span><span>Tsukuyomi Lab</span><span>Obsidian</span></div>
@@ -49,7 +49,11 @@
         <div class="workspace">
           <aside class="workspace-ribbon mod-left" aria-hidden="true"><span>◈</span><span>⌕</span><span>⌘</span><span>▦</span><span class="ribbon-bottom">⚙</span></aside>
           <aside class="workspace-split mod-left-split" id="file-drawer" aria-label="Files">
-            <div class="workspace-tab-header-container sidebar-tabs"><span>☷</span><span>⌕</span><span>☆</span></div>
+            <div class="workspace-tab-header-container sidebar-tabs" role="group" aria-label="Sidebar modules">
+              <button type="button" class="workspace-tab-header is-active" data-sidebar="files" aria-pressed="true" data-label="filesModule"><span class="workspace-tab-header-inner"><span class="workspace-tab-header-inner-icon" aria-hidden="true">☷</span></span></button>
+              <button type="button" class="workspace-tab-header" data-sidebar="search" aria-pressed="false" data-label="searchModule"><span class="workspace-tab-header-inner"><span class="workspace-tab-header-inner-icon" aria-hidden="true">⌕</span></span></button>
+              <button type="button" class="workspace-tab-header" data-sidebar="bookmarks" aria-pressed="false" data-label="bookmarksModule"><span class="workspace-tab-header-inner"><span class="workspace-tab-header-inner-icon" aria-hidden="true">☆</span></span></button>
+            </div>
             <div class="workspace-leaf-content" data-type="file-explorer">
               <div class="nav-header"><span>TSUKUYOMI LAB</span><span aria-hidden="true">＋ ···</span>
                 <button type="button" id="drawer-close" class="drawer-close" data-copy="closeDrawer">Close navigation</button>
@@ -57,22 +61,24 @@
                   <button type="button" aria-label="New note">＋</button><button type="button" aria-label="New folder">□</button><button type="button" aria-label="Collapse folders">⌃</button><button type="button" aria-label="More file actions">···</button>
                 </div>
               </div>
-              <div class="nav-files-container">
+              <div class="nav-files-container" data-module="files">
                 <div class="nav-folder-title">⌄ &nbsp; <span data-copy="folder">月读手帖</span></div>
-                <button type="button" class="nav-file-title is-active" data-view="scene"><span aria-hidden="true">◇</span><span data-copy="sceneFile">00 · 月读入口</span></button>
-                <button type="button" class="nav-file-title" data-view="reading"><span aria-hidden="true">▤</span><span data-copy="noteFile">01 · 把夜色写进笔记</span></button>
-                <div class="nav-file-title sample-file"><span aria-hidden="true">▤</span><span data-copy="ideas">02 · 灵感与碎片</span></div>
-                <div class="nav-file-title sample-file"><span aria-hidden="true">▤</span><span data-copy="links">03 · 星光的连线</span></div>
+                <button type="button" class="nav-file-title is-active" data-view="scene"><span aria-hidden="true">◇</span><span class="nav-file-title-content" data-copy="sceneFile">00 · 月读入口</span></button>
+                <button type="button" class="nav-file-title" data-view="reading"><span aria-hidden="true">▤</span><span class="nav-file-title-content" data-copy="noteFile">01 · 把夜色写进笔记</span></button>
+                <div class="nav-file-title sample-file"><span aria-hidden="true">▤</span><span class="nav-file-title-content" data-copy="ideas">02 · 灵感与碎片</span></div>
+                <div class="nav-file-title sample-file"><span aria-hidden="true">▤</span><span class="nav-file-title-content" data-copy="links">03 · 星光的连线</span></div>
               </div>
+              <div class="sidebar-module" data-module="search" hidden><label><span data-copy="searchModule">搜索</span><input type="search" value="月读" data-label="searchModule" readonly></label><button type="button" class="nav-file-title" data-view="reading"><span class="nav-file-title-content" data-copy="noteFile">01 · 把夜色写进笔记</span></button></div>
+              <div class="sidebar-module" data-module="bookmarks" hidden><p data-copy="bookmarksModule">书签</p><button type="button" class="nav-file-title" data-view="reading"><span class="nav-file-title-content" data-copy="noteFile">01 · 把夜色写进笔记</span></button></div>
             </div>
             <div class="vault-label">◈ &nbsp; Tsukuyomi Lab <span>⌄</span></div>
           </aside>
           <div class="workspace-split mod-root">
             <div class="workspace-tab-header-container">
-              <button class="workspace-tab-header is-active" data-view="scene"><span data-copy="sceneFile">00 · 月读入口</span><span aria-hidden="true">×</span></button>
-              <button class="workspace-tab-header" data-view="reading"><span data-copy="noteFile">01 · 把夜色写进笔记</span><span aria-hidden="true">×</span></button>
+              <button type="button" class="workspace-tab-header is-active" data-view="scene"><span class="workspace-tab-header-inner-title" data-copy="sceneFile">00 · 月读入口</span><span aria-hidden="true">×</span></button>
+              <button type="button" class="workspace-tab-header" data-view="reading"><span class="workspace-tab-header-inner-title" data-copy="noteFile">01 · 把夜色写进笔记</span><span aria-hidden="true">×</span></button>
             </div>
-            <div class="workspace-leaf mod-active">
+            <div class="workspace-leaf mod-active" data-pane="scene">
               <div class="workspace-leaf-content" data-type="empty" id="scene-pane">
                 <div class="view-header"><span data-copy="scene">空白场景</span><span aria-hidden="true">◫ &nbsp; ···</span></div>
                 <div class="view-content">
@@ -84,9 +90,11 @@
                   </div></div>
                 </div>
               </div>
-              <div class="workspace-leaf-content" data-type="markdown" id="reading-pane" hidden>
+            </div>
+            <div class="workspace-leaf" data-pane="reading" hidden>
+              <div class="workspace-leaf-content" data-type="markdown" id="reading-pane">
                 <div class="view-header"><span>Tsukuyomi / <span data-copy="noteFile">01 · 把夜色写进笔记</span></span><span aria-hidden="true">▤ &nbsp; ···</span></div>
-                <div class="view-content markdown-reading-view"><article class="markdown-preview-view markdown-rendered">
+                <div class="view-content"><div class="markdown-reading-view"><article class="markdown-preview-view markdown-rendered">
                   <p class="note-date">2026.09.16 &nbsp; / &nbsp; TSUKUYOMI JOURNAL</p>
                   <h1 data-copy="noteTitle">把夜色写进笔记</h1>
                   <p data-copy="noteIntro">窗外是流动的光，纸上是安静的字。月读把热闹留给空白页，把注意力还给正在写作的人。</p>
@@ -97,13 +105,21 @@
                   <h2 data-copy="details">细节备忘</h2>
                   <ul><li data-copy="detailOne">40rem 默认阅读宽度，1.75 倍行高</li><li data-copy="detailTwo">无需插件；可用 Style Settings 调整五项设置</li><li data-copy="detailThree">支持系统减少动态效果，也可以切换静态场景</li></ul>
                   <pre><code>theme: Tsukuyomi
-version: 1.0.4
+version: <span data-version>…</span>
 palette: moonlit</code></pre>
                   <p class="note-end">月読 / TSUKUYOMI — <span data-copy="noteEnd">写下此刻，留待重逢。</span></p>
-                </article></div>
+                </article></div></div>
               </div>
             </div>
           </div>
+          <aside class="workspace-split mod-right-split" aria-label="Note tools">
+            <div class="workspace-tab-header-container sidebar-tabs" role="group" aria-label="Note modules">
+              <button type="button" class="workspace-tab-header is-active" data-sidebar="outline" aria-pressed="true" data-label="outlineModule"><span class="workspace-tab-header-inner"><span class="workspace-tab-header-inner-icon" aria-hidden="true">☷</span></span></button>
+              <button type="button" class="workspace-tab-header" data-sidebar="backlinks" aria-pressed="false" data-label="backlinksModule"><span class="workspace-tab-header-inner"><span class="workspace-tab-header-inner-icon" aria-hidden="true">↗</span></span></button>
+            </div>
+            <div class="sidebar-module" data-module="outline"><p data-copy="outlineModule">大纲</p><button type="button" data-view="reading" data-copy="noteHeading">为阅读留白</button><p data-copy="details">细节备忘</p></div>
+            <div class="sidebar-module" data-module="backlinks" hidden><p data-copy="backlinksModule">反向链接</p><button type="button" data-view="scene" data-copy="sceneFile">00 · 月读入口</button></div>
+          </aside>
         </div>
         <div class="drawer-scrim" id="drawer-scrim" aria-hidden="true"></div>
         <nav class="mobile-bottom-bar" aria-label="Phone workspace controls">
@@ -111,19 +127,19 @@ palette: moonlit</code></pre>
           <button type="button" data-view="reading" data-copy="reading">阅读笔记</button>
           <button type="button" id="mobile-drawer-toggle" aria-controls="file-drawer" aria-expanded="false" data-copy="drawer">Navigation</button>
         </nav>
-        <div class="status-bar"><span data-copy="status">本地主题预览</span><span>CSS + SVG · Tsukuyomi 1.0.4</span></div>
+        <div class="status-bar"><span data-copy="status">本地主题预览</span><span>CSS + SVG · Tsukuyomi <span data-version>…</span></span></div>
       </div>
     </div>
     <section class="preview-notes">
       <p data-copy="disclaimer">此页面用主题原始 CSS 展示浏览器中的示例界面，并非完整 Obsidian 或 iOS 原生测试。</p>
       <p id="motion-note" data-copy="motionNote" hidden>系统已开启减少动态效果，场景保持静止。</p>
       <div class="project-links">
-        <a href="https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme/releases/tag/1.0.4" target="_blank" rel="noreferrer" data-copy="download">下载主题 1.0.4 ↗</a>
+        <a href="https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme/releases" target="_blank" rel="noreferrer" id="release-link" data-copy="download">GitHub Releases ↗</a>
         <a href="https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme" target="_blank" rel="noreferrer" data-copy="repository">GitHub 源码 ↗</a>
         <a href="https://community.obsidian.md/themes/tsukuyomi" target="_blank" rel="noreferrer" data-copy="listing">官方网页条目 ↗</a>
-        <a href="./theme.css?v=1.0.4" download>theme.css ↓</a><a href="./manifest.json?v=1.0.4" download>manifest.json ↓</a>
+        <a id="css-download" href="./theme.css" download>theme.css ↓</a><a href="./manifest.json" download>manifest.json ↓</a>
       </div>
-      <p data-copy="install">适用于 Obsidian 1.13.7+。下载 1.0.4 压缩包并将 Tsukuyomi 文件夹放入笔记库的 .obsidian/themes/，然后在外观中选择主题。</p>
+      <p data-copy="install">将发行包中的 Tsukuyomi 文件夹放入笔记库的 .obsidian/themes/，然后在外观中选择主题。</p>
     </section>
   </main>
   <footer class="preview-footer"><span data-copy="credit">ArisaTaki 的非官方粉丝主题 · 免费分享</span><span><a href="./LICENSE">MIT</a> / <a href="./NOTICE.md" data-copy="notice">素材与权利说明</a></span></footer>

@@ -1,3 +1,6 @@
+import tsukuyomiManifest from "../../public/previews/tsukuyomi/manifest.json";
+import tsukuyomiRelease from "../../public/previews/tsukuyomi/release.json";
+
 export type ProfileLink = {
   label: string;
   href: string;
@@ -252,18 +255,19 @@ export const knowledgeEntries: KnowledgeEntry[] = [
     keywords: [
       "tsukuyomi", "月读", "月読", "obsidian",
       "ink blue", "turquoise", "style settings", "static scene", "skeletal fish", "mascots",
-      "1.0.4", "1.13.7", "phone layout", "mobile layout", "compact phone", "preview",
+      tsukuyomiManifest.version, tsukuyomiManifest.minAppVersion, "motion", "animation", "phone layout", "mobile layout", "compact phone", "preview",
       "手机布局", "手机预览", "モバイル", "スマホ", "install", "installation", "安装", "手动安装", "インストール",
     ],
     answer:
-      "Tsukuyomi is an unofficial Obsidian theme by ArisaTaki, inspired by Tsukuyomi from Cosmic Princess Kaguya!. Version 1.0.4 pairs ink-blue nights and turquoise lights with calm dark and light reading surfaces, plus a compact phone empty scene that leaves room for native controls.",
+      `Tsukuyomi is an unofficial Obsidian theme by ArisaTaki, inspired by Tsukuyomi from Cosmic Princess Kaguya!. Version ${tsukuyomiManifest.version} pairs ink-blue nights and turquoise lights with calm dark and light reading surfaces, a compact phone scene, springy navigation and gentle note entry transitions.`,
     details: [
-      "Requires Obsidian 1.13.7 or newer. The official web listing existed as of 2026-09-16; 1.0.4 review was pending and client-directory synchronization had not been reverified, so do not claim theme-manager search or installation is available.",
-      "Install manually by extracting the Tsukuyomi folder from the 1.0.4 release ZIP into a vault's .obsidian/themes/ folder, then select it in Settings → Appearance.",
+      `Requires Obsidian ${tsukuyomiManifest.minAppVersion} or newer. This website bundles a verified GitHub release; check https://community.obsidian.md/themes/tsukuyomi for current directory/review status. A GitHub release alone does not verify theme-manager availability.`,
+      `Install manually by extracting the Tsukuyomi folder from release ${tsukuyomiManifest.version}'s ZIP into a vault's .obsidian/themes/ folder, then select it in Settings → Appearance. Release: ${tsukuyomiRelease.releaseUrl}.`,
       "It is self-contained: CSS with embedded SVG artwork, no runtime JavaScript, network requests, dependencies, or required plugins.",
       "Empty panes show a city and torii with skeletal fish and four vector companions. On phones, the compact stage and action menu leave top and bottom clearance for native controls, retain an 80px sidebar sign, and remove the decorative frame from an empty file toolbar.",
-      "Animation needs both the viewport and active empty pane to be at least 320 × 480. Reduced motion, Static scene, Minimal mode, inactive panes, printing, or a smaller area keep the art static or hidden.",
-      "Browser checks passed at 393 × 852, 375 × 667, 320 × 568, and 430 × 932 using simulated Obsidian DOM/CSS. They are not native iOS, Android, or iPad tests; keyboard and touch behavior remain untested. Try /previews/tsukuyomi/index.html?device=phone&lang=zh.",
+      "Scene animation needs both the viewport and active empty pane to be at least 320 × 480. Reduced motion, Static scene, Minimal mode, inactive panes, printing, or a smaller area keep the art static or hidden.",
+      "Navigation labels and sidebar module icons bounce on activation. Notes fade upward when their view is created or displayed again, including ordinary tab switches. Same-tab file replacement may reuse the view and is not guaranteed to replay; the theme does not intercept file loading or add a plugin. Static scene and system reduced motion disable these effects.",
+      "Browser previews use simulated Obsidian DOM/CSS. Browser checks are not native iOS, Android, or iPad tests and do not establish native keyboard or touch behavior. Try /previews/tsukuyomi/index.html?device=phone&lang=zh.",
     ],
   },
   {

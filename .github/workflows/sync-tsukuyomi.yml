@@ -1,0 +1,46 @@
+name: Check Tsukuyomi release
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: check-tsukuyomi-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  check:
+    if: vars.TSUKUYOMI_AUTO_SYNC != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Compare the latest stable theme with the live site
+        id: theme
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tools/check-tsukuyomi-deployment.mjs
+      - name: Deploy the new theme through the existing production workflow
+        if: steps.theme.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          THEME_VERSION: ${{ steps.theme.outputs.version }}
+        run: |
+          active_runs=$(gh api 'repos/ArisaTaki/roku-homepage/actions/workflows/deploy.yml/runs?branch=main&per_page=30' --jq '[.workflow_runs[] | select(.status != "completed")] | length')
+          if [ "$active_runs" -gt 0 ]; then
+            echo 'A production deployment is already running; the next check will verify its result.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            gh workflow run deploy.yml --repo ArisaTaki/roku-homepage --ref main -f "theme_version=$THEME_VERSION"
+            echo "Triggered the production workflow for Tsukuyomi $THEME_VERSION." >> "$GITHUB_STEP_SUMMARY"
+          fi

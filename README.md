@@ -70,7 +70,9 @@ Model keys stay server-side through `AI_API_KEY`, `AI_MODEL`, and `AI_CHAT_COMPL
 
 Run `npm run dev`, then open `/previews/tsukuyomi/index.html`. This is a browser preview of the copied theme CSS with dark/light, scene, reading, and static controls; it is not the full Obsidian application. Use `?device=phone&lang=zh` for the compact phone preview, or change `lang` to `en` or `ja`.
 
-The exhibit uses the unmodified `theme.css` and matching manifest from the [Tsukuyomi 1.0.4 tag](https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme/releases/tag/1.0.4), with its license and artwork notice alongside them in `public/previews/tsukuyomi/`. A separate browser scaffold supplies example panes and controls; the installed theme itself remains CSS-only. Keep these versioned files and the displayed version together when updating. The iframe isolates theme selectors from the homepage and pauses decoration when the card is offscreen.
+The exhibit uses the unmodified CSS and matching manifest of a published [Tsukuyomi release](https://github.com/kuguya-AI-app-develop/tsukuyomi-Obsidian-theme/releases), with its license and artwork notice alongside them in `public/previews/tsukuyomi/`. `release.json` records the source version and asset hashes. Run `npm run sync:tsukuyomi` to fetch the latest stable release, or append `-- --version 1.2.0` to select an existing release. Downloads are checked against the release SHA-256 list before replacing local files. The manifest supplies the displayed version, download links and assistant knowledge; no manual version search-and-replace is needed.
+
+A separate browser scaffold supplies two open tabs and interactive sidebar modules, so the original CSS can demonstrate note entry and navigation bounce. Homepage cards run a short demo only while playing and visible; static mode and system reduced motion stop it. The installed theme remains CSS-only. This demonstrates ordinary tab switching, not the postponed same-tab file-change animation. The iframe isolates theme selectors from the homepage. Preview resources are served with `Cache-Control: no-cache` to revalidate controls as well as theme assets after deployment.
 
 To verify, open the third exhibit on desktop and phone layouts, switch the site's language, and follow its link. Check dark/light, scene/reading, static/minimal controls and the two installation downloads. Browser checks at `393 × 852`, `375 × 667`, `320 × 568`, and `430 × 932` cover the compact phone presentation; they do not replace native iOS, Android, or iPad testing, including keyboard and touch validation.
 
@@ -78,7 +80,7 @@ To verify, open the third exhibit on desktop and phone layouts, switch the site'
 
 Deployment is prepared in `.github/workflows/deploy.yml` and runs when `main` receives a push. It can also be started manually from the GitHub Actions tab.
 
-The workflow installs dependencies, runs `npm run check:iroha`, builds the Vite app, packages `dist/`, uploads it through SSH, and replaces the server web root used by `irop.one`. It also bundles the Iroha assistant API, installs a private Node runtime on the server, runs the API through `systemd`, and lets nginx proxy `/api/iroha-assistant` to that local service.
+The workflow installs dependencies, syncs and validates the published Tsukuyomi release, runs `npm run check:iroha`, builds the Vite app, packages `dist/`, uploads it through SSH, and replaces the server web root used by `irop.one`. It also bundles the Iroha assistant API, installs a private Node runtime on the server, runs the API through `systemd`, and lets nginx proxy `/api/iroha-assistant` to that local service.
 
 Required GitHub Actions secrets:
 
@@ -92,4 +94,16 @@ Required GitHub Actions secrets:
 - `AI_API_KEY`: DeepSeek-compatible API key used only by the server-side assistant.
 - `AI_MODEL`, `AI_CHAT_COMPLETIONS_ENDPOINT`, `AI_THINKING`, `AI_TIMEOUT_MS`, `AI_RATE_LIMIT_MAX`, `AI_RATE_LIMIT_WINDOW_HOURS`: optional model/runtime settings.
 
-Current development branch should remain `develop`; only push `main` when the production deploy is intended.
+Current development branch remains `develop`; only push `main` when a production deploy is intended. Production runs queue instead of cancelling an in-flight SSH deployment.
+
+### Theme release synchronization
+
+The theme repository's `npm run release -- …` publishes through the maintainer's existing local GitHub CLI login, then dispatches this repository's `deploy.yml` on `main` with `theme_version`. Its `npm run sync:site -- 1.2.0` retries the website step for an already published version. The deploy workflow syncs the requested release before building and checks the live metadata and CSS digest after upload. No cross-repository token is stored in Actions.
+
+`Check Tsukuyomi release` runs at minutes 7, 22, 37 and 52 of each hour and can also be dispatched manually. It compares the latest stable release's hashes with **production** `release.json`, then starts the existing production workflow only when needed and no deployment is running. It uses the website repository's own temporary `GITHUB_TOKEN`. Scheduled GitHub runs can be delayed; this is a fallback, not an exact 15-minute delivery guarantee. Drafts and prereleases are not deployed.
+
+GitHub schedules execute on the default branch (`develop`). Keep `.github/workflows/sync-tsukuyomi.yml` there as well as on `main`; it explicitly checks out production `main`, so unrelated `develop` work is not deployed. Other workflow code and the website continue to ship from `main`.
+
+To temporarily pin or roll back a theme, set repository variable `TSUKUYOMI_AUTO_SYNC=false` before dispatching `deploy.yml` with the earlier `theme_version`. Re-enable it by removing the variable or setting it to `true`. The deployment still uses the site's existing SSH activation procedure; it is not an atomic server rollback system.
+
+Validation commands: `npm run test:tsukuyomi`, `npm run sync:tsukuyomi -- --check`, `npm run check:iroha`, and `npm run build`. `npm run check:tsukuyomi-deployment` is a read-only comparison with production. Browser checks should include the full preview plus the homepage auto demo, dark/light, three languages, phone drawer, static mode and offscreen pause.

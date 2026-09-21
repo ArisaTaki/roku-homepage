@@ -1,3 +1,5 @@
+import tsukuyomiManifest from "../public/previews/tsukuyomi/manifest.json";
+import tsukuyomiRelease from "../public/previews/tsukuyomi/release.json";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import handler from "../api/iroha-assistant";
@@ -46,11 +48,14 @@ assert(local.source === "Hermes-Yachiyo", "local client should match Hermes-Yach
 
 const tsukuyomi = await askIroha("Can I install the Tsukuyomi Obsidian theme from the theme manager?");
 assert(tsukuyomi.source === "Tsukuyomi (Obsidian theme)", "Tsukuyomi question should not be shadowed by the generic guide");
-assert(/1\.0\.4/.test(tsukuyomi.text), "Tsukuyomi answer should report the 1.0.4 release");
-assert(/1\.13\.7/.test(tsukuyomi.details?.join(" ") || ""), "Tsukuyomi answer should retain its Obsidian version requirement");
-assert(/do not claim theme-manager search or installation is available/.test(tsukuyomi.details?.join(" ") || ""), "Tsukuyomi answer should not claim directory sync is complete");
+assert(tsukuyomi.text.includes(tsukuyomiManifest.version), "Tsukuyomi answer should report the bundled release version");
+assert(tsukuyomi.details?.join(" ").includes(tsukuyomiManifest.minAppVersion), "Tsukuyomi answer should retain its Obsidian version requirement");
+assert(/GitHub release alone does not verify theme-manager availability/.test(tsukuyomi.details?.join(" ") || ""), "Tsukuyomi answer should separate GitHub publication from directory availability");
+assert(tsukuyomi.details?.join(" ").includes(tsukuyomiRelease.releaseUrl), "Tsukuyomi answer should link to the bundled release");
+const motionTsukuyomi = await askIroha("How does Tsukuyomi animate navigation and note transitions?");
+assert(/Same-tab file replacement/.test(motionTsukuyomi.details?.join(" ") || ""), "Tsukuyomi answer should retain the same-tab motion limitation");
 
-const phoneTsukuyomi = await askIroha("What changed in Tsukuyomi 1.0.4's phone layout?");
+const phoneTsukuyomi = await askIroha("How does Tsukuyomi adapt its phone layout?");
 assert(phoneTsukuyomi.source === "Tsukuyomi (Obsidian theme)", "Tsukuyomi phone question should match the theme entry");
 assert(/80px sidebar sign/.test(phoneTsukuyomi.details?.join(" ") || ""), "phone answer should describe the compact layout");
 assert(/not native iOS, Android, or iPad tests/.test(phoneTsukuyomi.details?.join(" ") || ""), "phone answer should retain browser-only validation limits");

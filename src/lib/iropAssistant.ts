@@ -1,3 +1,4 @@
+import tsukuyomiManifest from "../../public/previews/tsukuyomi/manifest.json";
 import {
   assistantSkill,
   iropProfile,
@@ -173,7 +174,7 @@ function localizedEntryAnswer(entry: KnowledgeEntry, language: QuestionLanguage)
       "nature-live2d":
         "nature-live2d 提供了一个 npm 包，用 LLM 分析回复并控制 Live2D 模型参数，让 AI 回复更有表情和拟人感。",
       tsukuyomi:
-        "Tsukuyomi（月读）是 ArisaTaki 维护的非官方 Obsidian 主题，灵感来自《超时空辉夜姬！》月读。1.0.4 以墨蓝夜景和海青灯光提供安静的深浅阅读界面，并为手机空白页加入了为顶部和底部原生控件预留间距的紧凑布局。",
+        `Tsukuyomi（月读）是 ArisaTaki 维护的非官方 Obsidian 主题，灵感来自《超时空辉夜姬！》月读。${tsukuyomiManifest.version} 以墨蓝夜景和海青灯光提供安静的深浅阅读界面与紧凑手机场景，并有导航回弹、文章视图入场动效。同一标签内换文件不保证重复播放。`,
       blog: "blog.irop.one 是八六写 AI 工具、前端实验和一些值得留下来的笔记的地方。",
       gallery: "images.irop.one 是个人画廊和视觉归档，收着生成图、参考图和一些零散的视觉片段。",
       shader: "shader.irop.one 是一个 WebGL Shader demo 站点，用 Shader 渲染记录侄女小时候的照片。",
@@ -195,7 +196,7 @@ function localizedEntryAnswer(entry: KnowledgeEntry, language: QuestionLanguage)
       "nature-live2d":
         "nature-live2d は、LLM が返答を分析して Live2D モデルのパラメータを制御する npm パッケージです。",
       tsukuyomi:
-        "Tsukuyomi（月読）は ArisaTaki が個人で制作・管理する非公式 Obsidian テーマです。『超時空輝夜姫！』の月読に着想を得て、1.0.4 では墨青の夜と青緑の光、落ち着いた明暗の読書面に加え、ネイティブの上下操作領域に余白を設けたスマホ向けのコンパクトな空白ビューを用意しています。",
+        `Tsukuyomi（月読）は ArisaTaki が個人で制作・管理する非公式 Obsidian テーマです。『超時空輝夜姫！』の月読に着想を得て、${tsukuyomiManifest.version} では落ち着いた明暗の読書面とコンパクトなスマホ向けシーンに、ナビゲーションのバウンスとノートビューの表示時アニメーションを添えています。同じタブでファイルを切り替える場合は再生を保証しません。`,
       blog: "blog.irop.one は、AI ツールやフロントエンド実験、あとで読み返したいメモを書く場所です。",
       gallery: "images.irop.one は、生成画像や参考画像、小さな視覚の断片を並べる個人ギャラリーです。",
       shader: "shader.irop.one は、WebGL Shader で姪の幼いころの写真を見せるビジュアル実験サイトです。",
@@ -407,9 +408,13 @@ function composeAnswer(matches: ScoredEntry[], question: string): AssistantAnswe
     : "";
   const isTsukuyomiPhoneQuestion = primary.entry.id === "tsukuyomi"
     && /(phone|mobile|compact|iphone|android|ipad|手机|手機|移动端|モバイル|スマホ)/i.test(question);
+  const isTsukuyomiMotionQuestion = primary.entry.id === "tsukuyomi"
+    && /(motion|animation|transition|jelly|bounce|动效|動畫|动画|切换|アニメーション)/i.test(question);
   const details = isTsukuyomiPhoneQuestion
     ? primary.entry.details?.slice(3)
-    : primary.entry.details?.slice(0, 2);
+    : isTsukuyomiMotionQuestion
+      ? primary.entry.details?.slice(4, 6)
+      : primary.entry.details?.slice(0, 2);
   const previewLinks = primary.entry.id === "tsukuyomi"
     ? [{ label: language === "zh" ? "手机预览" : language === "ja" ? "スマホプレビュー" : "Phone preview", href: `/previews/tsukuyomi/index.html?device=phone&lang=${language}` }]
     : [];

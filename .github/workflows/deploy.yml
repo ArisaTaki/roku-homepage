@@ -5,10 +5,16 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      theme_version:
+        description: 'Published Tsukuyomi version (empty uses latest stable)'
+        required: false
+        type: string
 
 concurrency:
   group: deploy-irop-one
-  cancel-in-progress: true
+  # A second release must not interrupt the current SSH activation midway.
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -55,6 +61,20 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Sync the published Tsukuyomi theme
+        env:
+          GH_TOKEN: ${{ github.token }}
+          THEME_VERSION: ${{ inputs.theme_version }}
+        run: |
+          if [ -n "$THEME_VERSION" ]; then
+            npm run sync:tsukuyomi -- --version "$THEME_VERSION"
+          else
+            npm run sync:tsukuyomi
+          fi
+
+      - name: Check theme synchronization
+        run: npm run test:tsukuyomi
 
       - name: Check assistant knowledge base
         env:
@@ -261,6 +281,13 @@ jobs:
           gzip_comp_level 5;
           gzip_vary on;
           gzip_types text/plain text/css text/javascript application/javascript application/x-javascript application/json application/xml application/xml+rss application/octet-stream image/svg+xml;
+
+          # Revalidate preview HTML, controls, metadata and versioned theme assets.
+          # Updating the outer iframe URL alone cannot invalidate its JS/CSS.
+          location ^~ /previews/tsukuyomi/ {
+              add_header Cache-Control "no-cache";
+              try_files \$uri =404;
+          }
           NGINX_COMPRESSION
 
           nginx_conf="/usr/local/nginx/conf/sites-enabled/irop.one.conf"
@@ -306,6 +333,28 @@ jobs:
             --max-time 20 "https://$DEPLOY_DOMAIN/" > production-index.html
           grep -q "<title>irop.one</title>" production-index.html
           grep -q 'id="root"' production-index.html
+
+          curl --fail --silent --show-error --location \
+            --retry 5 --retry-delay 5 --max-time 20 \
+            -H 'Cache-Control: no-cache' \
+            "https://$DEPLOY_DOMAIN/previews/tsukuyomi/release.json" > production-theme.json
+          curl --fail --silent --show-error --location \
+            --retry 5 --retry-delay 5 --max-time 20 \
+            -H 'Cache-Control: no-cache' \
+            "https://$DEPLOY_DOMAIN/previews/tsukuyomi/theme.css" > production-theme.css
+          node --input-type=module -e '
+            import { readFileSync } from "node:fs";
+            import { createHash } from "node:crypto";
+            const built = JSON.parse(readFileSync("dist/previews/tsukuyomi/release.json", "utf8"));
+            const live = JSON.parse(readFileSync("production-theme.json", "utf8"));
+            for (const key of ["version", "cssSha256", "manifestSha256"]) {
+              if (built[key] !== live[key]) throw new Error(`Deployed theme ${key} differs from the build`);
+            }
+            if (createHash("sha256").update(readFileSync("production-theme.css")).digest("hex") !== live.cssSha256) {
+              throw new Error("Deployed theme CSS digest differs from the release");
+            }
+            console.log(`Verified deployed Tsukuyomi ${live.version}`);
+          '
 
           curl --fail --silent --show-error --location \
             --max-time 30 \

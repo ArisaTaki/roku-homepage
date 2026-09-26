@@ -29,6 +29,7 @@ import { waitForInitialAppReady, type InitialAppReadiness } from "./bootReadines
 import { usePreparedPreviewImage } from "./usePreparedPreviewImage";
 import { FestivalArtwork } from "./FestivalArtwork";
 import { ProjectShowcase } from "./ProjectShowcase";
+import projectReleaseData from "./data/project-releases.json";
 import { currentFestivalArtwork } from "./festivalArtworkSource";
 import { FLOW_LAYOUT_QUERY, PHONE_NAV_QUERY, getSceneLayout, type SceneLayout } from "./sceneLayout";
 import { SCENE_PROGRESS_EVENT, useSceneMotion } from "./useSceneMotion";
@@ -51,6 +52,7 @@ const LOCALE_STORAGE_KEY = "irop-locale";
 const IROHA_SESSION_STORAGE_PREFIX = "irop-iroha-session";
 const FISH_BACKGROUND_MAX_PIXELS = 1_600_000;
 const FISH_BACKGROUND_PROGRESS_EVENT = SCENE_PROGRESS_EVENT;
+const projectReleases = projectReleaseData.projects as Partial<Record<WorkId, { version: string }>>;
 
 const HermesReplay = lazy(() => loadHermesReplay().then((module) => ({ default: module.HermesReplay })));
 const NatureLive2DReplay = lazy(() => (
@@ -1312,7 +1314,7 @@ const DesktopWorkCard = memo(function DesktopWorkCard({
         {href && <span className="work-open-arrow" aria-hidden="true">↗</span>}
       </div>
       <p>{work.description}</p>
-      <small>{work.status && <b className="work-status">{work.status}</b>}{work.meta}</small>
+      <small>{work.status && <b className="work-status">{work.status}</b>}{projectReleases[work.id] && <b className="work-status">{projectReleases[work.id]?.version}</b>}{work.meta}</small>
     </Card>
   );
 });
@@ -1552,7 +1554,7 @@ function MobileWorkCard({ work, copy, locale, index, total }: { work: Work; copy
       <Heading className="work-heading" href={href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>
         <h2>{work.title}</h2>{href && <span className="work-open-arrow" aria-hidden="true">↗</span>}
       </Heading>
-      <p>{work.description}</p><small>{work.status && <b className="work-status">{work.status}</b>}{work.meta}</small>
+      <p>{work.description}</p><small>{work.status && <b className="work-status">{work.status}</b>}{projectReleases[work.id] && <b className="work-status">{projectReleases[work.id]?.version}</b>}{work.meta}</small>
     </article>
   );
 }

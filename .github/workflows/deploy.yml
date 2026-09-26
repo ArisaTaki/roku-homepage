@@ -84,6 +84,18 @@ jobs:
           AI_REASONING_EFFORT: ""
         run: npm run check:iroha
 
+      - name: Sync published project releases
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_RELEASE_READ_TOKEN }}
+        run: |
+          if [ -n "$GH_TOKEN" ]; then
+            npm run sync:projects
+          else
+            # A missing credential must not replace already-synchronized games with old checked-in demos.
+            node tools/sync-project-releases.mjs --guard-no-token
+            echo 'Project release sync is not enabled: configure PROJECT_RELEASE_READ_TOKEN.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Build
         env:
           VITE_IROP_ASSISTANT_ENDPOINT: /api/iroha-assistant
@@ -282,9 +294,14 @@ jobs:
           gzip_vary on;
           gzip_types text/plain text/css text/javascript application/javascript application/x-javascript application/json application/xml application/xml+rss application/octet-stream image/svg+xml;
 
-          # Revalidate preview HTML, controls, metadata and versioned theme assets.
+          # Revalidate preview HTML, controls, metadata and game/theme assets.
           # Updating the outer iframe URL alone cannot invalidate its JS/CSS.
-          location ^~ /previews/tsukuyomi/ {
+          location ^~ /previews/ {
+              add_header Cache-Control "no-cache";
+              try_files \$uri =404;
+          }
+
+          location = /knowledge/project-releases.json {
               add_header Cache-Control "no-cache";
               try_files \$uri =404;
           }
@@ -379,3 +396,6 @@ jobs:
             "https://$DEPLOY_DOMAIN/api/nature-live2d-demo" > nature-response.json
           grep -q '"beats":' nature-response.json
           grep -q '"runtimeLabel":' nature-response.json
+
+      - name: Verify published project releases
+        run: node tools/sync-project-releases.mjs --verify-live

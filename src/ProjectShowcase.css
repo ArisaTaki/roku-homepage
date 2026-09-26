@@ -56,7 +56,7 @@
 .reflex-wave { height: 20px; margin-bottom: 16px; background: repeating-linear-gradient(90deg, #749f94 0 3px, transparent 3px 6px); clip-path: polygon(0 40%, 10% 30%, 20% 0, 30% 30%, 40% 15%, 50% 35%, 60% 10%, 70% 30%, 80% 0, 90% 20%, 100% 40%, 100% 70%, 90% 80%, 80% 100%, 70% 70%, 60% 90%, 50% 65%, 40% 85%, 30% 70%, 20% 100%, 10% 70%, 0 60%); }
 .reflex-cover > b { display: block; margin: 14px 0; font-size: 31px; line-height: .85; }
 .project-showcase :is(.reflex-note, .reflex-cover) > small { display: block; margin: 0; color: inherit; font-size: 9px; font-weight: 400; line-height: 1.2; }
-.work-status { display: inline-block; margin-right: 10px; padding: 3px 7px; border: 1px solid #decb92; color: #f0ddb0; font-size: 10px; font-weight: 500; vertical-align: baseline; }
+.work-status { display: inline-block; max-width: 100%; margin-right: 10px; padding: 3px 7px; border: 1px solid #decb92; color: #f0ddb0; font-size: 10px; font-weight: 500; vertical-align: baseline; overflow-wrap: anywhere; }
 :is(.work-card, .mobile-work):is(:hover, :focus-visible) > .project-showcase { outline-color: var(--work-accent); }
 :where([data-layout="flow"]) .mobile-work > .project-showcase { height: auto; aspect-ratio: 1.52; }
 @media (max-width: 699px) {

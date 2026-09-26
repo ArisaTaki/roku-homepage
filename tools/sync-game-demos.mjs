@@ -9,7 +9,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 // Supply local source checkouts explicitly; this tool never downloads private repositories.
 // Example: node tools/sync-game-demos.mjs --ranlu /path/to/ranlu --jingang-guild /path/to/jingang-guild --naiwa-yuushiya /path/to/naiwa-yuushiya-table-game
 const root = fileURLToPath(new URL('..', import.meta.url));
-const games = {
+export const games = {
   ranlu: { repo: 'ranlu', export: 'cocos/build/web-mobile', inputs: 'cocos/assets', title: '染路 · Ranlu' },
   'jingang-guild': { repo: 'jingang-guild', export: 'build/web-mobile', inputs: 'assets', title: '晶港商会 · Crystal Harbor Guild' },
   'naiwa-yuushiya': { repo: 'naiwa-yuushiya-table-game', title: '如果有勇者在的話就好了 · 单机试玩' },
@@ -164,7 +164,8 @@ async function finalize(output, id, game, revision) {
   return { game: id, runtimeFiles: Object.keys(files).length, runtimeBytes: bytes, sourceCommit: revision };
 }
 
-async function syncGame(id, source) {
+export async function syncGame(id, source, { root: destinationRoot = root } = {}) {
+  if (!Object.hasOwn(games, id)) throw new Error(`Unknown game: ${id}`);
   const game = games[id];
   const revision = sourceRevision(source, game);
   const temporary = await mkdtemp(path.join(tmpdir(), `homepage-${id}-`));
@@ -174,7 +175,7 @@ async function syncGame(id, source) {
     if (game.export) await copyCocosExport(source, game, output);
     else await buildNaiwa(source, output);
     const summary = await finalize(output, id, game, revision);
-    const destination = path.join(root, 'public/previews', id, 'game');
+    const destination = path.join(destinationRoot, 'public/previews', id, 'game');
     await mkdir(path.dirname(destination), { recursive: true });
     const previous = await lstat(destination).catch((error) => { if (error.code !== 'ENOENT') throw error; return null; });
     if (previous && (!previous.isDirectory() || previous.isSymbolicLink())) throw new Error('Demo destination must be a regular directory.');
@@ -192,27 +193,30 @@ async function syncGame(id, source) {
       throw error;
     }
     console.log(JSON.stringify(summary));
+    return summary;
   } finally {
     await rm(temporary, { recursive: true, force: true });
   }
 }
 
-const args = process.argv.slice(2);
-if (!args.length || args.includes('--help')) {
-  console.log('Usage: node tools/sync-game-demos.mjs [--ranlu SOURCE] [--jingang-guild SOURCE] [--naiwa-yuushiya SOURCE]');
-} else {
-  try {
-    const requested = new Set();
-    while (args.length) {
-      const flag = args.shift();
-      const id = flag?.slice(2);
-      const source = args.shift();
-      if (!flag?.startsWith('--') || !Object.hasOwn(games, id) || !source || source.startsWith('--') || requested.has(id)) throw new Error('Expected unique game flags and local source directories. Use --help for usage.');
-      requested.add(id);
-      await syncGame(id, path.resolve(source));
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const args = process.argv.slice(2);
+  if (!args.length || args.includes('--help')) {
+    console.log('Usage: node tools/sync-game-demos.mjs [--ranlu SOURCE] [--jingang-guild SOURCE] [--naiwa-yuushiya SOURCE]');
+  } else {
+    try {
+      const requested = new Set();
+      while (args.length) {
+        const flag = args.shift();
+        const id = flag?.slice(2);
+        const source = args.shift();
+        if (!flag?.startsWith('--') || !Object.hasOwn(games, id) || !source || source.startsWith('--') || requested.has(id)) throw new Error('Expected unique game flags and local source directories. Use --help for usage.');
+        requested.add(id);
+        await syncGame(id, path.resolve(source));
+      }
+    } catch (error) {
+      console.error(`Game demo sync failed: ${error.message}`);
+      process.exitCode = 1;
     }
-  } catch (error) {
-    console.error(`Game demo sync failed: ${error.message}`);
-    process.exitCode = 1;
   }
 }

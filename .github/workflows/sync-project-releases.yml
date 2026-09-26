@@ -1,0 +1,51 @@
+name: Check project releases
+
+on:
+  schedule:
+    - cron: '11,26,41,56 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: check-project-releases
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  check:
+    if: vars.PROJECT_RELEASE_AUTO_SYNC != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Compare stable project releases with the live site
+        id: releases
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_RELEASE_READ_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            echo 'Project release sync is not enabled: configure PROJECT_RELEASE_READ_TOKEN.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          npm run check:project-releases
+      - name: Deploy through the existing production workflow
+        if: steps.releases.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          active_runs=$(gh api 'repos/ArisaTaki/roku-homepage/actions/workflows/deploy.yml/runs?branch=main&per_page=30' --jq '[.workflow_runs[] | select(.status != "completed")] | length')
+          if [ "$active_runs" -gt 0 ]; then
+            echo 'A production deployment is already running; the next release check will verify its result.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            gh workflow run deploy.yml --repo ArisaTaki/roku-homepage --ref main
+            echo 'Triggered deployment for updated stable project releases.' >> "$GITHUB_STEP_SUMMARY"
+          fi

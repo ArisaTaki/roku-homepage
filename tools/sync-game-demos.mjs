@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { copyFile, lstat, mkdir, mkdtemp, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { copyFile, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -166,9 +166,10 @@ async function finalize(output, id, game, revision) {
 
 export async function syncGame(id, source, { root: destinationRoot = root } = {}) {
   if (!Object.hasOwn(games, id)) throw new Error(`Unknown game: ${id}`);
+  source = await realpath(source);
   const game = games[id];
   const revision = sourceRevision(source, game);
-  const temporary = await mkdtemp(path.join(tmpdir(), `homepage-${id}-`));
+  const temporary = await realpath(await mkdtemp(path.join(tmpdir(), `homepage-${id}-`)));
   const output = path.join(temporary, 'game');
   await mkdir(output);
   try {

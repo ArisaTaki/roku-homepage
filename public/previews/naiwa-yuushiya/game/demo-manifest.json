@@ -1,0 +1,21 @@
+{
+  "sourceRepo": "kuguya-AI-app-develop/naiwa-yuushiya-table-game",
+  "sourceCommit": "95f5d673f170ccf4fadc1c5a97ab93482f02771f",
+  "runtime": "DOM offline prototype",
+  "entry": "index.html",
+  "offline": true,
+  "files": {
+    "assets/index-BWTmde5B.css": {
+      "bytes": 7711,
+      "sha256": "87cfb4b4bfb2e8db5a08c7f6ac177a669f64b8d7a1addd4def7dd63f814e64d6"
+    },
+    "assets/index-bj1exEq9.js": {
+      "bytes": 36720,
+      "sha256": "a90ec130cce5e34c8113055273d212e440422deb7ff90c7da0d477514312c60b"
+    },
+    "index.html": {
+      "bytes": 458,
+      "sha256": "f1d8346fa307ab0bdcb184dffe3fa21b003dd9e6ca71f72707fd8ea7b3e4965f"
+    }
+  }
+}

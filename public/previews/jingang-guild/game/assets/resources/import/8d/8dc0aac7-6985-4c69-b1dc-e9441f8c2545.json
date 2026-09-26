@@ -1,0 +1,1 @@
+[1,0,0,[["cc.TextAsset",["_name","text"],1]],[[0,0,1,3]],[[0,"请把美术资源放入本目录","把美术资源包的图片文件放入本目录（assets/resources/art/），\n文件名规范见项目根目录 README.md 或 assets/ART_GUIDE（运行 node tools/import-assets.js 也会列出清单）。\n放入后运行导入脚本，然后在 Cocos Creator 中刷新资源库即可。\n"]],0,0,[],[],[]]

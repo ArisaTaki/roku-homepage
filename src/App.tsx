@@ -2,6 +2,11 @@ import {
   Bot,
   BookOpen,
   FileText,
+  Clapperboard,
+  Gem,
+  Layers3,
+  Mic,
+  Palette,
   Images,
   ScanFace,
   Waves,
@@ -23,6 +28,7 @@ import {
 import { waitForInitialAppReady, type InitialAppReadiness } from "./bootReadiness";
 import { usePreparedPreviewImage } from "./usePreparedPreviewImage";
 import { FestivalArtwork } from "./FestivalArtwork";
+import { ProjectShowcase } from "./ProjectShowcase";
 import { currentFestivalArtwork } from "./festivalArtworkSource";
 import { FLOW_LAYOUT_QUERY, PHONE_NAV_QUERY, getSceneLayout, type SceneLayout } from "./sceneLayout";
 import { SCENE_PROGRESS_EVENT, useSceneMotion } from "./useSceneMotion";
@@ -58,7 +64,7 @@ const TsukuyomiThemePreview = lazy(() => (
 
 type WorkBase = {
   id: WorkId;
-  href: string;
+  href?: string;
   visual?: string;
   image?: string;
   width: number;
@@ -143,6 +149,35 @@ const workShells: WorkBase[] = [
     width: 580,
     left: 6030,
   },
+  {
+    id: "ranlu",
+    href: "/previews/ranlu/index.html",
+    width: 620,
+    left: 6970,
+  },
+  {
+    id: "jingang-guild",
+    href: "/previews/jingang-guild/index.html",
+    width: 620,
+    left: 7910,
+  },
+  {
+    id: "yki-video-generator",
+    href: "https://github.com/kuguya-AI-app-develop/YKI-video-generator",
+    width: 620,
+    left: 8850,
+  },
+  {
+    id: "naiwa-yuushiya",
+    href: "/previews/naiwa-yuushiya/index.html",
+    width: 620,
+    left: 9790,
+  },
+  {
+    id: "reflex-labs",
+    width: 620,
+    left: 10730,
+  },
 ];
 
 const workNavIcons: Record<WorkId, LucideIcon> = {
@@ -152,6 +187,11 @@ const workNavIcons: Record<WorkId, LucideIcon> = {
   blog: FileText,
   gallery: Images,
   shader: Waves,
+  ranlu: Palette,
+  "jingang-guild": Gem,
+  "yki-video-generator": Clapperboard,
+  "naiwa-yuushiya": Layers3,
+  "reflex-labs": Mic,
 };
 
 function clamp(value: number, min: number, max: number): number {
@@ -1172,6 +1212,10 @@ function WorkVisual({
     return <PreparedWorkImage work={work} />;
   }
 
+  if (["ranlu", "jingang-guild", "yki-video-generator", "naiwa-yuushiya", "reflex-labs"].includes(work.id)) {
+    return <ProjectShowcase id={work.id} locale={locale} />;
+  }
+
   if (work.visual === "visual-hermes") {
     return (
       <DeferredWorkPreview work={work}>
@@ -1231,13 +1275,15 @@ const DesktopWorkCard = memo(function DesktopWorkCard({
   total: number;
 }) {
   const href = workHref(work, locale);
-  const external = href.startsWith("http");
+  const external = href?.startsWith("http");
+  const Card = href ? "a" : "article";
   return (
-    <a
+    <Card
       className={workCardClass("work-card", work)}
       data-work-id={work.id}
       data-exhibit-number={String(index + 1).padStart(2, "0")}
       href={href}
+      tabIndex={href ? undefined : 0}
       style={{ left: `${work.left}px`, width: `${work.width}px` }}
       target={external ? "_blank" : undefined}
       rel={external ? "noreferrer" : undefined}
@@ -1263,11 +1309,11 @@ const DesktopWorkCard = memo(function DesktopWorkCard({
       <WorkVisual work={work} copy={copy} layout="desktop" locale={locale} />
       <div className="work-heading">
         <h2>{work.title}</h2>
-        <span className="work-open-arrow" aria-hidden="true">↗</span>
+        {href && <span className="work-open-arrow" aria-hidden="true">↗</span>}
       </div>
       <p>{work.description}</p>
-      <small>{work.meta}</small>
-    </a>
+      <small>{work.status && <b className="work-status">{work.status}</b>}{work.meta}</small>
+    </Card>
   );
 });
 
@@ -1285,8 +1331,8 @@ function workCardClass(baseClass: string, work: Work): string {
   } ${work.short ? "short" : ""}`;
 }
 
-function workHref(work: Work, locale: Locale): string {
-  return work.id === "tsukuyomi" ? `${work.href}?lang=${locale}` : work.href;
+function workHref(work: Work, locale: Locale): string | undefined {
+  return work.href?.startsWith("/previews/") ? `${work.href}?lang=${locale}` : work.href;
 }
 
 function LanguageSwitcher({
@@ -1319,6 +1365,7 @@ function LanguageSwitcher({
 function FloatingNav({
   flow,
   progressRef,
+  travel,
   works,
   locale,
   onLocaleChange,
@@ -1326,6 +1373,7 @@ function FloatingNav({
 }: {
   flow: boolean;
   progressRef: RefObject<number>;
+  travel: number;
   works: Work[];
   locale: Locale;
   onLocaleChange: (locale: Locale) => void;
@@ -1353,12 +1401,13 @@ function FloatingNav({
     }
     const onProgress = () => {
       const progress = progressRef.current;
-      update(progress > 0.13, progress > 0.13 && progress < 1);
+      const pastOpening = progress * travel > 728;
+      update(pastOpening, pastOpening && progress < 1);
     };
     onProgress();
     window.addEventListener(SCENE_PROGRESS_EVENT, onProgress);
     return () => window.removeEventListener(SCENE_PROGRESS_EVENT, onProgress);
-  }, [flow, progressRef]);
+  }, [flow, progressRef, travel]);
 
   return (
     <div ref={navRef} className={`floating-navigation${flow ? " is-flow" : ""}`}>
@@ -1483,7 +1532,8 @@ function MobileWorkCard({ work, copy, locale, index, total }: { work: Work; copy
   const hasReplay = ["visual-hermes", "visual-live2d", "visual-gallery", "visual-shader", "visual-tsukuyomi"].includes(work.visual ?? "");
   const shouldPlay = playing ?? !reducedMotion;
   const href = workHref(work, locale);
-  const external = href.startsWith("http");
+  const external = href?.startsWith("http");
+  const Heading = href ? "a" : "div";
   return (
     <article id={`work-${work.id}`} className={workCardClass("mobile-work", work)} data-work-id={work.id}
       data-exhibit-number={String(index + 1).padStart(2, "0")}>
@@ -1499,10 +1549,10 @@ function MobileWorkCard({ work, copy, locale, index, total }: { work: Work; copy
           <span aria-hidden="true">{shouldPlay ? "Ⅱ" : "▷"}</span>{shouldPlay ? copy.preview.pause : copy.preview.play}
         </button>
       </div>}
-      <a className="work-heading" href={href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>
-        <h2>{work.title}</h2><span className="work-open-arrow" aria-hidden="true">↗</span>
-      </a>
-      <p>{work.description}</p><small>{work.meta}</small>
+      <Heading className="work-heading" href={href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>
+        <h2>{work.title}</h2>{href && <span className="work-open-arrow" aria-hidden="true">↗</span>}
+      </Heading>
+      <p>{work.description}</p><small>{work.status && <b className="work-status">{work.status}</b>}{work.meta}</small>
     </article>
   );
 }
@@ -1709,7 +1759,7 @@ export default function App({ isBooting = false, onReady }: AppProps) {
   const readingAnchorRef = useRef("top");
   const resizeAnchorRef = useRef<string | null>(null);
   const viewport = useViewportSize(readingAnchorRef, resizeAnchorRef);
-  const layout = useMemo(() => getSceneLayout(viewport.width, viewport.height), [viewport.width, viewport.height]);
+  const layout = useMemo(() => getSceneLayout(viewport.width, viewport.height, workShells[workShells.length - 1]), [viewport.width, viewport.height]);
   const isMobileLayout = useMediaQuery(FLOW_LAYOUT_QUERY);
   const isPhoneNavigation = useMediaQuery(PHONE_NAV_QUERY);
   const copy = uiCopy[locale];
@@ -1788,7 +1838,7 @@ export default function App({ isBooting = false, onReady }: AppProps) {
     <>
       {isPhoneNavigation
         ? <SiteNavigation works={works} locale={locale} onLocaleChange={setLocale} copy={copy} flow={isMobileLayout} />
-        : !isMobileLayout && <FloatingNav works={works} locale={locale} onLocaleChange={setLocale} copy={copy} flow={false} progressRef={progressRef} />}
+        : !isMobileLayout && <FloatingNav works={works} locale={locale} onLocaleChange={setLocale} copy={copy} flow={false} progressRef={progressRef} travel={layout.travel} />}
       <div className={`app-shell ${isBooting ? "is-booting" : "is-ready"}`} ref={appRef} data-layout={isMobileLayout ? "flow" : "desktop"}>
         <LightFishBackground progressRef={progressRef} />
         <a className="skip-link" href={isMobileLayout ? "#mobile-works" : `#work-${works[0].id}`}>{copy.skip}</a>
@@ -1797,7 +1847,7 @@ export default function App({ isBooting = false, onReady }: AppProps) {
           <section id="project" ref={sceneRef} className="scroll-scene" style={isMobileLayout ? undefined : { height: layout.sectionHeight }}>
             {isMobileLayout ? <MobilePage works={works} copy={copy} locale={locale} petSessionKey={petSessionKey}
               navigation={!isPhoneNavigation ? <FloatingNav works={works} locale={locale} onLocaleChange={setLocale}
-                copy={copy} flow progressRef={progressRef} /> : undefined} /> : (
+                copy={copy} flow progressRef={progressRef} travel={layout.travel} /> : undefined} /> : (
               <>
                 <DesktopProjectAnchors works={works} layout={layout} />
                 <DesktopScene layout={layout} activeIndex={activeIndex} works={works} copy={copy} locale={locale} petSessionKey={petSessionKey} />

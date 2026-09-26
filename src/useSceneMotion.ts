@@ -45,7 +45,8 @@ export function useSceneMotion({ sceneRef, layout, flow, enabled, workCenters, p
       }
       if (!flow) {
         const center = progress * layout.travel + layout.viewportWidth / 2;
-        const next = progress < 0.06 ? -1 : workCenters.reduce((nearest, value, index) => (
+        // Keep the opening's transition fixed when exhibits extend the track.
+        const next = progress * layout.travel < 336 ? -1 : workCenters.reduce((nearest, value, index) => (
           Math.abs(value - center) < Math.abs(workCenters[nearest] - center) ? index : nearest
         ), 0);
         if (next !== lastIndex) { lastIndex = next; setActiveIndex(next); }

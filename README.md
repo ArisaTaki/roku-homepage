@@ -76,6 +76,23 @@ A separate browser scaffold supplies two open tabs and interactive sidebar modul
 
 To verify, open the third exhibit on desktop and phone layouts, switch the site's language, and follow its link. Check dark/light, scene/reading, static/minimal controls and the two installation downloads. Browser checks at `393 × 852`, `375 × 667`, `320 × 568`, and `430 × 932` cover the compact phone presentation; they do not replace native iOS, Android, or iPad testing, including keyboard and touch validation.
 
+## Games and creative tools
+
+The homepage links to playable project pages at `/previews/ranlu/index.html`, `/previews/jingang-guild/index.html` and `/previews/naiwa-yuushiya/index.html`. Append `?lang=zh`, `?lang=en` or `?lang=ja` to translate the introduction and controls; the games themselves remain in Chinese. The embedded game downloads and starts only after **Start** is selected. Naiwa is a simplified offline BOT prototype still in development, with no online rooms. Reflex Labs remains a pending homepage exhibit; YKI links to its public repository and is labeled beta.
+
+Static production runtimes are committed under each preview's `game/` directory. To refresh them from explicit local checkouts:
+
+```bash
+node tools/sync-game-demos.mjs \
+  --ranlu /path/to/ranlu \
+  --jingang-guild /path/to/jingang-guild \
+  --naiwa-yuushiya /path/to/naiwa-yuushiya-table-game
+```
+
+Flags may be used individually. Use clean source revisions; prepare fresh production Web exports with `npm run build:web` in Ranlu and Jingang Guild, and install Naiwa's dependencies with `npm ci` in its checkout first. The sync copies production runtime files from the Cocos exports and builds Naiwa with its online UI and controller removed. It records source commits and file hashes in `demo-manifest.json`; it does not download private repositories or copy their development source trees. Publishing a game repository does not automatically refresh its website demo: run the sync, review the outputs and use the normal site deployment flow.
+
+Check with `npm run build`, `npm run check:iroha` and `npx tsx --test tools/check-scene-layout.ts`. In `npm run preview`, open each page, confirm game requests wait for Start, play a move, switch introduction languages and check the controls and game at phone width.
+
 ## Deployment
 
 Deployment is prepared in `.github/workflows/deploy.yml` and runs when `main` receives a push. It can also be started manually from the GitHub Actions tab.

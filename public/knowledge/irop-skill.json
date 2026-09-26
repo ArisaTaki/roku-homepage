@@ -1,21 +1,52 @@
 {
   "name": "irop-portal-skill",
-  "version": "0.6.0",
-  "updatedAt": "2026-09-16",
+  "version": "0.7.0",
+  "updatedAt": "2026-09-26",
   "owner": "八六 / HacchiRoku",
   "contact": "me@irop.one",
   "runtime": "local retrieval with optional Kimi K3 server assistant endpoint",
-  "description": "A public portfolio knowledge base used by the Iroha pixel pet on irop.one, including Tsukuyomi theme facts.",
+  "description": "A public portfolio knowledge base used by the Iroha pixel pet on irop.one, including games, creative tools and Tsukuyomi theme facts.",
   "apiContract": "/knowledge/irop-assistant-api.md",
   "serverlessEndpoint": "/api/iroha-assistant",
   "optionalFrontendEnv": "VITE_IROP_ASSISTANT_ENDPOINT",
   "boundaries": [
-    "Use public portfolio and Tsukuyomi theme facts only.",
+    "Use approved public portfolio summaries only, including games, creative tools and the Tsukuyomi theme.",
     "Do not claim Tsukuyomi is searchable or installable through Obsidian's theme manager while client directory synchronization is pending.",
     "Do not reveal or infer real name, home address, employer name, school name, private contact routes, income, or anything that needs deeper trust before sharing.",
-    "When unsure or when a topic is unrelated, gently refuse instead of inventing details."
+    "When unsure or when a topic is unrelated, gently refuse instead of inventing details.",
+    "Naiwa and Reflex Labs are still in development. YKI Video Generator is a beta; its Windows real-model workflow has not completed end-to-end acceptance. Do not promise public online room services or unpublished downloads."
   ],
   "entries": [
+    {
+      "id": "ranlu",
+      "title": "染路 · Ranlu",
+      "type": "project",
+      "href": "/previews/ranlu/index.html"
+    },
+    {
+      "id": "jingang-guild",
+      "title": "晶港商会 · Crystal Harbor Guild",
+      "type": "project",
+      "href": "/previews/jingang-guild/index.html"
+    },
+    {
+      "id": "yki-video-generator",
+      "title": "YKI Video Generator",
+      "type": "project",
+      "href": "https://github.com/kuguya-AI-app-develop/YKI-video-generator"
+    },
+    {
+      "id": "naiwa-yuushiya",
+      "title": "奶蛙 · 如果有勇者在的话就好了",
+      "type": "project",
+      "href": "/previews/naiwa-yuushiya/index.html"
+    },
+    {
+      "id": "reflex-labs",
+      "title": "Reflex Labs",
+      "type": "project",
+      "href": "#work-reflex-labs"
+    },
     {
       "id": "profile",
       "title": "八六 profile",

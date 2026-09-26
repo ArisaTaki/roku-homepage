@@ -168,7 +168,8 @@
 .nav-row .arrow { color: var(--festival-ink); font-size: 24px; }
 .icon-strip { bottom: 8px; }
 .icon-strip a { border: 1px solid #60a5b0; color: #d7f1ed; }
-.work-anchor-strip { gap: 4px; }
+.nav-row-works { min-height: 104px; }
+.work-anchor-strip { display: grid; grid-template-columns: repeat(6, 23px); gap: 4px; }
 .work-anchor-strip a { width: 23px; min-width: 23px; height: 23px; }
 .work-anchor-strip svg { width: 12px; height: 12px; }
 .nav-row.resume { min-height: 36px; padding: 9px 8px; border-left: 5px solid var(--festival-cyan); background: #113b49; font-size: 16px; }
@@ -184,6 +185,11 @@
 [data-work-id="tsukuyomi"] { --work-accent: #a9b8dc; }
 [data-work-id="blog"] { --work-accent: #cbbaf9; }
 [data-work-id="gallery"] { --work-accent: #ff9683; }
+[data-work-id="ranlu"] { --work-accent: #a9ded3; }
+[data-work-id="jingang-guild"] { --work-accent: #e0bd7f; }
+[data-work-id="yki-video-generator"] { --work-accent: #a5e7ce; }
+[data-work-id="naiwa-yuushiya"] { --work-accent: #d7be99; }
+[data-work-id="reflex-labs"] { --work-accent: #c2d0b7; }
 .work-card { top: 150px; }
 .work-card::before { content: attr(data-exhibit-number); position: absolute; z-index: -1; left: -160px; top: -87px; color: transparent; -webkit-text-stroke: 1px rgba(76, 245, 223, 0.2); font-size: 226px; font-family: "GT Haptik", sans-serif; font-style: italic; letter-spacing: -0.06em; line-height: 1; pointer-events: none; }
 .work-overline { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 18px; font-size: 11px; line-height: 1; }

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="围绕选牌、同时出牌与传牌展开的桌游实验。这份浏览器原型可以和 BOT 进行单人对局，玩法与呈现仍在完善。">
+  <title>奶蛙 · 浏览器试玩 · irop.one</title>
+  <link rel="stylesheet" href="../shared/game-preview.css">
+  <script src="../shared/game-preview.js" defer></script>
+</head>
+<body class="game-preview" data-game="naiwa-yuushiya">
+  <header class="preview-header">
+    <a class="back-link" href="/#work-naiwa-yuushiya" data-copy="back">← 返回作品展</a>
+    <span class="edition">IROP.ONE / PLAYABLE WORKS</span>
+    <label class="language-label"><span data-copy="language">语言</span>
+      <select id="language"><option value="zh">中文</option><option value="en">English</option><option value="ja">日本語</option></select>
+    </label>
+  </header>
+  <main class="game-main">
+    <section class="game-intro">
+      <div>
+        <p class="eyebrow" data-copy="category">NAIWA / CARD GAME PROTOTYPE</p>
+        <h1 data-copy="title">奶蛙</h1>
+        <p class="subtitle" data-copy="subtitle">如果有勇者在的话就好了。</p>
+      </div>
+      <p class="intro-description" data-copy="description">围绕选牌、同时出牌与传牌展开的桌游实验。这份浏览器原型可以和 BOT 进行单人对局，玩法与呈现仍在完善。</p>
+    </section>
+    <div class="demo-layout">
+      <section class="demo-panel" aria-labelledby="demo-heading">
+        <div class="demo-heading">
+          <h2 id="demo-heading" data-copy="demo">浏览器试玩</h2>
+          <span class="status-badge" data-copy="status">开发中 · 待完善</span>
+        </div>
+        <div class="game-stage" id="game-stage" aria-busy="false">
+          <div class="game-cover" id="game-cover">
+            
+            <div class="cover-content">
+              <span class="cover-mark" aria-hidden="true">✦</span>
+              <strong data-copy="title">奶蛙</strong>
+              <p data-copy="cover">和 BOT 坐下来，试一局选牌与传牌。</p>
+              <button class="start-button" id="start-demo" type="button" data-copy="start">开始试玩 →</button>
+              <small class="cover-note" data-copy="startNote">按下按钮后才会下载并运行游戏。</small>
+            </div>
+          </div>
+        </div>
+        <nav class="demo-toolbar" data-label="controls" aria-label="试玩控制">
+          <button id="reload-demo" type="button" data-copy="reload" disabled>重新载入</button>
+          <button id="fullscreen-demo" type="button" data-copy="fullscreen" disabled>全屏</button>
+          <a class="direct-link" href="./game/index.html" target="_blank" rel="noreferrer" data-copy="direct">独立打开 ↗</a>
+        </nav>
+        <p class="load-status" id="load-status" role="status" aria-live="polite">点击「开始试玩」后载入游戏。</p>
+        <p class="language-note" data-copy="gameLanguage">游戏界面为中文；上方语言切换仅翻译介绍与操作说明。</p>
+        <noscript><p class="no-script">试玩需要启用 JavaScript。请启用后刷新本页，或使用上方的「独立打开」入口。</p></noscript>
+      </section>
+      <aside class="game-notes">
+        <section class="note-section">
+          <h2><span class="note-index" aria-hidden="true">01</span><span data-copy="how">怎么玩</span></h2>
+          <ol class="instructions" id="instructions"></ol>
+        </section>
+        <section class="note-section">
+          <h2><span class="note-index" aria-hidden="true">02</span><span data-copy="progress">进度与存储</span></h2>
+          <p data-copy="storage"></p>
+        </section>
+        <section class="note-section">
+          <h2><span class="note-index" aria-hidden="true">03</span><span data-copy="about">关于这份试玩</span></h2>
+          <p data-copy="note"></p>
+        </section>
+      </aside>
+    </div>
+  </main>
+  <footer class="preview-footer"><span data-copy="footer">irop.one · 作品试玩</span><a href="/#work-naiwa-yuushiya" data-copy="back">← 返回作品展</a></footer>
+</body>
+</html>

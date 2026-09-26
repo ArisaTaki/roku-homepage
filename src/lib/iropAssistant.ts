@@ -42,7 +42,7 @@ type ScoredEntry = {
   score: number;
 };
 
-const fallbackKeywords = ["project", "ai", "tool", "live2d", "webgl", "blog", "gallery", "contact"];
+const fallbackKeywords = ["project", "game", "video", "ai", "tool", "live2d", "webgl", "blog", "gallery", "contact"];
 const privateQuestionPattern =
   /(真实姓名|真名|住址|家庭住址|地址在哪|住在哪里|现居|公司名|哪家公司|所在公司|任职公司|雇主|学校名|哪个学校|哪所学校|收入|工资|薪资|私人|手机号|电话号码|私人电话|telegram|real name|home address|where do you live|where are you based|company name|which company|current employer|where do you work|school name|which school|income|salary|private|phone number|personal phone|本名|住所|どこに住|勤務先|会社名|どの会社|学校名|どこの学校|年収|収入|個人情報|電話番号)/i;
 
@@ -138,14 +138,14 @@ function guideText(language: QuestionLanguage): string {
 
 function projectsGuideText(language: QuestionLanguage): string {
   if (language === "ja") {
-    return "主な公開プロジェクトは Hermes-Yachiyo、nature-live2d、shader.irop.one、Tsukuyomi です。Hermes-Yachiyo は AI ワークフロー編成とデスクトップペット、nature-live2d は LLM による Live2D 表情制御、shader.irop.one は WebGL Shader で写真を見せる実験です。Tsukuyomi は墨青と青緑の明暗テーマを持つ非公式 Obsidian テーマです。";
+    return "ゲームなら色塗りパズルの染路と戦略カードゲームの晶港商会、創作ツールならベータ版の YKI Video Generator があります。Hermes-Yachiyo、nature-live2d、Tsukuyomi、WebGL Shader の展示も見られます。奶蛙と、音声・カバー制作ツールの Reflex Labs は開発中です。";
   }
 
   if (language === "zh") {
-    return "主要公开项目有 Hermes-Yachiyo、nature-live2d、shader.irop.one 和 Tsukuyomi。Hermes-Yachiyo 偏 AI 流程编排与桌宠，nature-live2d 用 LLM 分析回复并控制 Live2D 表情，shader.irop.one 是用 WebGL Shader 展示照片记忆的视觉实验；Tsukuyomi 是墨蓝与海青色深浅模式的非官方 Obsidian 主题。";
+    return "想玩游戏可以先看染路和晶港商会：一个是色彩解谜，一个是宝石策略卡牌。创作工具有测试版的 YKI 视频生成器；原有作品还有 Hermes-Yachiyo、nature-live2d、Tsukuyomi 和 WebGL Shader。奶蛙与录音、封面创作工具 Reflex Labs 仍在完善中。";
   }
 
-  return "The main public projects are Hermes-Yachiyo, nature-live2d, shader.irop.one and Tsukuyomi. Hermes-Yachiyo explores AI workflow orchestration and desktop pet behavior; nature-live2d controls Live2D expressions with LLM analysis; shader.irop.one records childhood photos through WebGL shader rendering; Tsukuyomi is an unofficial Obsidian theme with ink-blue and turquoise dark/light modes.";
+  return "Start with Ranlu for color puzzles, Crystal Harbor Guild for strategy cards, or the beta YKI Video Generator for local video creation. The portfolio also includes Hermes-Yachiyo, nature-live2d, Tsukuyomi and WebGL Shader experiments. Naiwa and the audio/cover workbench Reflex Labs are still in development.";
 }
 
 function linksGuideText(language: QuestionLanguage): string {
@@ -165,6 +165,16 @@ function localizedEntryAnswer(entry: KnowledgeEntry, language: QuestionLanguage)
 
   const localized: Partial<Record<QuestionLanguage, Record<string, string>>> = {
     zh: {
+      ranlu:
+        "染路（Ranlu）是一个有 500 关的色彩解谜游戏：在有限步数里合并相邻色块，把颜色铺满棋盘。支持撤销、提示、星级评价与本地进度保存，项目详情页可以试玩。",
+      "jingang-guild":
+        "晶港商会（Crystal Harbor Guild）是离线策略卡牌游戏。你会与三位 AI 对手收集宝石、积累卡牌折扣，再争夺声望；项目详情页可以试玩。",
+      "yki-video-generator":
+        "YKI 视频生成器是面向 Windows 与 NVIDIA 显卡的本地短视频创作工具，串联分镜、中文配音、竖屏视频和字幕，也支持逐镜头编辑、重做与历史版本。当前为测试版，Windows 真实模型完整链路仍待实机验收。",
+      "naiwa-yuushiya":
+        "奶蛙《如果有勇者在的话就好了》是一款围绕同时出牌、轮抽和传牌的卡牌游戏，目前仍在完善。项目详情页提供与机器人对局的开发预览，暂不承诺公开联机房间服务。",
+      "reflex-labs":
+        "Reflex Labs（Jev_project）是仍待完善的本地创作工具。LiveTake 用于录音或导入音频、整理带时间点的重录笔记、编辑和导出音频、CSV 与 Audacity 标签；Cover Pause Canvas 用于制作封面草稿并导出 PNG，不是 AI 图片生成器。",
       profile:
         "八六 / HacchiRoku 是前端出身的 AI 工具创作者，喜欢新兴 AI 技术、安静的工作方式、本地 Agent、角色界面和实用的视觉实验。他偏 I 人，喜欢安静，也很乐意帮助别人。",
       "tech-stack":
@@ -187,6 +197,16 @@ function localizedEntryAnswer(entry: KnowledgeEntry, language: QuestionLanguage)
       contact: "最适合公开联系八六的方式是邮件：me@irop.one。GitHub 和博客入口也在站点里。",
     },
     ja: {
+      ranlu:
+        "染路（Ranlu）は全500面の色塗りパズルです。限られた手数で隣接する色の領域をつなぎ、盤面を埋めていきます。取り消し、ヒント、星評価、ローカル進捗保存に対応し、作品ページで試遊できます。",
+      "jingang-guild":
+        "晶港商会（Crystal Harbor Guild）は、3人の AI と競うオフライン戦略カードゲームです。宝石を集め、カードの割引を積み重ねて名声を獲得します。作品ページで試遊できます。",
+      "yki-video-generator":
+        "YKI Video Generator は Windows と NVIDIA GPU 向けのローカル動画制作ツールです。絵コンテ、中国語ナレーション、縦型動画、字幕をつなぎ、ショット単位の編集や再生成、履歴管理に対応します。現在はベータ版で、Windows の実モデルを使う全工程の実機検証は未完了です。",
+      "naiwa-yuushiya":
+        "奶蛙『勇者がいればいいのに』は、同時選択、ドラフト、手札の受け渡しを中心としたカードゲームです。まだ開発中で、作品ページにはボットと遊べる開発プレビューがあります。公開オンラインルームの提供は保証していません。",
+      "reflex-labs":
+        "Reflex Labs（Jev_project）は開発中のローカル制作ツールです。LiveTake では録音や音声の取り込み、時刻付きの録り直しメモ、編集、音声・CSV・Audacity ラベルの書き出しができます。Cover Pause Canvas はカバーの下書きと PNG 書き出し用で、AI 画像生成ツールではありません。",
       profile:
         "八六 / HacchiRoku はフロントエンド出身の AI ツール制作者です。新しい AI 技術、静かな作業、ローカル Agent、キャラクター UI、実用的なビジュアル実験が好きです。",
       "tech-stack":
@@ -290,6 +310,21 @@ function answerIntent(question: string, normalizedQuestion: string): AssistantAn
     };
   }
 
+  const namedProjectPatterns: Array<[string, RegExp]> = [
+    ["ranlu", /\branlu\b|染路/i],
+    ["jingang-guild", /\bjingang\b|crystal harbor|晶港/i],
+    ["naiwa-yuushiya", /\bnaiwa\b|\byuushiya\b|奶蛙|勇者/i],
+    ["reflex-labs", /\breflex\b|\bjev\b|jev_project|livetake|live take|cover pause canvas/i],
+    ["yki-video-generator", /\byki\b|video generator|视频生成器|動画生成/i],
+  ];
+  const namedProjectMatches = namedProjectPatterns
+    .filter(([, pattern]) => pattern.test(question))
+    .map(([id]) => knowledgeEntries.find((entry) => entry.id === id))
+    .filter((entry): entry is KnowledgeEntry => Boolean(entry));
+  if (namedProjectMatches.length) {
+    return composeAnswer(namedProjectMatches.map((entry) => ({ entry, score: 99 })), question);
+  }
+
   const asksForTsukuyomi = /(tsukuyomi|月读|月読|obsidian)/i.test(question);
   if (!asksForTsukuyomi && /(what can|what do you know|help|capabilit|你会|能问|可以问|知道什么|帮助|怎么用)/i.test(question)) {
     const projectEntries = entriesForCollection("Projects");
@@ -333,7 +368,7 @@ function answerIntent(question: string, normalizedQuestion: string): AssistantAn
     }
   }
 
-  if (/(projects?|works?|repo|github|项目|作品|仓库|代码)/i.test(question)) {
+  if (/(projects?|works?|repo|github|games?|creative tools?|项目|作品|仓库|代码|游戏|创作工具|制作物|ゲーム)/i.test(question)) {
     const projectEntries = entriesForCollection("Projects");
 
     return {

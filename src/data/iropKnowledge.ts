@@ -68,22 +68,22 @@ export const starterQuestions = [
 
 export const assistantSkill = {
   name: "irop-portal-skill",
-  version: "0.6.0",
+  version: "0.7.0",
   runtime: "local retrieval with an optional OpenAI-compatible server assistant endpoint",
   specHref: "/knowledge/irop-skill.md",
   manifestHref: "/knowledge/irop-skill.json",
   apiHref: "/knowledge/irop-assistant-api.md",
   role:
-    "Answer visitor questions about 八六 / HacchiRoku, public projects including the Tsukuyomi Obsidian theme, writing, visual archives, WebGL demos, collaboration fit and contact routes from the local curated knowledge base.",
+    "Answer visitor questions about 八六 / HacchiRoku, portfolio projects including games, creative tools and the Tsukuyomi Obsidian theme, writing, visual archives, WebGL demos, collaboration fit and contact routes from the local curated knowledge base.",
   style:
     "Be concise, cute, friendly and factual. Follow the visitor's language when possible. If the visitor asks for something private or unknown, gently refuse or say it is not in the public notes.",
   boundaries:
     "Do not reveal or infer real name, home address, employer name, school name, private contact routes, income, private relationships, precise availability, private credentials, or anything that needs deeper trust before sharing.",
   dataPolicy:
-    "Public portfolio and Tsukuyomi theme facts only. Unknown, unrelated, private, or sensitive questions must be answered with a gentle refusal instead of invented biography or availability claims.",
+    "Public portfolio facts only, including approved game and creative-tool summaries. Naiwa and Reflex Labs are still in development; YKI is a beta without completed Windows real-model acceptance. Unknown, unrelated, private, or sensitive questions must be answered with a gentle refusal instead of invented biography or availability claims.",
   capabilities: [
     "Profile and contact routing",
-    "Public project and Tsukuyomi theme explainers",
+    "Public project, game, creative-tool and Tsukuyomi theme explainers",
     "Technology stack and collaboration direction",
     "Public career and experience summary",
     "Blog, gallery and shader navigation",
@@ -96,7 +96,7 @@ export const knowledgeCollections: KnowledgeCollection[] = [
   {
     label: "Projects",
     accent: "cyan",
-    entryIds: ["hermes-yachiyo", "nature-live2d", "shader", "tsukuyomi"],
+    entryIds: ["ranlu", "jingang-guild", "yki-video-generator", "hermes-yachiyo", "nature-live2d", "shader", "tsukuyomi", "naiwa-yuushiya", "reflex-labs"],
   },
   {
     label: "Places",
@@ -111,6 +111,71 @@ export const knowledgeCollections: KnowledgeCollection[] = [
 ];
 
 export const knowledgeEntries: KnowledgeEntry[] = [
+  {
+    id: "ranlu",
+    title: "染路 · Ranlu",
+    type: "project",
+    href: "/previews/ranlu/index.html",
+    visibility: "public",
+    keywords: ["ranlu", "染路", "color flood", "puzzle", "500", "颜色", "色块", "染色", "解谜", "益智", "パズル", "色塗り"],
+    answer:
+      "Ranlu (染路) is a color-flood puzzle with 500 levels. Choose colors to merge connected neighboring regions within a move limit; the game includes undo, hints, star ratings and local progress.",
+    details: [
+      "Regions connect through their four orthogonal neighbors, not diagonally.",
+      "Built with Cocos Creator 3.8.8. Visit the project page for a playable preview.",
+    ],
+  },
+  {
+    id: "jingang-guild",
+    title: "晶港商会 · Crystal Harbor Guild",
+    type: "project",
+    href: "/previews/jingang-guild/index.html",
+    visibility: "public",
+    keywords: ["jingang", "晶港", "晶港商会", "crystal harbor", "guild", "gems", "prestige", "strategy", "宝石", "折扣", "声望", "策略", "カード", "戦略"],
+    answer:
+      "Crystal Harbor Guild (晶港商会) is an offline strategy card game for one player and three AI rivals. Collect gems, acquire cards for lasting discounts and build prestige. The project page includes a playable preview.",
+    details: ["The core game combines resource choices, card discounts and competition for prestige."],
+  },
+  {
+    id: "yki-video-generator",
+    title: "YKI Video Generator",
+    type: "project",
+    href: "https://github.com/kuguya-AI-app-develop/YKI-video-generator",
+    visibility: "public",
+    keywords: ["yki", "video generator", "video", "generator", "视频", "视频生成", "生成器", "短视频", "分镜", "配音", "字幕", "qwen", "kokoro", "h3", "ffmpeg", "動画", "ナレーション"],
+    answer:
+      "YKI Video Generator is a beta local short-video tool for Windows and NVIDIA GPUs. It connects storyboard planning, Chinese narration, vertical video and subtitles, with shot editing, retakes and version history. Windows real-model end-to-end acceptance is still pending.",
+    details: [
+      "The workflow uses Qwen for storyboards, Kokoro for narration, H3 for video and FFmpeg for MP4 composition and SRT subtitles.",
+      "macOS provides a workflow demo. The demo does not establish real-model output quality, speed or reliability.",
+      "The public repository contains setup instructions; no packaged executable or GitHub release is currently published.",
+    ],
+  },
+  {
+    id: "naiwa-yuushiya",
+    title: "奶蛙 · 如果有勇者在的话就好了",
+    type: "project",
+    href: "/previews/naiwa-yuushiya/index.html",
+    visibility: "public",
+    keywords: ["naiwa", "naiwa yuushiya", "奶蛙", "勇者", "yuushiya", "draft", "drafting", "simultaneous", "轮抽", "传牌", "同时出牌", "ドラフト"],
+    answer:
+      "Naiwa (奶蛙 · 如果有勇者在的话就好了) is a card game built around simultaneous choices, drafting and passing hands. It is still in development, and the project page presents a development preview with bots; a public online room service is not promised.",
+    details: ["The game is still being refined. Its preview should be presented as work in progress."],
+  },
+  {
+    id: "reflex-labs",
+    title: "Reflex Labs",
+    type: "project",
+    href: "#work-reflex-labs",
+    visibility: "public",
+    keywords: ["reflex", "reflex labs", "jev", "jev project", "livetake", "live take", "cover pause canvas", "audio", "recording", "retake", "旁白", "录音", "重录", "封面", "音声", "録音", "カバー"],
+    answer:
+      "Reflex Labs, developed in Jev_project, is a local creative workbench still in development. LiveTake supports narration recording or audio import, timestamped retake notes, editing and audio, CSV or Audacity-label exports. Cover Pause Canvas supports cover drafts and PNG export; it is not an AI image generator.",
+    details: [
+      "Cover Pause Canvas exports a confirmed cover at 1600 × 2000 pixels.",
+      "Local speech recognition and Laya integration are experimental. No public hosted app is currently provided.",
+    ],
+  },
   {
     id: "profile",
     title: "八六 profile",

@@ -1,0 +1,84 @@
+.project-showcase { position: relative; width: 100%; height: 408px; overflow: hidden; border: 3px solid var(--festival-ink); outline: 1px solid #668a9b; box-shadow: 8px 8px 0 #010713; isolation: isolate; }
+.project-showcase .showcase-caption { position: absolute; z-index: 3; top: 8%; left: 6%; width: 49%; }
+.project-showcase .showcase-caption > span { font-size: 9px; font-weight: 700; letter-spacing: .12em; }
+.project-showcase .showcase-caption > strong { display: block; margin-top: 18px; font-size: clamp(28px, 3vw, 45px); font-weight: 600; line-height: 1.15; letter-spacing: -.045em; }
+.project-showcase .showcase-caption > p { margin: 16px 0 0; color: inherit; font-size: 11px; line-height: 1.6; }
+.project-showcase .showcase-screen { position: absolute; z-index: 2; width: 31%; height: 85%; top: 7%; right: 5%; border-radius: 10px; object-fit: contain; box-shadow: 0 16px 32px #0005; background: #102b30; }
+.project-showcase .showcase-screen-back { z-index: 1; top: 27%; right: 28%; width: 26%; height: 65%; transform: rotate(-8deg); }
+.project-showcase .showcase-footer { position: absolute; z-index: 3; left: 6%; bottom: 7%; width: 29%; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid currentColor; padding-top: 13px; font-size: 10px; }
+.project-showcase .showcase-footer b { font-size: 20px; line-height: 1; }
+.showcase-ranlu { color: #2d686b; background: #eff4e6; }
+.showcase-ranlu::before { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 0 100%, #a9ded3 0, transparent 65%); }
+.showcase-ranlu .showcase-caption > strong { font-family: serif; font-size: 64px; letter-spacing: .2em; line-height: 1.05; }
+.showcase-ranlu .showcase-caption > p { width: 60%; }
+.showcase-jingang-guild { color: #f3dcb0; background: radial-gradient(ellipse at 75% 30%, #34616d, #0b232e 65%); }
+.showcase-jingang-guild::before { content: "◇"; position: absolute; left: 2%; top: 27%; color: #91bbaa13; font-size: 240px; line-height: 1; }
+.showcase-jingang-guild .showcase-caption > strong { font-family: serif; font-size: 52px; line-height: 1.25; letter-spacing: .04em; }
+.showcase-yki { color: #e9fff6; background: #153336; }
+.showcase-yki .showcase-caption { width: 64%; }
+.showcase-yki .showcase-caption > strong { font-size: 37px; }
+.showcase-film { position: absolute; right: 5%; top: 6%; height: 52%; aspect-ratio: 9 / 16; overflow: hidden; border: 1px solid #b5d7c455; border-radius: 6px; background: linear-gradient(#769e93, #ebb67f 70%); transform: rotate(5deg); }
+.film-time { position: absolute; z-index: 2; top: 10px; right: 10px; font-size: 8px; }
+.film-sun { position: absolute; top: 28%; left: 22%; width: 43%; aspect-ratio: 1; border-radius: 50%; background: #f3d293; }
+.film-landscape { position: absolute; inset: 53% -10% -20%; border-radius: 50% 30% 0 0; background: #244e50; box-shadow: 20px -18px 0 #46756a; transform: rotate(-10deg); }
+.film-subtitle { position: absolute; bottom: 12%; width: 100%; text-align: center; font-size: 7px; letter-spacing: .03em; }
+.showcase-timeline { position: absolute; z-index: 3; bottom: 7%; left: 6%; right: 6%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.showcase-timeline > div { min-width: 0; padding: 13px; background: #092c2e; border-top: 2px solid #8be0bf; }
+.showcase-timeline > div > b { margin-right: 8px; color: #a5e7ce; font-size: 11px; }
+.showcase-timeline > div > span { font-size: 10px; }
+.timeline-shots, .timeline-wave, .timeline-export { display: flex; gap: 5px; height: 34px; margin-top: 18px; align-items: center; font-style: normal; }
+.timeline-shots > i { flex: 1; height: 30px; background: linear-gradient(145deg, #729983, #dcac79); border-radius: 2px; }
+.timeline-shots > i:nth-child(2) { background: linear-gradient(30deg, #829f97, #384f53); }
+.timeline-shots > i:nth-child(3) { background: linear-gradient(110deg, #d6bc87, #709278); }
+.timeline-wave { gap: 3px; }
+.timeline-wave > i { flex: 1; min-width: 1px; background: #86bdac; }
+.timeline-export { justify-content: space-between; color: #cfe5d4; font-size: 10px; }
+.timeline-export b { font-size: 26px; }
+.showcase-naiwa { background: radial-gradient(ellipse at 75% 85%, #384545, #1b252a 75%); color: #eee5c6; }
+.showcase-naiwa .showcase-caption { width: 75%; }
+.showcase-naiwa .showcase-caption > strong { font-family: serif; font-size: 32px; line-height: 1.45; }
+.showcase-hand { position: absolute; right: 9%; bottom: 12%; display: flex; padding-left: 35px; }
+.showcase-hand > div { display: grid; width: 100px; height: 160px; margin-left: -35px; padding: 14px; border: 1px solid #ceb982; outline: 4px solid #173237; border-radius: 6px; background: #214146; box-shadow: 0 5px 20px #0004; transform: rotate(-14deg) translateY(8px); }
+.showcase-hand > div:nth-child(2) { background: #806757; transform: rotate(1deg); }
+.showcase-hand > div:nth-child(3) { background: #586954; transform: rotate(17deg) translateY(12px); }
+.project-showcase .showcase-hand small { display: block; margin: 0; color: inherit; font-size: 9px; font-weight: 400; line-height: 1.2; }
+.showcase-hand b { font-size: 45px; text-align: center; font-family: serif; }
+.showcase-hand span { font-size: 8px; text-align: center; letter-spacing: .15em; }
+.showcase-reflex { background: #ede8da; color: #314a47; }
+.showcase-reflex .showcase-caption { width: 74%; }
+.showcase-reflex .showcase-caption > strong { font-size: 37px; }
+.reflex-note, .reflex-cover { position: absolute; bottom: 8%; width: 38%; border: 1px solid #9daaa0; padding: 16px; box-shadow: 5px 5px 0 #304b4d16; }
+.reflex-note { left: 7%; background: #f7f6ec; transform: rotate(-3deg); }
+.reflex-cover { right: 8%; width: 34%; bottom: 9%; background: #89a697; transform: rotate(5deg); }
+.reflex-note > span, .reflex-cover > span { display: block; font-size: 9px; }
+.reflex-note > b { display: flex; align-items: center; justify-content: space-between; margin: 15px 0; font-size: 24px; font-variant-numeric: tabular-nums; }
+.reflex-note > b > span { font-size: 12px; color: #d17a68; }
+.reflex-wave { height: 20px; margin-bottom: 16px; background: repeating-linear-gradient(90deg, #749f94 0 3px, transparent 3px 6px); clip-path: polygon(0 40%, 10% 30%, 20% 0, 30% 30%, 40% 15%, 50% 35%, 60% 10%, 70% 30%, 80% 0, 90% 20%, 100% 40%, 100% 70%, 90% 80%, 80% 100%, 70% 70%, 60% 90%, 50% 65%, 40% 85%, 30% 70%, 20% 100%, 10% 70%, 0 60%); }
+.reflex-cover > b { display: block; margin: 14px 0; font-size: 31px; line-height: .85; }
+.project-showcase :is(.reflex-note, .reflex-cover) > small { display: block; margin: 0; color: inherit; font-size: 9px; font-weight: 400; line-height: 1.2; }
+.work-status { display: inline-block; margin-right: 10px; padding: 3px 7px; border: 1px solid #decb92; color: #f0ddb0; font-size: 10px; font-weight: 500; vertical-align: baseline; }
+:is(.work-card, .mobile-work):is(:hover, :focus-visible) > .project-showcase { outline-color: var(--work-accent); }
+:where([data-layout="flow"]) .mobile-work > .project-showcase { height: auto; aspect-ratio: 1.52; }
+@media (max-width: 699px) {
+  .project-showcase .showcase-caption > span { font-size: 6px; }
+  .project-showcase .showcase-caption > strong { margin-top: 11px; font-size: 24px; }
+  .project-showcase .showcase-caption > p { margin-top: 10px; font-size: 8px; }
+  .project-showcase .showcase-footer { padding-top: 8px; font-size: 8px; }
+  .showcase-ranlu .showcase-caption > strong { font-size: 43px; }
+  .showcase-jingang-guild .showcase-caption > strong { font-size: 34px; }
+  .showcase-yki .showcase-caption > strong, .showcase-reflex .showcase-caption > strong { font-size: 25px; }
+  .showcase-timeline { gap: 5px; }
+  .showcase-timeline > div { padding: 8px; }
+  .showcase-timeline > div > b, .showcase-timeline > div > span { font-size: 7px; }
+  .timeline-shots, .timeline-wave, .timeline-export { margin-top: 10px; height: 20px; }
+  .timeline-shots > i { height: 20px; }
+  .timeline-export { font-size: 7px; }
+  .showcase-hand > div { width: 68px; height: 112px; padding: 9px; margin-left: -25px; }
+  .showcase-hand b { font-size: 30px; }
+  .showcase-hand span { font-size: 6px; }
+  .reflex-note, .reflex-cover { padding: 10px; }
+  .reflex-note > b { font-size: 18px; margin: 8px 0; }
+  .reflex-wave { height: 13px; margin-bottom: 7px; }
+  .reflex-cover > b { font-size: 23px; margin: 7px 0; }
+  .reflex-note > span, .reflex-cover > span, .project-showcase :is(.reflex-note, .reflex-cover) > small { font-size: 7px; }
+}

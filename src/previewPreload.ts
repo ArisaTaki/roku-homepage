@@ -25,6 +25,8 @@ const previewImages: Partial<Record<WorkId, readonly string[]>> = {
   ],
   "nature-live2d": ["/models/yachiyo-web/avatar.webp"],
   blog: ["/assets/screenshots/blog-irop.png"],
+  ranlu: ["/assets/projects/ranlu-board.png", "/assets/projects/ranlu-map.png"],
+  "jingang-guild": ["/assets/projects/jingang-board.png", "/assets/projects/jingang-home.png"],
   gallery: [
     "/assets/gallery-new/cover-kaguya.webp",
     "/assets/gallery-new/weathering-main.webp",
@@ -163,6 +165,7 @@ export const prepareInitialScreen = sharedImport(async (): Promise<void> => {
 
 const workOrder: WorkId[] = [
   "hermes-yachiyo", "nature-live2d", "tsukuyomi", "blog", "gallery", "shader",
+  "ranlu", "jingang-guild", "yki-video-generator", "naiwa-yuushiya", "reflex-labs",
 ];
 const backgroundAttempted = new Set<WorkId>();
 let backgroundActive = 0;

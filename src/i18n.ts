@@ -23,6 +23,11 @@ export function isLocale(value: string | null): value is Locale {
 export type WorkId =
   | "hermes-yachiyo"
   | "nature-live2d"
+  | "ranlu"
+  | "jingang-guild"
+  | "naiwa-yuushiya"
+  | "reflex-labs"
+  | "yki-video-generator"
   | "tsukuyomi"
   | "blog"
   | "gallery"
@@ -32,10 +37,39 @@ export type WorkCopy = {
   title: string;
   description: string;
   meta: string;
+  status?: string;
 };
 
 export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
   en: {
+    ranlu: {
+      title: "Ranlu · Color the Path",
+      description: "A color-flood puzzle with 500 levels. Merge neighboring colors within the move limit and find a path across the board.",
+      meta: "Puzzle, 500 Levels, Cocos Creator",
+    },
+    "jingang-guild": {
+      title: "Crystal Harbor Guild",
+      description: "An offline strategy card game: collect gems, build card discounts and compete with three AI rivals for prestige.",
+      meta: "Strategy, Cards, Offline Play",
+    },
+    "naiwa-yuushiya": {
+      title: "Naiwa · If Only There Were a Hero",
+      description: "A card game of simultaneous choices, drafting and passing hands. Try the development preview against bots while the game takes shape.",
+      meta: "Cards, Drafting, Bot Preview",
+      status: "In development",
+    },
+    "reflex-labs": {
+      title: "Reflex Labs",
+      description: "A local creative workbench for narration takes, timestamped retake notes, audio exports and cover drafts.",
+      meta: "Audio, Retake Notes, Cover Design",
+      status: "In development",
+    },
+    "yki-video-generator": {
+      title: "YKI Video Generator",
+      description: "A local video workflow for Windows and NVIDIA GPUs, connecting storyboards, Chinese narration, vertical video and subtitles.",
+      meta: "Local AI, Video, Windows",
+      status: "Beta",
+    },
     "hermes-yachiyo": {
       title: "Hermes-Yachiyo",
       description: "A local desktop companion for chatting, running agents, popping up bubbles and showing Live2D.",
@@ -68,6 +102,34 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
     },
   },
   zh: {
+    ranlu: {
+      title: "染路 · Ranlu",
+      description: "在有限步数里连接相邻色块，让颜色铺满棋盘。500 个关卡，配合撤销与提示，慢慢找到自己的解法。",
+      meta: "益智解谜, 500 关, Cocos Creator",
+    },
+    "jingang-guild": {
+      title: "晶港商会",
+      description: "收集宝石、积累卡牌折扣，与三位 AI 对手争夺声望。一个可以离线慢慢琢磨的策略卡牌游戏。",
+      meta: "策略卡牌, 宝石经营, 离线游玩",
+    },
+    "naiwa-yuushiya": {
+      title: "奶蛙 · 如果有勇者在的话就好了",
+      description: "同时出牌、选牌再传牌的卡牌游戏。先和机器人玩一局开发预览，更多细节还在慢慢打磨。",
+      meta: "卡牌, 轮抽, 单人试玩",
+      status: "完善中",
+    },
+    "reflex-labs": {
+      title: "Reflex Labs",
+      description: "围绕旁白录制与封面草稿的本地创作台，整理带时间点的重录笔记，编辑并导出音频与封面。",
+      meta: "音频录制, 重录笔记, 封面创作",
+      status: "待完善",
+    },
+    "yki-video-generator": {
+      title: "YKI 视频生成器",
+      description: "面向 Windows 与 NVIDIA 显卡的本地短视频创作工具，串联分镜策划、中文配音、竖屏视频与字幕。",
+      meta: "本地 AI, 视频创作, Windows",
+      status: "测试版",
+    },
     "hermes-yachiyo": {
       title: "Hermes-Yachiyo",
       description: "一个放在桌面上的本地 AI 伙伴，可以聊天、跑 Agent、弹气泡，也能接 Live2D。",
@@ -100,6 +162,34 @@ export const workCopies: Record<Locale, Record<WorkId, WorkCopy>> = {
     },
   },
   ja: {
+    ranlu: {
+      title: "染路 · Ranlu",
+      description: "限られた手数で隣り合う色をつなぐ、全500面の色塗りパズル。取り消しとヒントで、自分なりの解き方を探せます。",
+      meta: "パズル, 全500面, Cocos Creator",
+    },
+    "jingang-guild": {
+      title: "晶港商会",
+      description: "宝石を集め、カードの割引を積み重ね、3人の AI と名声を競うオフラインの戦略カードゲーム。",
+      meta: "戦略, カード, オフライン",
+    },
+    "naiwa-yuushiya": {
+      title: "奶蛙 · 勇者がいればいいのに",
+      description: "同時にカードを選び、ドラフトして手札を回すカードゲーム。開発中のプレビューではボットと対戦できます。",
+      meta: "カード, ドラフト, ボット対戦",
+      status: "開発中",
+    },
+    "reflex-labs": {
+      title: "Reflex Labs",
+      description: "ナレーション録音、時刻付きの録り直しメモ、音声の編集と書き出し、カバーの下書きをまとめたローカル制作ツール。",
+      meta: "音声, 録り直しメモ, カバー制作",
+      status: "開発中",
+    },
+    "yki-video-generator": {
+      title: "YKI Video Generator",
+      description: "Windows と NVIDIA GPU 向けのローカル動画制作ツール。絵コンテ、中国語ナレーション、縦型動画、字幕をつなぎます。",
+      meta: "ローカル AI, 動画, Windows",
+      status: "ベータ版",
+    },
     "hermes-yachiyo": {
       title: "Hermes-Yachiyo",
       description: "チャット、Agent 実行、バブル表示、Live2D までまとめた、デスクトップ常駐のローカル AI 相棒。",
@@ -155,8 +245,8 @@ export const uiCopy = {
       exploreHint: "Scroll or click to explore",
       indexAria: "Exhibition navigation",
       prologue: "Prologue",
-      intro: ["AI tools, character interfaces,", "WebGL sketches, notes,", "and a few small experiments."],
-      mobileIntro: ["AI tools, Live2D experiments,", "WebGL sketches, notes", "and small interface studies."],
+      intro: ["Games, AI and creative tools,", "character interfaces, WebGL,", "and a few small experiments."],
+      mobileIntro: ["Games, AI and creative tools,", "Live2D, WebGL sketches", "and small interface studies."],
       thisWay: ["Exhibition", "this way"],
       stageAria: "irop.one project exhibition",
     },
@@ -245,8 +335,8 @@ export const uiCopy = {
       exploreHint: "滚动或点击，开始探索",
       indexAria: "展览导航",
       prologue: "序章",
-      intro: ["做一点 AI 工具，", "也做角色界面、WebGL、", "笔记和图像实验。"],
-      mobileIntro: ["AI 工具、Live2D 表情、", "WebGL 草图、笔记", "和一些小界面实验。"],
+      intro: ["做一点游戏与创作工具，", "也做 AI、角色界面、", "WebGL 和图像实验。"],
+      mobileIntro: ["游戏、AI 与创作工具，", "Live2D、WebGL 草图", "和一些小界面实验。"],
       thisWay: ["展览", "往这边"],
       stageAria: "irop.one 项目展览",
     },
@@ -331,8 +421,8 @@ export const uiCopy = {
       exploreHint: "スクロールかクリックで、展示へ",
       indexAria: "展示ナビゲーション",
       prologue: "プロローグ",
-      intro: ["ローカル AI と", "キャラクター UI、WebGL、", "メモや画像の小さな展示室。"],
-      mobileIntro: ["AI ツール、Live2D 表情、", "WebGL スケッチ、メモ", "そして小さな UI 実験。"],
+      intro: ["ゲームと創作ツール、", "AI、キャラクター UI、", "WebGL の小さな展示室。"],
+      mobileIntro: ["ゲーム、AI と創作ツール、", "Live2D、WebGL スケッチ、", "そして小さな UI 実験。"],
       thisWay: ["展示は", "こちら"],
       stageAria: "irop.one プロジェクト展示",
     },

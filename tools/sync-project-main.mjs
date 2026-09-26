@@ -188,7 +188,8 @@ async function installDependencies(directory) {
   const packageJson = await localFile(directory, 'package.json');
   requireCondition(packageJson, `Missing package.json in ${directory}.`);
   const lock = await localFile(directory, 'package-lock.json') ?? await localFile(directory, 'npm-shrinkwrap.json');
-  if (lock) await run('npm', ['ci', '--no-audit', '--no-fund'], { cwd: directory, timeout: 900_000, label: 'Install locked dependencies' });
+  // Vite sets NODE_ENV, so build dependencies must be included explicitly.
+  if (lock) await run('npm', ['ci', '--include=dev', '--no-audit', '--no-fund'], { cwd: directory, timeout: 900_000, label: 'Install locked dependencies' });
   else requireCondition(!['dependencies', 'devDependencies', 'optionalDependencies'].some((key) => Object.keys(packageJson[key] ?? {}).length) && !packageJson.workspaces, 'Dependencies require a committed npm lockfile.');
 }
 

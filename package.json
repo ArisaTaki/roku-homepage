@@ -7,6 +7,8 @@
     "dev": "vite",
     "sync:tsukuyomi": "node tools/sync-tsukuyomi.mjs",
     "sync:projects": "node tools/sync-project-releases.mjs",
+    "check:project-main": "node tools/sync-project-main.mjs --check",
+    "sync:project-main": "node tools/sync-project-main.mjs --publish",
     "check:project-releases": "node tools/sync-project-releases.mjs --check",
     "package:game-release": "node tools/package-game-release.mjs",
     "check:tsukuyomi-deployment": "node tools/check-tsukuyomi-deployment.mjs",

@@ -30,6 +30,7 @@ import { usePreparedPreviewImage } from "./usePreparedPreviewImage";
 import { FestivalArtwork } from "./FestivalArtwork";
 import { ProjectShowcase } from "./ProjectShowcase";
 import projectReleaseData from "./data/project-releases.json";
+import projectMainData from "./data/project-main.json";
 import { currentFestivalArtwork } from "./festivalArtworkSource";
 import { FLOW_LAYOUT_QUERY, PHONE_NAV_QUERY, getSceneLayout, type SceneLayout } from "./sceneLayout";
 import { SCENE_PROGRESS_EVENT, useSceneMotion } from "./useSceneMotion";
@@ -53,6 +54,16 @@ const IROHA_SESSION_STORAGE_PREFIX = "irop-iroha-session";
 const FISH_BACKGROUND_MAX_PIXELS = 1_600_000;
 const FISH_BACKGROUND_PROGRESS_EVENT = SCENE_PROGRESS_EVENT;
 const projectReleases = projectReleaseData.projects as Partial<Record<WorkId, { version: string }>>;
+const projectSnapshots = projectMainData.projects as Partial<Record<WorkId, { updatedAt: string }>>;
+
+function ProjectUpdated({ id, locale }: { id: WorkId; locale: Locale }) {
+  const updatedAt = projectSnapshots[id]?.updatedAt;
+  if (!updatedAt) return null;
+  const date = new Intl.DateTimeFormat({ zh: "zh-CN", en: "en-US", ja: "ja-JP" }[locale], {
+    year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Asia/Shanghai",
+  }).format(new Date(updatedAt));
+  return <span className="work-updated">{{ zh: "更新于", en: "Updated", ja: "更新" }[locale]} <time dateTime={updatedAt}>{date}</time></span>;
+}
 
 const HermesReplay = lazy(() => loadHermesReplay().then((module) => ({ default: module.HermesReplay })));
 const NatureLive2DReplay = lazy(() => (
@@ -1314,7 +1325,7 @@ const DesktopWorkCard = memo(function DesktopWorkCard({
         {href && <span className="work-open-arrow" aria-hidden="true">↗</span>}
       </div>
       <p>{work.description}</p>
-      <small>{work.status && <b className="work-status">{work.status}</b>}{projectReleases[work.id] && <b className="work-status">{projectReleases[work.id]?.version}</b>}{work.meta}</small>
+      <small>{work.status && <b className="work-status">{work.status}</b>}{projectReleases[work.id] && <b className="work-status">{projectReleases[work.id]?.version}</b>}{work.meta}<ProjectUpdated id={work.id} locale={locale} /></small>
     </Card>
   );
 });
@@ -1554,7 +1565,7 @@ function MobileWorkCard({ work, copy, locale, index, total }: { work: Work; copy
       <Heading className="work-heading" href={href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>
         <h2>{work.title}</h2>{href && <span className="work-open-arrow" aria-hidden="true">↗</span>}
       </Heading>
-      <p>{work.description}</p><small>{work.status && <b className="work-status">{work.status}</b>}{projectReleases[work.id] && <b className="work-status">{projectReleases[work.id]?.version}</b>}{work.meta}</small>
+      <p>{work.description}</p><small>{work.status && <b className="work-status">{work.status}</b>}{projectReleases[work.id] && <b className="work-status">{projectReleases[work.id]?.version}</b>}{work.meta}<ProjectUpdated id={work.id} locale={locale} /></small>
     </article>
   );
 }

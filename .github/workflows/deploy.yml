@@ -84,18 +84,6 @@ jobs:
           AI_REASONING_EFFORT: ""
         run: npm run check:iroha
 
-      - name: Sync published project releases
-        env:
-          GH_TOKEN: ${{ secrets.PROJECT_RELEASE_READ_TOKEN }}
-        run: |
-          if [ -n "$GH_TOKEN" ]; then
-            npm run sync:projects
-          else
-            # A missing credential must not replace already-synchronized games with old checked-in demos.
-            node tools/sync-project-releases.mjs --guard-no-token
-            echo 'Project release sync is not enabled: configure PROJECT_RELEASE_READ_TOKEN.' >> "$GITHUB_STEP_SUMMARY"
-          fi
-
       - name: Build
         env:
           VITE_IROP_ASSISTANT_ENDPOINT: /api/iroha-assistant
@@ -305,6 +293,11 @@ jobs:
               add_header Cache-Control "no-cache";
               try_files \$uri =404;
           }
+
+          location = /knowledge/project-main.json {
+              add_header Cache-Control "no-cache";
+              try_files \$uri =404;
+          }
           NGINX_COMPRESSION
 
           nginx_conf="/usr/local/nginx/conf/sites-enabled/irop.one.conf"
@@ -397,5 +390,5 @@ jobs:
           grep -q '"beats":' nature-response.json
           grep -q '"runtimeLabel":' nature-response.json
 
-      - name: Verify published project releases
-        run: node tools/sync-project-releases.mjs --verify-live
+      - name: Verify synchronized project snapshots
+        run: node tools/sync-project-main.mjs --verify-live

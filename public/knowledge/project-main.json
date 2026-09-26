@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "projects": {
+    "ranlu": {
+      "sourceRepo": "kuguya-AI-app-develop/ranlu",
+      "branch": "main",
+      "sourceCommit": "657f984272f6bda177becbe384377a327af0b329",
+      "updatedAt": "2026-09-23T07:27:10Z",
+      "commitUrl": "https://github.com/kuguya-AI-app-develop/ranlu/commit/657f984272f6bda177becbe384377a327af0b329"
+    },
+    "jingang-guild": {
+      "sourceRepo": "kuguya-AI-app-develop/jingang-guild",
+      "branch": "main",
+      "sourceCommit": "e062b858656587d693d49cc635b9a4a5c432d225",
+      "updatedAt": "2026-09-23T07:24:38Z",
+      "commitUrl": "https://github.com/kuguya-AI-app-develop/jingang-guild/commit/e062b858656587d693d49cc635b9a4a5c432d225"
+    },
+    "naiwa-yuushiya": {
+      "sourceRepo": "kuguya-AI-app-develop/naiwa-yuushiya-table-game",
+      "branch": "main",
+      "sourceCommit": "95f5d673f170ccf4fadc1c5a97ab93482f02771f",
+      "updatedAt": "2026-09-23T07:25:09Z",
+      "commitUrl": "https://github.com/kuguya-AI-app-develop/naiwa-yuushiya-table-game/commit/95f5d673f170ccf4fadc1c5a97ab93482f02771f"
+    },
+    "yki-video-generator": {
+      "sourceRepo": "kuguya-AI-app-develop/YKI-video-generator",
+      "branch": "master",
+      "sourceCommit": "00d72d5aefcbf20abd427218092555a05e3c6da9",
+      "updatedAt": "2026-09-25T07:54:59Z",
+      "commitUrl": "https://github.com/kuguya-AI-app-develop/YKI-video-generator/commit/00d72d5aefcbf20abd427218092555a05e3c6da9"
+    },
+    "reflex-labs": {
+      "sourceRepo": "kuguya-AI-app-develop/Jev_project",
+      "branch": "main",
+      "sourceCommit": "a33ad1e09d7ff7d50e56571b2dafe5cf7c71707e",
+      "updatedAt": "2026-09-23T07:25:00Z",
+      "commitUrl": "https://github.com/kuguya-AI-app-develop/Jev_project/commit/a33ad1e09d7ff7d50e56571b2dafe5cf7c71707e"
+    }
+  }
+}

@@ -89,7 +89,7 @@ node tools/sync-game-demos.mjs \
   --naiwa-yuushiya /path/to/naiwa-yuushiya-table-game
 ```
 
-Flags may be used individually. Use clean source revisions; prepare fresh production Web exports with `npm run build:web` in Ranlu and Jingang Guild, and install Naiwa's dependencies with `npm ci` in its checkout first. The two Cocos exports require a local Cocos Creator installation. The sync copies production runtime files from the Cocos exports and builds Naiwa with its online UI and controller removed. It records source commits and file hashes in `demo-manifest.json`; it does not download private repositories or copy their development source trees. Source commits and tags alone do not refresh the website demo. Either review these local outputs and deploy the site, or publish a release package as described below.
+Flags may be used individually. Use clean source revisions; prepare fresh production Web exports with `npm run build:web` in Ranlu and Jingang Guild, and install Naiwa's dependencies with `npm ci` in its checkout first. The two Cocos exports require a local Cocos Creator installation. The sync copies production runtime files from the Cocos exports and builds Naiwa with its online UI and controller removed. It records source commits and file hashes in `demo-manifest.json`; it does not download private repositories or copy their development source trees. This command is a manual import: review its outputs before deploying the site. The automatic main-branch sync described below builds from fixed remote revisions in temporary checkouts instead.
 
 Check with `npm run build`, `npm run check:iroha` and `npx tsx --test tools/check-scene-layout.ts`. In `npm run preview`, open each page, confirm game requests wait for Start, play a move, switch introduction languages and check the controls and game at phone width.
 
@@ -125,9 +125,49 @@ To temporarily pin or roll back a theme, set repository variable `TSUKUYOMI_AUTO
 
 Validation commands: `npm run test:tsukuyomi`, `npm run sync:tsukuyomi -- --check`, `npm run check:iroha`, and `npm run build`. `npm run check:tsukuyomi-deployment` is a read-only comparison with production. Browser checks should include the full preview plus the homepage auto demo, dark/light, three languages, phone drawer, static mode and offscreen pause.
 
-### Game and tool release synchronization
+### Game and tool main-branch synchronization
 
-The release workflow covers only `ranlu`, `jingang-guild`, `naiwa-yuushiya-table-game`, `YKI-video-generator`, and `Jev_project` (Reflex Labs) in `kuguya-AI-app-develop`. It follows published, non-prerelease GitHub releases; ordinary commits, tags, drafts and prereleases do not trigger updates. Games require a complete Web demo package attached to the release. YKI and Reflex Labs update version metadata only. Existing introduction text and completion labels remain editorial choices.
+The current automatic mode follows pushes to these source branches in `kuguya-AI-app-develop`; publishing a Release is not required:
+
+| Repository | Branch | Website update |
+| --- | --- | --- |
+| `ranlu` | `main` | Rebuild and replace the playable Web demo |
+| `jingang-guild` | `main` | Rebuild and replace the playable Web demo |
+| `naiwa-yuushiya-table-game` | `main` | Rebuild the offline BOT demo, without online rooms |
+| `Jev_project` (Reflex Labs) | `main` | Update the latest source revision and update information |
+| `YKI-video-generator` | `master` | Update the latest source revision and update information |
+
+Introduction text, screenshots and completion labels remain manually maintained. A push does not remove Naiwa's in-development label or Reflex Labs' pending label. The homepage and preview pages use matching tracking files at `src/data/project-main.json` and `public/knowledge/project-main.json`.
+
+#### Local automatic runner
+
+A Codex heartbeat on the current Mac checks every five minutes while the computer is awake, logged in and online, with Codex running. Offline time and delayed runs postpone synchronization; five minutes is the checking interval, not a deployment deadline. The runner requires the existing authenticated GitHub CLI (`gh`) login, Node/npm and Cocos Creator 3.8.8. That GitHub account needs read access to the source repositories and permission to push the homepage's `main`. **This mode does not require `PROJECT_RELEASE_READ_TOKEN` or a new Actions secret.**
+
+Each run uses the script from the homepage's remote `main`, even if the user's local checkout is behind it. It reads all five source heads and clones the required revisions into temporary directories. Changed Cocos games build with `npm run build:web`; Naiwa builds through the offline Vite adapter. Source repositories and the user's homepage checkout, including uncommitted work, are not modified. Only the homepage's remote `main` snapshot is eligible for publication.
+
+Before publishing, the script requires successful builds and confirms that all five source heads and the homepage's remote `main` still match the revisions it started with. It then creates a scoped commit and pushes normally to homepage `main`, triggering the existing deployment workflow. It does not force-push, rebase or reset user checkouts. If a source changes during a build, the next run processes the newer revision. Build or synchronization failures leave the existing live site in place and preserve temporary failure evidence for diagnosis; the normal deployment workflow still handles server publication.
+
+Normal website deployments no longer fetch game/tool Releases, so an older Release cannot replace a newer demo synchronized from a branch. Tsukuyomi's independent Release synchronization is unchanged.
+
+#### Local commands
+
+```bash
+# Read-only comparison of tracked revisions with the five source branches.
+npm run check:project-main
+
+# Build changes in temporary checkouts and publish a scoped homepage main commit.
+npm run sync:project-main
+
+# After deployment, compare local tracking metadata and game manifests with production.
+node tools/sync-project-main.mjs --verify-live
+```
+
+`check:project-main` passes `--check`; `sync:project-main` passes `--publish`. Running `node tools/sync-project-main.mjs` without flags checks for changes without publishing. Run the publishing command from a checkout of the current homepage remote `main` when invoking it manually. `--verify-live` is a read-only check and should use the snapshot that was deployed; it does not start a deployment or change the website.
+
+<details>
+<summary>Optional manual Release packaging and synchronization</summary>
+
+The older Release tools remain available for deliberate manual use. They are not the active automatic mode. `.github/workflows/sync-project-releases.yml` has no schedule and requires explicit opt-in with repository variable `PROJECT_RELEASE_AUTO_SYNC=true` for manual dispatch. Ordinary deployments do not fetch project Releases. Avoid running Release imports alongside the branch-sync heartbeat: a later branch update will again become the demo source.
 
 #### Prepare a game release
 
@@ -141,7 +181,7 @@ npm run package:game-release -- \
   --output /path/to/release-assets
 ```
 
-`--game` also accepts `jingang-guild` and `naiwa-yuushiya`. The packager runs `npm run build:web` for the Cocos games, then uses the controlled demo sync. `--skip-build` reuses an existing Cocos export subject to freshness checks. Naiwa always builds through the offline Vite adapter. Source changes alone cannot supply a fresh Web package.
+`--game` also accepts `jingang-guild` and `naiwa-yuushiya`. The packager runs `npm run build:web` for the Cocos games, then uses the controlled demo sync. `--skip-build` reuses an existing Cocos export subject to freshness checks. Naiwa always builds through the offline Vite adapter.
 
 The output is `irop-web-demo.json.gz` plus `SHA256SUMS.txt`, containing runtime files and their hashes, not the development source tree. The packager does not upload or publish anything; it prints commands with the actual source commit and paths. Review those commands and create a draft release in the corresponding source repository before publishing it:
 
@@ -156,19 +196,9 @@ gh release edit v1.0.0 --draft=false --repo kuguya-AI-app-develop/ranlu
 
 Replace `SOURCE_COMMIT` with the packager's recorded `sourceCommit`, and use the same intended version throughout. Publish only after both assets are attached and the draft is ready.
 
-#### Enable private release access
+#### Import a release manually
 
-Automatic synchronization requires the Actions secret `PROJECT_RELEASE_READ_TOKEN` in `ArisaTaki/roku-homepage`. Create a dedicated fine-grained token with resource owner `kuguya-AI-app-develop`, access only to the four private repositories `ranlu`, `jingang-guild`, `naiwa-yuushiya-table-game` and `Jev_project`, and **Contents: read-only** (Metadata is included automatically). Public YKI needs no extra private repository access. See GitHub's [fine-grained token permissions](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens). Do not copy a general personal `gh` token into Actions.
-
-Without this secret, the workflow reports synchronization as disabled and does not read private repositories. Deployments without the secret compare local release metadata and already-released game manifests with production before proceeding, to prevent overwriting a synchronized version. Games with no release metadata can still be refreshed through the existing local demo sync.
-
-`.github/workflows/sync-project-releases.yml` checks every 15 minutes and supports manual dispatch. GitHub may delay scheduled runs. Keep this workflow on the default branch, `develop`; it checks out production `main`. A detected change starts the existing `deploy.yml`, which downloads and validates the release before building and publishing. Validation includes SHA-256 hashes of runtime files and the GitHub asset digest. Releases without a Web demo package are skipped, preserving the existing demo. An attached package that fails validation stops deployment and leaves the live site in place.
-
-Set repository variable `PROJECT_RELEASE_AUTO_SYNC=false` to pause scheduled checks. Manual deployments still synchronize eligible releases; this variable does not pin or roll back a version.
-
-#### Local commands
-
-Use a dedicated read-only token through `GH_TOKEN`, or append `-- --use-gh` to use the local GitHub CLI login in memory:
+Use the local GitHub CLI login without copying its credential into Actions:
 
 ```bash
 npm run check:project-releases -- --use-gh
@@ -176,4 +206,8 @@ npm run sync:projects -- --use-gh
 npm run sync:projects -- --verify-live
 ```
 
-`check:project-releases` runs the synchronizer with `--check` to compare upstream releases with production without changing files. `sync:projects` updates local metadata and game runtimes. `--verify-live` compares the current local metadata and game manifests with the deployed site.
+`check:project-releases` compares published, non-prerelease upstream releases with production without changing files. `sync:projects` imports their metadata and validated game runtimes into the local checkout; review and deploy those changes explicitly. Games require a complete Web demo package. YKI and Reflex Labs update release metadata only. Drafts and prereleases are ignored. `--verify-live` compares the local release metadata and game manifests with the deployed site.
+
+The optional Actions Release check, unlike the current local branch runner, needs `PROJECT_RELEASE_READ_TOKEN` to read private releases. If using that legacy path, create a dedicated fine-grained token with resource owner `kuguya-AI-app-develop`, access only to `ranlu`, `jingang-guild`, `naiwa-yuushiya-table-game` and `Jev_project`, and **Contents: read-only**. See GitHub's [fine-grained token permissions](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens). Do not copy a general personal `gh` token into Actions.
+
+</details>

@@ -1,6 +1,6 @@
 {
   "sourceRepo": "kuguya-AI-app-develop/naiwa-yuushiya-table-game",
-  "sourceCommit": "893b1063e4aa66483abe1a0cec371708d9032b78",
+  "sourceCommit": "16910f844b215ef9f63b9bafd50b067eef4ccb5a",
   "runtime": "DOM offline prototype",
   "entry": "index.html",
   "offline": true,

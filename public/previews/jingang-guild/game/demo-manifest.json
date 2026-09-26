@@ -1,6 +1,6 @@
 {
   "sourceRepo": "kuguya-AI-app-develop/jingang-guild",
-  "sourceCommit": "e062b858656587d693d49cc635b9a4a5c432d225",
+  "sourceCommit": "9170a36df937d0b8933b019d5cddb5460b295071",
   "runtime": "Cocos Creator 3.8.8 Web",
   "entry": "index.html",
   "offline": true,
@@ -38,8 +38,8 @@
       "sha256": "c2eee4552a460ed97591f527e127b95c811d5f796b9448f3f705974af9beba9d"
     },
     "assets/main/index.js": {
-      "bytes": 70449,
-      "sha256": "ac38dc3f14c1d8fd6a6950397c4ea770dc54a167ee7011acb9f0b1790f25b26c"
+      "bytes": 92866,
+      "sha256": "381d3d935bef126ad3c6f3017e7c463aa6fd628f6d87dc46ac63728115176186"
     },
     "assets/resources/config.json": {
       "bytes": 3043,

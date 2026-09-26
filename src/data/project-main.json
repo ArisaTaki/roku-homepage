@@ -11,16 +11,16 @@
     "jingang-guild": {
       "sourceRepo": "kuguya-AI-app-develop/jingang-guild",
       "branch": "main",
-      "sourceCommit": "e062b858656587d693d49cc635b9a4a5c432d225",
-      "updatedAt": "2026-09-23T07:24:38Z",
-      "commitUrl": "https://github.com/kuguya-AI-app-develop/jingang-guild/commit/e062b858656587d693d49cc635b9a4a5c432d225"
+      "sourceCommit": "9170a36df937d0b8933b019d5cddb5460b295071",
+      "updatedAt": "2026-09-26T04:22:27Z",
+      "commitUrl": "https://github.com/kuguya-AI-app-develop/jingang-guild/commit/9170a36df937d0b8933b019d5cddb5460b295071"
     },
     "naiwa-yuushiya": {
       "sourceRepo": "kuguya-AI-app-develop/naiwa-yuushiya-table-game",
       "branch": "main",
-      "sourceCommit": "893b1063e4aa66483abe1a0cec371708d9032b78",
-      "updatedAt": "2026-09-26T03:29:13Z",
-      "commitUrl": "https://github.com/kuguya-AI-app-develop/naiwa-yuushiya-table-game/commit/893b1063e4aa66483abe1a0cec371708d9032b78"
+      "sourceCommit": "16910f844b215ef9f63b9bafd50b067eef4ccb5a",
+      "updatedAt": "2026-09-26T04:22:04Z",
+      "commitUrl": "https://github.com/kuguya-AI-app-develop/naiwa-yuushiya-table-game/commit/16910f844b215ef9f63b9bafd50b067eef4ccb5a"
     },
     "yki-video-generator": {
       "sourceRepo": "kuguya-AI-app-develop/YKI-video-generator",

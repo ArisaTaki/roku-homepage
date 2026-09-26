@@ -1,6 +1,6 @@
 {
   "sourceRepo": "kuguya-AI-app-develop/ranlu",
-  "sourceCommit": "657f984272f6bda177becbe384377a327af0b329",
+  "sourceCommit": "2eceb4fa560efa6f16d15987a797f8af35f15374",
   "runtime": "Cocos Creator 3.8.8 Web",
   "entry": "index.html",
   "offline": true,
@@ -38,8 +38,8 @@
       "sha256": "c2eee4552a460ed97591f527e127b95c811d5f796b9448f3f705974af9beba9d"
     },
     "assets/main/index.js": {
-      "bytes": 52383,
-      "sha256": "cc81aea7587bab4439098bb4a92ef18aa469a7bc1c657263b3e902a879a2485b"
+      "bytes": 56160,
+      "sha256": "23a5aa67894c55823411a5bace77d8ff7b6da7a7a1ff7d64e5d7d8e3aac56ebf"
     },
     "assets/main/native/6f/6f01cf7f-81bf-4a7e-bd5d-0afc19696480@b47c0@40c10.png": {
       "bytes": 54213,
